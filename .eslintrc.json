@@ -27,7 +27,7 @@
     "rules": {
         // useful rules below
         "semi": ["error", "never"],
-        "indent": ["error", 3],
+        "indent": ["error", 3, {"offsetTernaryExpressions": true}],
         // useless rules below
         "camelcase": "off",
         "no-alert": "off",
