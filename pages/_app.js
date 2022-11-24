@@ -1,17 +1,15 @@
 import { SessionProvider } from "next-auth/react"
-import Layout from "../components/layout/layout"
 import "../styles/globals.css"
 
 function MyApp({ Component, pageProps }) {
+   const getLayout = Component.getLayout || ((page) => page)
    return (
       <SessionProvider
          session={pageProps.session}
          refetchInterval={5 * 60}
          refetchOnWindowFocus
       >
-         <Layout>
-            <Component {...pageProps} />
-         </Layout>
+         {getLayout(<Component {...pageProps} />)}
       </SessionProvider>
    )
 }

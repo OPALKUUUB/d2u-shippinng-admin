@@ -7,18 +7,18 @@ async function handler(req, res) {
       return
    }
    const date = genDate()
-   const { name, username, password, phone} = req.body
+   const { name, username, password, role} = req.body
    const hashedPassword = await hashPassword(password)
    try {
       await mysql.connect()
       const results = await mysql
          .transaction()
          .query(
-            "INSERT INTO admins (name, username, password, phone, created_at, updated_at) VALUES (?,?,?,?,?,?)",
-            [name, username, hashedPassword, phone, date, date]
+            "INSERT INTO admins (name, username, password, role, created_at, updated_at) VALUES (?,?,?,?,?,?)",
+            [name, username, hashedPassword, role, date, date]
          )
          .query((response) => [
-            "SELECT name, username, phone, created_at, updated_at FROM users where id = ?",
+            "SELECT name, username, role, created_at, updated_at FROM admins where id = ?",
             response.insertId,
          ])
          .rollback((error) => {
