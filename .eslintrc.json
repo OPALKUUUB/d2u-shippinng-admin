@@ -41,6 +41,8 @@
         "react/react-in-jsx-scope": "off",
         "react/destructuring-assignment": "off",
         "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
-        "jsx-a11y/label-has-associated-control": "off"
+        "react/jsx-fragments": "off",
+        "jsx-a11y/label-has-associated-control": "off",
+        "react/no-unknown-property": ["error", { "ignore": ["jsx", "global"] }]
     }
 }

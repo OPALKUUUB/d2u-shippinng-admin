@@ -1,0 +1,15 @@
+@font-face {
+   font-family: "Ibm";
+
+   src: url("./Ibm/IBMPlexSansThai-Regular.ttf") format("truetype"),
+      url("./Ibm/IBMPlexSansThai-Bold.ttf") format("truetype"),
+      url("./Ibm/IBMPlexSansThai-ExtraLight.ttf") format("truetype"),
+      url("./Ibm/IBMPlexSansThai-Light.ttf") format("truetype"),
+      url("./Ibm/IBMPlexSansThai-Medium.ttf") format("truetype"),
+      url("./Ibm/IBMPlexSansThai-SemiBold.ttf") format("truetype"),
+      url("./Ibm/IBMPlexSansThai-Thin.ttf") format("truetype");
+}
+
+* {
+   font-family: "Ibm";
+}

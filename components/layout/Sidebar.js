@@ -1,55 +1,96 @@
-import React from "react"
-import styles from "../../styles/Sidebar.module.css"
+import Link from "next/link"
 
 function Sidebar() {
    return (
-      <aside className={styles.container}>
+      <aside>
          <ul>
             <li>
-               <div>Dashboard</div>
-               <ul>
-                  <li>dashboard1</li>
-                  <li>dashboard1</li>
-                  <li>dashboard1</li>
-               </ul>
+               <i className="bx bxs-dashboard"/>
+               <div>
+                  <Link href="/dashboard">Dashboard</Link>
+               </div>
             </li>
             <li>
+               <i className="bx bx-customize"/>
                <div>Auction Yahoo</div>
+               <i className=""/>
                <ul>
-                  <li>Add Auction</li>
-                  <li>Bidding</li>
-                  <li>Payment</li>
-                  <li>History</li>
+                  <li>
+                     <Link href="/yahoo-auction/add-auction">Add Auction</Link>
+                  </li>
+                  <li>
+                     <Link href="/yahoo-auction/bidding">Bidding</Link>
+                  </li>
+                  <li>
+                     <Link href="/yahoo-auction/payment">Payment</Link>
+                  </li>
+                  <li>
+                     <Link href="/yahoo-auction/history">History</Link>
+                  </li>
                </ul>
             </li>
             <li>
+               <i className=""/>
                <div>Tracking</div>
                <ul>
-                  <li>All</li>
-                  <li>Shimizu</li>
-                  <li>Mercari</li>
-                  <li>Web 123</li>
-                  <li>Yahoo</li>
-                  <li>Mart</li>
+                  <li>
+                     <Link href="/tracking/all">All</Link>
+                  </li>
+                  <li>
+                     <Link href="/tracking/shimizu">Shimizu</Link>
+                  </li>
+                  <li>
+                     <Link href="/tracking/mercari">Mercari</Link>
+                  </li>
+                  <li>
+                     <Link href="/tracking/web123">Web 123</Link>
+                  </li>
+                  <li>
+                     <Link href="/tracking/yahoo">Yahoo</Link>
+                  </li>
+                  <li>
+                     <Link href="/tracking/mart">Mart</Link>
+                  </li>
                </ul>
             </li>
             <li>
+               <i className=""/>
                <div>Mart</div>
                <ul>
-                  <li>Order</li>
-                  <li>Buy List</li>
-                  <li>Promotion</li>
-                  <li>Gachapong</li>
-                  <li>7-Eleven</li>
-                  <li>Donki</li>
-                  <li>Disney</li>
-                  <li>Disneyland</li>
+                  <li>
+                     <Link href="/mart/order">Order</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">Buy List</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">Promotion</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">Gachapong</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">7-Eleven</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">Donki</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">Disney</Link>
+                  </li>
+                  <li>
+                     <Link href="/mart/order">Disneyland</Link>
+                  </li>
                </ul>
             </li>
             <li>
-               <div>Ship Billing</div>
+               <i className=""/>
+               <div>
+                  <Link href="/ship-billing">Ship Billing</Link>
+               </div>
             </li>
          </ul>
+         <div />
       </aside>
    )
 }

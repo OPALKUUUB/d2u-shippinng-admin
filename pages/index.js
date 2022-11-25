@@ -1,8 +1,8 @@
 import { getSession } from "next-auth/react"
 import Layout from "../components/layout/layout"
 
-function Home() {
-   return <div>home</div>
+function Dashboard() {
+   return <div>Dashboard</div>
 }
 
 export async function getServerSideProps(context) {
@@ -21,8 +21,8 @@ export async function getServerSideProps(context) {
    }
 }
 
-Home.getLayout = function getLayout(page) {
+Dashboard.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
 }
 
-export default Home
+export default Dashboard
