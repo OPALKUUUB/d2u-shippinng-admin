@@ -1,13 +1,20 @@
-import React, { Fragment } from 'react'
-import MainNavigation from './main-navigation'
+import Navbar from "./Navbar"
+import Sidebar from "./Sidebar"
 
-function Layout({children}) {
+const container = {
+   position: "relative",
+   background: "rgba(0,0,0,0.05)",
+   width: "100vw",
+   height: "100vh",
+}
+function layout({ children }) {
    return (
-      <>
-         <MainNavigation/>
-         <main>{children}</main>
-      </>
+      <div style={container}>
+         <Sidebar />
+         <Navbar />
+         <main style={{marginLeft: 200, marginTop: 60}}>{children}</main>
+      </div>
    )
 }
 
-export default Layout
+export default layout

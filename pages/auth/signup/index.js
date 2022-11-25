@@ -1,6 +1,6 @@
 import axios from "axios"
 import { useRouter } from "next/router"
-import React, { useRef } from "react"
+import { useRef } from "react"
 
 function Signup() {
    const router = useRouter()

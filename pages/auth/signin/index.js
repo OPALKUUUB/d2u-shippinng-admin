@@ -1,41 +1,21 @@
-import React, { useRef } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/router"
+import { LockOutlined } from "@ant-design/icons"
+import SignInForm from "../../../components/SignInForm"
+import styles from "../../../styles/SignInPage.module.css"
 
-function Signin() {
-   const router = useRouter()
-   const usernameRef = useRef()
-   const passwordRef = useRef()
-   const handleSignIn = async (e) => {
-      e.preventDefault()
-      const username = usernameRef.current.value
-      const password = passwordRef.current.value
-      const response = await signIn("credentials", {
-         redirect: false,
-         username,
-         password,
-      })
-      if (response.ok) {
-         alert("Success!")
-         router.replace("/")
-      } else {
-         alert("Error!")
-      }
-   }
-
+function SignInPage() {
    return (
-      <form onSubmit={handleSignIn}>
-         <div>
-            <label htmlFor="username">username</label>
-            <input type="text" name="username" ref={usernameRef} />
+      <div className={styles.container}>
+         <div className={styles.card}>
+            <h2>
+               <div className={styles.lockIcon}>
+                  <LockOutlined />
+               </div>
+               SIGN IN<span>(D2U-ADMIN)</span>
+            </h2>
+            <SignInForm />
          </div>
-         <div>
-            <label htmlFor="password">password</label>
-            <input type="password" name="password" ref={passwordRef} />
-         </div>
-         <button type="submit">Sign In</button>
-      </form>
+      </div>
    )
 }
 
-export default Signin
+export default SignInPage
