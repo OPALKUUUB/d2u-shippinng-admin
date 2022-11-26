@@ -27,11 +27,11 @@ function SignInForm() {
          <form onSubmit={handleSignIn}>
             <div className="input-container">
                <div className="input-icon">
-                  <i className="bx bxs-user-circle" />
+                  {/* <i className="bx bxs-user-circle" /> */}
                   <input name="username" type="text" ref={usernameRef} />
                </div>
                <div className="input-icon">
-                  <i className="bx bxs-lock-open-alt" />
+                  {/* <i className="bx bxs-lock-open-alt" /> */}
                   <input name="password" type="password" ref={passwordRef} />
                </div>
             </div>

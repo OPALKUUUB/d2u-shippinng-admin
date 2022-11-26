@@ -1,20 +1,17 @@
 import { Fragment, useState } from "react"
-import { signOut } from "next-auth/react"
 import Navbar from "./Navbar"
 import Sidebar from "./Sidebar"
 
 function layout({ children }) {
    const [slide, setSlide] = useState(false)
-   const handleSignOut = async () => {
-      await signOut()
-   }
+
    return (
       <Fragment>
          <div className="layout-1">
-            <Navbar />
+            <Navbar setToggleSlide={() => setSlide(!slide)} slide={slide} />
             <div className="layout-2">
-               <Sidebar slide={slide}/>
-               {/* <Content>{children}</Content> */}
+               <Sidebar slide={slide} />
+               <div className="content">{children}</div>
             </div>
          </div>
          <style jsx>
@@ -23,11 +20,17 @@ function layout({ children }) {
                   position: relative;
                   width: 100vw;
                   height: 100vh;
-                  overflow: hidden;
+                  background: rgba(0, 0, 0, 0.1);
+                   {
+                     /* overflow: hidden; */
+                  }
                }
                .layout-2 {
-                  position: absolute;
-                  top: 40px;
+                  display: flex;
+               }
+               .content {
+                  padding-top: 50px;
+                  width: 100%;
                }
             `}
          </style>
