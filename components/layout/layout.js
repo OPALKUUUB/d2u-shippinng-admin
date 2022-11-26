@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react"
+import Sidebar from "../Sidebar/Sidebar"
 import Navbar from "./Navbar"
-import Sidebar from "./Sidebar"
 
 function layout({ children }) {
    const [slide, setSlide] = useState(false)
