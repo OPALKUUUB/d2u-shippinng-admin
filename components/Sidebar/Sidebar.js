@@ -46,7 +46,7 @@ const SidebarMenuDropdown = ({ menu }) => {
          <div className="box-dropdown-list">
             <ul className={`dropdown-list ${open ? "show" : null}`}>
                {childs.map((child) => (
-                  <li key={`DropdownItem-${id}`}>
+                  <li key={`DropdownItem-${id}_${child.id}`}>
                      <div className="box-dropdown-item">
                         <span onClick={() => router.replace(child.to)}>
                            {child.name}

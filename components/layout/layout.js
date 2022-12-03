@@ -30,7 +30,10 @@ function layout({ children }) {
                }
                .content {
                   padding-top: 50px;
+                  padding-bottom: 20px;
                   width: 100%;
+                  max-height: 100vh;
+                  overflow: auto;
                }
             `}
          </style>

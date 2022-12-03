@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { verifyPassword } from "../../../lib/auth"
 import mysql from "../../../lib/db"
 
+
 export default NextAuth({
    session: {
       jwt: true,

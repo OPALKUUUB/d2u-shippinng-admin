@@ -38,7 +38,7 @@ function Navbar({ slide, setToggleSlide }) {
                      className={`btn-menu ${!slide ? "close" : null}`}
                      onClick={setToggleSlide}
                   >
-                     <MenuIcon/>
+                     <MenuIcon />
                   </button>
                </div>
             </div>
@@ -97,7 +97,8 @@ function Navbar({ slide, setToggleSlide }) {
                box-sizing: border-box;
                color: white;
                padding: 10px 0;
-               box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+               box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px,
+                  rgba(0, 0, 0, 0.23) 0px 3px 6px;
             }
             ul {
                margin: 0;
