@@ -8,17 +8,10 @@ async function handler(req, res) {
       let yahoo_payments = await mysql.query(
          "SELECT `yahoo-auction-payment`.*, users.username, `yahoo-auction-order`.image, `yahoo-auction-order`.link FROM `yahoo-auction-payment` LEFT JOIN `yahoo-auction-order` ON `yahoo-auction-payment`.order_id = `yahoo-auction-order`.id LEFT JOIN users ON users.id = `yahoo-auction-payment`.user_id"
       )
-      const preferences = await mysql.query("SELECT * FROM preference")
-      if (preferences.lenght === 0) {
-         res.status(400).json({
-            message: "Cann't Get preference!",
-         })
-      }
       await mysql.end()
       res.status(200).json({
          message: "get order from table success!",
          payments: yahoo_payments,
-         rate_yen: preferences[0].rate_yen,
       })
    }
    if (req.method === "POST") {
@@ -48,7 +41,7 @@ async function handler(req, res) {
       const result_add = await mysql.query(
          "INSERT INTO `yahoo-auction-payment` (date, user_id, order_id, bid, tranfer_fee, delivery_fee, payment_status,rate_yen, created_at, updated_at) VALUES(?,?, ?, ?, ?, ?, ?, ?, ?, ?)",
          [
-            date,
+            date.split(" ")[0],
             user_id,
             order_id,
             bid,
@@ -98,6 +91,14 @@ async function handler(req, res) {
          orders: yahoo_orders,
          payment: payments[0],
       })
+   }
+   if (req.method === "PUT") {
+      // console.log(req.body)
+      const { date, delivery_fee, tranfer_fee, payment_status, rate_yen } =
+         req.body
+      const {id} = req.query
+      await mysql.connect()
+      res.status(200).json({ message: "TEST" })
    }
 }
 export default handler

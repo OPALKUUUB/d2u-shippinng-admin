@@ -1,6 +1,8 @@
 import { getSession } from "next-auth/react"
 import { Fragment, useEffect, useState } from "react"
 import { useRouter } from "next/router"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 import CardHead from "../../../components/CardHead"
 import SortIcon from "../../../components/icon/SortIcon"
 import Layout from "../../../components/layout/layout"
@@ -165,7 +167,6 @@ function TableHead() {
 function TbodyRow({ data, setData, index }) {
    const [showDropdown, setShowDropdown] = useState(false)
    const [showEditModal, setShowEditModal] = useState(false)
-   console.log(data)
    return (
       <tr>
          <th>{index}</th>
@@ -217,7 +218,11 @@ function TbodyRow({ data, setData, index }) {
          </td>
          <td>{data.payment_status}</td>
          <td>
-            <input type="checkbox" />
+            {data.notificated === 0 ? (
+               <span style={{ color: "green" }}>แจ้งชำระแล้ว</span>
+            ) : (
+               <span style={{ color: "red" }}>รอการแจ้ง</span>
+            )}
          </td>
          <td>{data.remark_user || "-"}</td>
          <td>{data.remark_admin || "-"}</td>
@@ -329,39 +334,124 @@ const CalSum = ({ bid, tranferFee, deliveryFee, rateYen }) => {
 }
 
 const EditModal = ({ data, setShow, setData }) => {
-   const [payments, setPayments] = useState()
-   const handleSubmit = (e) => {
+   const [startDate, setStartDate] = useState("")
+   const [payment, setPayment] = useState({
+      date: "",
+      delivery_fee: "",
+      tranfer_fee: "",
+      rate_yen: "",
+      payment_status: "",
+      notificated: "",
+   })
+   const handleChangeData = (e) => {
+      setPayment((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+   }
+   const handleSubmit = async (e) => {
       e.preventDefault()
-      console.log(payments)
+      const body = {
+         date: `${startDate.getDate()}/${
+            startDate.getMonth() + 1
+         }/${startDate.getFullYear()}`,
+         delivery_fee: payment.delivery_fee === "" ? 0 : payment.delivery_fee,
+         tranfer_fee: payment.tranfer_fee === "" ? 0 : payment.tranfer_fee,
+         rate_yen: payment.rate_yen === "" ? 0 : payment.rate_yen,
+         payment_status: payment.payment_status,
+         notificated: payment.notificated === "0" ? 0 : 1,
+      }
+      try {
+         const response = await fetch(`/api/yahoo/payment?id=${ payment.id}`, {
+            method: "put",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+         })
+         const responseJson = await response.json()
+         console.log(responseJson)
+      } catch (err) {
+         console.log(err)
+      }
    }
    useEffect(() => {
-      setPayments(data)
+      const dateSplit = data.date.split("/")
+      const date = `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`
+      setStartDate(new Date(date))
+      setPayment(data)
+      return () => {}
    }, [data])
    return (
       <form onSubmit={handleSubmit}>
-         <Modal title="แก้ไขข้อมูล" onClose={() => setShow(false)}>
+         <Modal
+            title="แก้ไขข้อมูล"
+            onClose={() => setShow(false)}
+            btnSubmitName="ยืนยันการแก้ไข"
+            isBtnSubmit
+         >
             <div className="container">
                <label>วันที่</label>
-               <input type="date" />
+               <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  dateFormat="dd/MM/yyyy"
+               />
                <label>ค่าโอน</label>
-               <input type="number" />
+               <input
+                  name="delivery_fee"
+                  type="number"
+                  value={payment.delivery_fee}
+                  onChange={handleChangeData}
+               />
                <label>ค่าส่ง</label>
-               <input type="number" />
+               <input
+                  name="tranfer_fee"
+                  type="number"
+                  value={payment.tranfer_fee}
+                  onChange={handleChangeData}
+               />
                <label>อัตราแลกเปลี่ยนจากเยนเป็นเงินบาท</label>
-               <input type="number" />
+               <input
+                  name="rate_yen"
+                  type="number"
+                  value={payment.rate_yen}
+                  onChange={handleChangeData}
+               />
                <label>สถานะ</label>
-               <select>
+               <select
+                  name="payment_status"
+                  value={payment.payment_status}
+                  onChange={handleChangeData}
+               >
+                  <option value="รอค่าโอนและค่าส่ง">รอค่าโอนและค่าส่ง</option>
                   <option value="รอการชำระเงิน">รอการชำระเงิน</option>
                   <option value="รอการตรวจสอบ">รอการตรวจสอบ</option>
                   <option value="ชำระเงินเสร็จสิ้น">ชำระเงินเสร็จสิ้น</option>
                </select>
+               <label>สถานะการแจ้งชำระ</label>
+               <select
+                  name="notificated"
+                  value={payment.notificated}
+                  onChange={handleChangeData}
+               >
+                  <option value={0}>รอการแจ้ง</option>
+                  <option value={1}>แจ้งชำระแล้ว</option>
+               </select>
             </div>
          </Modal>
+         <style jsx global>
+            {`
+               .react-datepicker-wrapper,
+               .react-datepicker__input-container,
+               .react-datepicker__input-container input {
+                  display: block;
+                  width: 100%;
+                  margin-bottom: 10px;
+               }
+            `}
+         </style>
          <style jsx>
             {`
                .container {
                   margin-top: 10px;
                }
+               .input-date,
                input,
                select {
                   width: 100%;
@@ -394,7 +484,6 @@ export async function getServerSideProps(context) {
    return {
       props: {
          payments: response.payments,
-         rate_yen: response.rate_yen,
       },
    }
 }

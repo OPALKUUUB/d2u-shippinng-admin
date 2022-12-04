@@ -1,6 +1,7 @@
 import { SessionProvider } from "next-auth/react"
 import "../styles/globals.css"
 import "../styles/ibm.css"
+import "antd/dist/reset.css"
 
 function MyApp({ Component, pageProps }) {
    const getLayout = Component.getLayout || ((page) => page)

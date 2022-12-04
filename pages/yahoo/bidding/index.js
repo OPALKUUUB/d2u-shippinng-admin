@@ -1,561 +1,448 @@
-import { Fragment, useEffect, useRef, useState } from "react"
+/* eslint-disable react/no-unstable-nested-components */
+/* eslint-disable prefer-const */
+import {
+   Button,
+   Dropdown,
+   Input,
+   InputNumber,
+   Modal,
+   Select,
+   Space,
+   Table,
+} from "antd"
+import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import { getSession } from "next-auth/react"
-import { useRouter } from "next/router"
+import React, { Fragment, useEffect, useRef, useState } from "react"
+import Highlighter from "react-highlight-words"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
-import SortIcon from "../../../components/icon/SortIcon"
-import DownIcon from "../../../components/icon/DownIcon"
-import Modal from "../../../components/Modal"
+
+const { TextArea } = Input
+
+// must have key
+const ordersModel = {
+   key: "1",
+   id: 9,
+   user_id: 13,
+   admin_maxbid_id: null,
+   admin_addbid1_id: null,
+   admin_addbid2_id: null,
+   date: null,
+   image: "https://auctions.c.yimg.jp/images.auctions.yahoo.co.jp/image/dr000/auc0311/users/8a8f2885e18a4dbc0066a428562b16c8927af0c6/i-img1200x1200-1669100123d4a86k51092.jpg",
+   link: "https://page.auctions.yahoo.co.jp/jp/auction/q1073037683",
+   name: "【DJ】HERMES/エルメス ベルト2点/バックル3点 セット H金具/シェーヌダンクル レザー リバーシブル 送料無料 R9589443386",
+   price: 51000,
+   maxbid: 300000,
+   addbid1: null,
+   addbid2: null,
+   status: null,
+   remark_user: null,
+   remark_admin: null,
+   created_at: "29/11/2565 10:40:56",
+   updated_at: "29/11/2565 10:40:56",
+   username: "zorzyyippy",
+   admin_maxbid_username: null,
+   admin_addbid1_username: null,
+   admin_addbid2_username: null,
+}
 
 function YahooBiddingPage(props) {
-   const router = useRouter()
-   const [orders, setOrders] = useState(props.orders)
-   const [searchInput, setSearchInput] = useState("")
-   useEffect(() => {
-      router.push({
-         query: {
-            search: searchInput,
+   const [data, setData] = useState(props.orders)
+   const [filteredInfo, setFilteredInfo] = useState({})
+   const [sortedInfo, setSortedInfo] = useState({})
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+   const [selectedRow, setSelectedRow] = useState(ordersModel)
+   const [showEditModal, setShowEditModal] = useState(false)
+   const [showEditStatusModal, setShowEditStatusModal] = useState(false)
+   const [statusForm, setStatusForm] = useState({
+      status: "ชนะประมูล",
+      bid: "",
+      tranfer_fee: "",
+      delivery_fee: "",
+      payment_status: "รอค่าโอนและค่าส่ง",
+   })
+   const handleShowEditModal = (id) => {
+      setSelectedRow(data.find((element) => element.id === id))
+      setShowEditModal(true)
+   }
+   const handleShowEditStatusModal = (id) => {
+      setSelectedRow(data.find((element) => element.id === id))
+      setShowEditStatusModal(true)
+   }
+   const handleOkEditModal = () => {
+      console.log("ok")
+   }
+   const handleOkEditStatusModal = () => {
+      console.log("ok")
+   }
+   const handleCancelEditModal = () => {
+      console.log("cancel edit modal")
+      setShowEditModal(false)
+   }
+   const handleCancelEditStatusModal = () => {
+      console.log("cancel edit status modal")
+      setShowEditStatusModal(false)
+   }
+   const handleChange = (pagination, filters, sorter) => {
+      console.log(filters, sorter)
+      setFilteredInfo(filters)
+      setSortedInfo(sorter)
+   }
+   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+      confirm()
+      setSearchText(selectedKeys[0])
+      setSearchedColumn(dataIndex)
+   }
+   const handleReset = (clearFilterSearch) => {
+      clearFilterSearch()
+      setSearchText("")
+   }
+   const getColumnSearchProps = (dataIndex) => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1890ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) =>
+         record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+      render: (text) =>
+         searchedColumn === dataIndex ? (
+            <Highlighter
+               highlightStyle={{
+                  backgroundColor: "#ffc069",
+                  padding: 0,
+               }}
+               searchWords={[searchText]}
+               autoEscape
+               textToHighlight={text ? text.toString() : ""}
+            />
+         ) : (
+            text
+         ),
+   })
+   const columns = [
+      {
+         title: "วันที่",
+         dataIndex: "created_at",
+         key: "created_at",
+         sorter: (a, b) => {
+            let datetime_a = a.created_at
+            let date_a = datetime_a.split(" ")[0]
+            let time_a = datetime_a.split(" ")[1]
+            let date_a_f = date_a.split("/")
+            let time_a_f = time_a.split(":")
+            // [y,m,d,h,m,s]
+            let datetime_a_f = [
+               parseInt(date_a_f[2], 10),
+               parseInt(date_a_f[1], 10),
+               parseInt(date_a_f[0], 10),
+               parseInt(time_a_f[0], 10),
+               parseInt(time_a_f[1], 10),
+               parseInt(time_a_f[2], 10),
+            ]
+            let datetime_b = b.created_at
+            let date_b = datetime_b.split(" ")[0]
+            let time_b = datetime_b.split(" ")[1]
+            let date_b_f = date_b.split("/")
+            let time_b_f = time_b.split(":")
+            let datetime_b_f = [
+               parseInt(date_b_f[2], 10),
+               parseInt(date_b_f[1], 10),
+               parseInt(date_b_f[0], 10),
+               parseInt(time_b_f[0], 10),
+               parseInt(time_b_f[1], 10),
+               parseInt(time_b_f[2], 10),
+            ]
+            for (let i = 0; i < 6; i++) {
+               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
+                  return datetime_b_f[i] - datetime_a_f[i]
+               }
+            }
+            return 0
          },
-      })
-   }, [searchInput])
+         sortOrder:
+            sortedInfo.columnKey === "created_at" ? sortedInfo.order : null,
+         render: (text) => (
+            <div>
+               <p>{text.split(" ")[0]}</p>
+               <p>{text.split(" ")[1]}</p>
+            </div>
+         ),
+         ellipsis: true,
+      },
+      {
+         title: "รูปภาพ",
+         dataIndex: "image",
+         key: "image",
+         filteredValue: null,
+         render: (text) => <img src={text} alt="" width="100" />,
+         ellipsis: true,
+      },
+      {
+         title: "ชื่อลูกค้า",
+         dataIndex: "username",
+         key: "username",
+         filters: props.orders.reduce(
+            (accumulator, currentValue) => [
+               ...accumulator,
+               { text: currentValue.username, value: currentValue.username },
+            ],
+            []
+         ),
+         filteredValue: filteredInfo.username || null,
+         onFilter: (value, record) => record.username.includes(value),
+         sorter: (a, b) => a.username.length - b.username.length,
+         sortOrder:
+            sortedInfo.columnKey === "username" ? sortedInfo.order : null,
+         ellipsis: true,
+      },
+      {
+         title: "ลิ้งค์",
+         dataIndex: "link",
+         key: "link",
+         render: (text, record, index) => {
+            const link_code = text.split(
+               "https://page.auctions.yahoo.co.jp/jp/auction/"
+            )
+            return (
+               <a href={text} target="_blank" rel="noreferrer">
+                  {link_code[1]}
+               </a>
+            )
+         },
+         filteredValue: null,
+         ellipsis: false,
+      },
+      {
+         title: "ราคาประมูล",
+         dataIndex: "maxbid",
+         key: "maxbid",
+         filteredValue: null,
+         render: (text) =>
+            new Intl.NumberFormat("ja-JP", {
+               currency: "JPY",
+               style: "currency",
+               minimumFractionDigits: 2,
+            }).format(text),
+         ellipsis: true,
+      },
+      {
+         title: "หมายเหตุลูกค้า",
+         dataIndex: "remark_user",
+         key: "remark_user",
+         filteredValue: filteredInfo.remark_user || null,
+         ellipsis: true,
+         ...getColumnSearchProps("remark_user"),
+      },
+      {
+         title: "หมายเหตุแอดมิน",
+         dataIndex: "remark_admin",
+         key: "remark_admin",
+         filteredValue: filteredInfo.remark_admin || null,
+         ellipsis: true,
+         ...getColumnSearchProps("remark_admin"),
+      },
+      {
+         title: "จัดการ",
+         dataIndex: "id",
+         key: "id",
+         filteredValue: null,
+         ellipsis: true,
+         width: "100px",
+         render: (id) => {
+            const items = [
+               {
+                  key: "1",
+                  label: "หมายเหตุ",
+                  onClick: () => handleShowEditModal(id),
+               },
+               {
+                  key: "2",
+                  label: "สถานะประมูล",
+                  onClick: () => handleShowEditStatusModal(id),
+               },
+               { key: "3", label: "ลบรายการ" },
+            ]
+            return (
+               <Space>
+                  <Dropdown menu={{ items }}>
+                     <span>
+                        จัดการ <DownOutlined />
+                     </span>
+                  </Dropdown>
+               </Space>
+            )
+         },
+      },
+   ]
    return (
       <Fragment>
          <CardHead
             name="Yahoo Bidding Auction"
             description="* แสดงรายการประมูลสินค้าที่ลูกค้าสั่งประมูล"
          />
-         <div className="container">
-            <div className="box-search">
-               <input
-                  type="text"
-                  placeholder="ค้นหาในตาราง..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-               />
-            </div>
-            <div className="box-table">
-               <table>
-                  <TableHead />
-                  <tbody>
-                     {orders?.map((item, index) => (
-                        <TbodyRow
-                           key={`TbodyRow-${item.id}`}
-                           index={index + 1}
-                           data={item}
-                           setData={setOrders}
-                        />
-                     ))}
-                  </tbody>
-               </table>
-            </div>
+         <div className="container-table">
+            <Table
+               columns={columns}
+               dataSource={data}
+               onChange={handleChange}
+            />
          </div>
+         {/* Edit Modal */}
+         <Modal
+            title="แก้ไขหมายเหตุแอดมิน"
+            open={showEditModal}
+            onOk={handleOkEditModal}
+            onCancel={handleCancelEditModal}
+            okText="ยืนยัน"
+            cancelText="ยกเลิก"
+         >
+            <div>
+               <label>หมายเหตุแอดมิน: </label>
+               <TextArea rows={4} />
+            </div>
+         </Modal>
+         {/* Edit Status Modal */}
+         <Modal
+            title="เปลี่ยนสถานะการประมูล"
+            open={showEditStatusModal}
+            onOk={handleOkEditStatusModal}
+            onCancel={handleCancelEditStatusModal}
+            okText="ยืนยันการเปลี่ยนสถานะ"
+            cancelText="ยกเลิก"
+         >
+            <div>
+               <label>สถานะประมูล: </label>
+               <Select
+                  defaultValue={statusForm.status}
+                  options={[
+                     { value: "ชนะประมูล", label: "ชนะประมูล" },
+                     { value: "แพ้ประมูล", label: "แพ้ประมูล" },
+                  ]}
+               />
+               {statusForm.status === "ชนะประมูล" ? (
+                  <>
+                     <label>*ราคาที่ประมูลได้: </label>
+                     <InputNumber value={statusForm.bid} />
+                     <label>ค่าธรรมเนียมการโอน(฿): </label>
+                     <InputNumber value={statusForm.tranfer_fee} />
+                     <label>ค่าขนส่ง(￥): </label>
+                     <InputNumber value={statusForm.delivery_fee} />
+                     <label>*สถานะการชำระเงิน:</label>
+                     <Select
+                        defaultValue={statusForm.payment_status}
+                        options={[
+                           {
+                              value: "รอค่าโอนและค่าส่ง",
+                              label: "รอค่าโอนและค่าส่ง",
+                           },
+                           {
+                              value: "รอการชำระเงิน",
+                              label: "รอการชำระเงิน",
+                           },
+                        ]}
+                     />
+                  </>
+               ) : undefined}
+            </div>
+         </Modal>
          <style jsx>
             {`
-               .container {
+               .container-table {
+                  margin: 10px;
                   background: white;
-                  width: 98%;
-                  margin-left: 1%;
-                  margin-right: 1%;
-                  margin-top: 10px;
-                  padding: 10px 15px;
-                  border-radius: 2px;
-                  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-               }
-               .box-search {
-                  width: 250px;
-                  margin-bottom: 1rem;
-               }
-               .box-search input {
-                  width: 100%;
-                  padding: 5px 10px;
-                  border-radius: 4px;
-               }
-               .box-table {
-                  max-width: 100%;
-                  overflow: auto;
-               }
-               table {
-                  width: 100%;
-                  border-collapse: collapse;
+                  padding: 10px;
                }
             `}
          </style>
       </Fragment>
    )
-}
-
-const head_table = [
-   { id: 9, name: "#" },
-   { id: 1, name: "วันที่", sort: true },
-   { id: 2, name: "รูปภาพ" },
-   { id: 3, name: "ชื่อลูกค้า", sort: true },
-   { id: 4, name: "ลิ้งค์", sort: true },
-   { id: 5, name: "ราคาประมูล" },
-   { id: 6, name: "หมายเหตุลูกค้า" },
-   { id: 7, name: "หมายเหตุแอดมิน" },
-   { id: 8, name: "จัดการ" },
-]
-function TableHead() {
-   return (
-      <thead>
-         <tr>
-            {head_table.map((head) => (
-               <th key={`HeadTable-${head.id}`}>
-                  <div className="box-th">
-                     <div className="name">{head.name}</div>
-                     {head.sort && <SortIcon />}
-                  </div>
-               </th>
-            ))}
-         </tr>
-         <style jsx>
-            {`
-               thead {
-                  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-               }
-               thead th {
-                  color: rgba(0, 0, 0, 0.85);
-                  font-weight: 600;
-                  position: relative;
-                  padding: 7px 8px;
-                  background: #f1f1f1;
-                  text-align: left;
-               }
-               .box-th {
-                  cursor: pointer;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-               }
-               th:not(:last-child) .box-th::after {
-                  content: "";
-                  background: rgba(0, 0, 0, 0.06);
-                  width: 1px;
-                  height: 1.6em;
-                  position: absolute;
-                  top: 50%;
-                  right: 0;
-                  transform: translateY(-50%);
-                  transition: background 0.3s;
-               }
-               th .box-th:hover::after {
-                  background: white;
-               }
-               .name {
-                  display: inline-block;
-                  white-space: pre;
-                  height: fit-content;
-                  width: fit-content;
-               }
-               .icon {
-                  display: inline-block;
-               }
-            `}
-         </style>
-      </thead>
-   )
-}
-
-function TbodyRow({ data, setData, index }) {
-   const [showDropdown, setShowDropdown] = useState(false)
-   const [showEditModal, setShowEditModal] = useState(false)
-   const [showWinModal, setShowWinModal] = useState(false)
-   const handleDelete = async () => {
-      const order_id = data.id
-      if (window.confirm(`คุณต้องการที่จะลบรายการประมูลที่ ${index} ?`)) {
-         try {
-            const response = await fetch("/api/yahoo/order", {
-               method: "DELETE",
-               headers: {
-                  "Content-Type": "application/json",
-               },
-               body: JSON.stringify({ order_id }),
-            }).then((res) => res.json())
-            setData(response.orders)
-         } catch (err) {
-            console.log(err)
-            alert("Error!")
-         }
-      }
-   }
-   const handleLose = async () => {
-      const order_id = data.id
-      if (
-         window.confirm(
-            `คุณแน่ใจที่จะเเปลี่ยนสถานะของรายการประมูลที่ ${index} เป็นแพ้ ?`
-         )
-      ) {
-         try {
-            const response = await fetch(`/api/yahoo/order/lose/${order_id}`, {
-               method: "PUT",
-               headers: {
-                  "Content-Type": "application/json",
-               },
-            }).then((res) => res.json())
-            // console.log(response)
-            setData(response.orders)
-            alert("Change status to lose success!")
-         } catch (err) {
-            console.log(err)
-            alert("Error!")
-         }
-      }
-   }
-   return (
-      <tr>
-         <th>{index}</th>
-         <td>
-            {data.created_at.split(" ")[0]}
-            <br />
-            {data.created_at.split(" ")[1]}
-         </td>
-         <td>
-            {data.image ? (
-               <img src={data.image} alt={data.name} width={100} />
-            ) : (
-               "no image!"
-            )}
-         </td>
-         <td>{data.username}</td>
-         <td>
-            <a href={data.link}>
-               {
-                  data.link.split(
-                     "https://page.auctions.yahoo.co.jp/jp/auction/"
-                  )[1]
-               }
-            </a>
-         </td>
-         <td>
-            <div className="box-checkbox">
-               <span>#1: </span>
-               <BiddingCheckBox
-                  setData={setData}
-                  bidding={data.maxbid}
-                  id={data.id}
-                  bidby={data.admin_maxbid_username}
-                  name="maxbid"
-               />
-            </div>
-            <div className="box-checkbox">
-               <span>#2: </span>
-               <BiddingCheckBox
-                  setData={setData}
-                  bidding={data.addbid1}
-                  id={data.id}
-                  bidby={data.admin_addbid1_username}
-                  name="addbid1"
-               />
-            </div>
-            <div className="box-checkbox">
-               <span>#3: </span>
-               <BiddingCheckBox
-                  setData={setData}
-                  bidding={data.addbid2}
-                  id={data.id}
-                  bidby={data.admin_addbid2_username}
-                  name="addbid2"
-               />
-            </div>
-         </td>
-         <td>{data.remark_user || "-"}</td>
-         <td>{data.remark_admin || "-"}</td>
-         <td>
-            <button
-               className="btn-dropdown"
-               onClick={() => setShowDropdown(!showDropdown)}
-            >
-               <span className="text">จัดการ</span>
-               <span className="icon">
-                  <DownIcon fill="white" width="14" height="14" />
-               </span>
-            </button>
-            <div className="dropdown-container">
-               <div className={`dropdown-box ${showDropdown && "show"}`}>
-                  <ul>
-                     <li onClick={() => setShowEditModal(true)}>
-                        <span>หมายเหตุ</span>
-                     </li>
-                     <li onClick={() => setShowWinModal(true)}>
-                        <span>ชนะ</span>
-                     </li>
-                     <li onClick={handleLose}>
-                        <span>แพ้</span>
-                     </li>
-                     <li onClick={handleDelete}>
-                        <span>ลบ</span>
-                     </li>
-                  </ul>
-               </div>
-            </div>
-            {showEditModal && (
-               <EditModal
-                  setShow={setShowEditModal}
-                  remark_admin={data.remark_admin}
-                  id={data.id}
-                  setData={setData}
-               />
-            )}
-            {showWinModal && (
-               <WinModal
-                  setShow={setShowWinModal}
-                  order_id={data.id}
-                  user_id={data.user_id}
-                  setData={setData}
-               />
-            )}
-         </td>
-         <style jsx>
-            {`
-               tr {
-                  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-               }
-               tr td {
-                  padding: 12px 8px;
-                  color: rgba(0, 0, 0, 0.85);
-                  position: relative;
-               }
-               .box-checkbox {
-                  white-space: pre;
-               }
-               .btn-dropdown {
-                  border: none;
-                  background: #2e8bc0;
-                  color: white;
-                  border-radius: 5px;
-                  padding: 3px 8px;
-                  cursor: pointer;
-               }
-               .btn-dropdown .icon {
-                  margin-left: 5px;
-                  vertical-align: -0.2em;
-               }
-               .dropdown-container {
-                  position: relative;
-               }
-               .dropdown-box {
-                  overflow: hidden;
-                  min-width: 100px;
-                  max-height: 0px;
-                  border-radius: 3px;
-                  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1),
-                     -1px -1px 1px rgba(0, 0, 0, 0.1);
-                  transition: max-height 0.2s ease-in;
-               }
-               .dropdown-box ul {
-                  padding: 0;
-                  margin: 0;
-               }
-               .dropdown-box li {
-                  list-style: none;
-                  text-align: center;
-                  padding: 5px 5px;
-                  cursor: pointer;
-                  background: white;
-               }
-               .dropdown-box li:hover {
-                  background: rgba(0, 0, 0, 0.1);
-                  color: #fff;
-               }
-               .dropdown-box li:not(:last-child) {
-                  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-               }
-               .dropdown-box.show {
-                  height: fit-content;
-                  max-height: 1000px;
-               }
-            `}
-         </style>
-      </tr>
-   )
-}
-
-const EditModal = ({ id, remark_admin, setShow, setData }) => {
-   const [remark, setRemark] = useState()
-   const handleSubmit = async (e) => {
-      e.preventDefault()
-      try {
-         // eslint-disable-next-line prefer-template
-         const response = await fetch("/api/yahoo/order/remark-admin/" + id, {
-            method: "PUT",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ remark }),
-         }).then((res) => res.json())
-         // console.log(response.orders)
-         setData(response.orders)
-      } catch (err) {
-         console.log(err)
-         alert("Error!")
-      }
-   }
-   useEffect(() => {
-      setRemark(remark_admin || "")
-   }, [remark_admin])
-   return (
-      <form onSubmit={handleSubmit}>
-         <Modal
-            onClose={() => setShow(false)}
-            title="เพิ่มหมายเหตุแอดมิน"
-            height="200px"
-            btnSubmitName="ยืนยันการแก้ไขหมายเหตุ"
-            isBtnSubmit
-         >
-            <div className="Modal-container">
-               <label>* หมายเหตุ:</label>
-               <textarea
-                  value={remark}
-                  onChange={(e) => setRemark(e.target.value)}
-               />
-            </div>
-         </Modal>
-         <style jsx>
-            {`
-               .Modal-container {
-                  margin-top: 10px;
-               }
-               .Modal-container label {
-                  margin-bottom: 10px;
-               }
-               .Modal-container textarea {
-                  width: 100%;
-                  display: block;
-                  border-radius: 4px;
-                  padding: 8px;
-               }
-            `}
-         </style>
-      </form>
-   )
-}
-
-function WinModal({ setShow, order_id, user_id, setData }) {
-   const bidRef = useRef()
-   const tranferFeeRef = useRef()
-   const deliveryFeeRef = useRef()
-   const paymentStatusRef = useRef()
-   const handleSubmit = async (e) => {
-      e.preventDefault()
-      // console.log(order_id, user_id)
-      const bid = bidRef.current.value
-      const tranfer_fee = tranferFeeRef.current.value
-      const delivery_fee = deliveryFeeRef.current.value
-      const payment_status = paymentStatusRef.current.value
-      try {
-         const response = await fetch("/api/yahoo/payment", {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-               order_id,
-               user_id,
-               bid,
-               delivery_fee,
-               tranfer_fee,
-               payment_status,
-            }),
-         }).then((res) => res.json())
-         alert("Add Payment Success!")
-         setData(response.orders)
-      } catch (err) {
-         console.log(err)
-         alert("Error!")
-      }
-   }
-   return (
-      <form onSubmit={handleSubmit}>
-         <Modal
-            onClose={() => setShow(false)}
-            title="เพิ่มรายการประมูลที่ชนะ"
-            btnSubmitName="ยืนยันการเปลี่ยนสถานะ"
-            isBtnSubmit
-         >
-            <div className="container">
-               <label>* ราคาที่ประมูลได้:</label>
-               <input type="number" ref={bidRef} />
-               <label>ค่าธรรมเนียมการโอน(฿):</label>
-               <input type="number" ref={tranferFeeRef} />
-               <label>ค่าขนส่ง(￥):</label>
-               <input type="number" ref={deliveryFeeRef} />
-               <label>* สถานะการชำระเงิน:</label>
-               <select ref={paymentStatusRef}>
-                  <option value="รอค่าโอนและค่าส่ง">รอค่าโอนและค่าส่ง</option>
-                  <option value="รอการชำระเงิน">รอการชำระเงิน</option>
-               </select>
-            </div>
-         </Modal>
-         <style jsx>
-            {`
-               .container {
-                  margin-top: 10px;
-               }
-               input,
-               select {
-                  width: 100%;
-                  margin-bottom: 10px;
-               }
-            `}
-         </style>
-      </form>
-   )
-}
-
-function BiddingCheckBox({ bidding, id, bidby, name, setData }) {
-   const [check, setCheck] = useState(false)
-   const handleCheck = async () => {
-      // eslint-disable-next-line prefer-template
-      // setCheck(!check)
-      try {
-         const response = await fetch(`/api/yahoo/order/addbid/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-               name,
-               check,
-            }),
-         }).then((res) => res.json())
-         // setCheck(!check)
-         setData(response.orders)
-      } catch (err) {
-         console.log(err)
-         alert("Error!")
-      }
-   }
-   useEffect(() => {
-      if (bidby) {
-         setCheck(true)
-      }
-   }, [bidby])
-   if (bidding) {
-      return (
-         <span className="bidding">
-            <input type="checkbox" checked={check} onChange={handleCheck} />
-            <span>
-               {new Intl.NumberFormat("ja-JP", {
-                  style: "currency",
-                  currency: "JPY",
-               }).format(bidding)}
-            </span>
-            {bidby && <span>({bidby})</span>}
-            <style jsx>
-               {`
-                  .bidding {
-                     display: inline-block;
-                  }
-                  input {
-                     vertical-align: -0.125em;
-                     width: 15px;
-                     height: 15px;
-                     cursor: pointer;
-                  }
-               `}
-            </style>
-         </span>
-      )
-   }
-   return "-"
 }
 
 YahooBiddingPage.getLayout = function getLayout(page) {
@@ -582,68 +469,5 @@ export async function getServerSideProps(context) {
       },
    }
 }
-
-// const datas = [
-//    {
-//       id: 1,
-//       date: "01/12/2022",
-//       image: null,
-//       username: "opal",
-//       link: "https://opalnakuuub.com/skuid",
-//       maxbid: 2000,
-//       addbid1: 2001,
-//       addbid2: 2004,
-//       remark_user: "this data use for test",
-//       remark_admin: "this data use for test data of admin",
-//    },
-//    {
-//       id: 2,
-//       date: "01/12/2022",
-//       image: null,
-//       username: "opal",
-//       link: "https://opalnakuuub.com/skuid",
-//       maxbid: 2000,
-//       addbid1: 2001,
-//       addbid2: 2004,
-//       remark_user: "this data use for test",
-//       remark_admin: "this data use for test data of admin",
-//    },
-//    {
-//       id: 3,
-//       date: "01/12/2022",
-//       image: null,
-//       username: "opal",
-//       link: "https://opalnakuuub.com/skuid",
-//       maxbid: 2000,
-//       addbid1: 2001,
-//       addbid2: 2004,
-//       remark_user: "this data use for test",
-//       remark_admin: "this data use for test data of admin",
-//    },
-//    {
-//       id: 4,
-//       date: "01/12/2022",
-//       image: null,
-//       username: "opal",
-//       link: "https://opalnakuuub.com/skuid",
-//       maxbid: 2000,
-//       addbid1: 2001,
-//       addbid2: 2004,
-//       remark_user: "this data use for test",
-//       remark_admin: "this data use for test data of admin",
-//    },
-//    {
-//       id: 5,
-//       date: "01/12/2022",
-//       image: null,
-//       username: "opal",
-//       link: "https://opalnakuuub.com/skuid",
-//       maxbid: 2000,
-//       addbid1: 2001,
-//       addbid2: 2004,
-//       remark_user: "this data use for test",
-//       remark_admin: "this data use for test data of admin",
-//    },
-// ]
 
 export default YahooBiddingPage

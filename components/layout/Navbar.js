@@ -14,15 +14,12 @@ function Navbar({ slide, setToggleSlide }) {
    const btnRef = useRef()
    useEffect(() => {
       window.addEventListener("click", (e) => {
-         const btn_status = btnRef.current.contains(e.target)
-         let dropdown_status = false
-         if (dropdownRef.current.className.split(" ").length) {
-            dropdown_status = true
-         }
+         const dropdown_status =
+            dropdownRef.current?.className.split(" ").length > 0
          if (
             !dropdownRef.current.contains(e.target) &&
             dropdown_status &&
-            !btn_status
+            !btnRef.current.contains(e.target)
          ) {
             setShowSetting(false)
          }
