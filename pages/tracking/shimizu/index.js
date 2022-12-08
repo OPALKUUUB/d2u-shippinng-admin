@@ -79,12 +79,28 @@ function ShimizuTrackingsPage(props) {
       // console.log(deleteImages)
       // console.log(addImages)
       try {
+         const doneImage =
+            fileList.map((file, index) => ({
+               id: index,
+               name: file.name,
+               status: file.status,
+               uid: file.uid,
+               url: file.url ? file.url : file.thumbUrl,
+            })) || []
+         // const response = await fetch(
+         //    `/api/tracking/images?tracking_id=${trackingId}`,
+         //    {
+         //       method: "PATCH",
+         //       headers: { "Content-Type": "application/json" },
+         //       body: JSON.stringify({ deleteImages, addImages }),
+         //    }
+         // )
          const response = await fetch(
             `/api/tracking/images?tracking_id=${trackingId}`,
             {
                method: "PATCH",
                headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ deleteImages, addImages }),
+               body: JSON.stringify({ doneImage }),
             }
          )
          const responseJson = await response.json()
@@ -94,16 +110,16 @@ function ShimizuTrackingsPage(props) {
       }
    }
    const onChange = ({ fileList: newFileList }) => {
-      const temp1 = fileList.filter((ft) => ft.status === "removed")
-      const temp2 = fileList.filter(
-         (ft) => ft.status === "uploading" && ft.percent === 100
-      )
-      if (temp1.length === 1) {
-         setDeleteImages((prev) => [...prev, temp1[0].id])
-      }
-      if (temp2.length === 1) {
-         setAddImages((prev) => [...prev, temp2[0].thumbUrl])
-      }
+      // const temp1 = fileList.filter((ft) => ft.status === "removed")
+      // const temp2 = fileList.filter(
+      //    (ft) => ft.status === "uploading" && ft.percent === 100
+      // )
+      // if (temp1.length === 1) {
+      //    setDeleteImages((prev) => [...prev, temp1[0].id])
+      // }
+      // if (temp2.length === 1) {
+      //    setAddImages((prev) => [...prev, temp2[0].thumbUrl])
+      // }
       setFileList(newFileList)
    }
    const onPreview = async (file) => {
@@ -129,22 +145,21 @@ function ShimizuTrackingsPage(props) {
          const response = await fetch(`/api/tracking/images?id=${id}`)
          const responseJson = await response.json()
          const { tracking_image } = responseJson
-         setTrackingId(id)
-         setFileList(
-            tracking_image.reduce((accumulator, currentValue, index) => {
-               const a = 0
-               return [
-                  ...accumulator,
-                  {
-                     uid: index,
-                     name: `image${index}.png`,
-                     status: "done",
-                     url: currentValue.image,
-                     id: currentValue.id,
-                  },
-               ]
-            }, [])
+         const new_tracking_image = tracking_image.reduce(
+            (accumulator, currentValue, index) => [
+               ...accumulator,
+               {
+                  uid: index,
+                  name: `image${index}.png`,
+                  status: "done",
+                  url: currentValue.image,
+                  id: currentValue.id,
+               },
+            ],
+            []
          )
+         setTrackingId(id)
+         setFileList(new_tracking_image)
       } catch (err) {
          console.log(err)
       }
@@ -215,12 +230,35 @@ function ShimizuTrackingsPage(props) {
          dataIndex: "date",
          width: "120px",
          key: "date",
+         sorter: (a, b) => {
+            const datetime_a = a.date
+            const date_a_f = datetime_a.split("/")
+            // [y,m,d,h,m,s]
+            const datetime_a_f = [
+               parseInt(date_a_f[2], 10),
+               parseInt(date_a_f[1], 10),
+               parseInt(date_a_f[0], 10),
+            ]
+            const datetime_b = b.date
+            const date_b_f = datetime_b.split("/")
+            const datetime_b_f = [
+               parseInt(date_b_f[2], 10),
+               parseInt(date_b_f[1], 10),
+               parseInt(date_b_f[0], 10),
+            ]
+            for (let i = 0; i < 3; i++) {
+               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
+                  return datetime_a_f[i] - datetime_b_f[i]
+               }
+            }
+            return 0
+         },
       },
       {
          title: "รูปภาพ",
          dataIndex: "id",
          width: "120px",
-         key: "images",
+         key: "id",
          render: (id) => (
             <button onClick={() => handleShowImages(id)}>ดูรูปภาพ</button>
          ),
@@ -602,7 +640,7 @@ function ShimizuTrackingsPage(props) {
                   onChange={onChange}
                   onPreview={onPreview}
                >
-                  {fileList.length < 3 && "+ Upload"}
+                  {fileList.length < 7 && "+ Upload"}
                </Upload>
             </div>
          </Modal>
