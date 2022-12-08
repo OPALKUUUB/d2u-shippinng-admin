@@ -10,21 +10,7 @@ import MenuIcon from "../icon/MenuIcon"
 function Navbar({ slide, setToggleSlide }) {
    const router = useRouter()
    const [showSetting, setShowSetting] = useState(false)
-   const dropdownRef = useRef()
-   const btnRef = useRef()
-   useEffect(() => {
-      window.addEventListener("click", (e) => {
-         const dropdown_status =
-            dropdownRef.current?.className.split(" ").length > 0
-         if (
-            !dropdownRef.current.contains(e.target) &&
-            dropdown_status &&
-            !btnRef.current.contains(e.target)
-         ) {
-            setShowSetting(false)
-         }
-      })
-   }, [])
+
    return (
       <Fragment>
          <nav>
@@ -50,7 +36,6 @@ function Navbar({ slide, setToggleSlide }) {
                      <div
                         className="profile-box"
                         onClick={() => setShowSetting(!showSetting)}
-                        ref={btnRef}
                      >
                         <span className="profile-image-box">
                            <ProfileIcon />
@@ -62,7 +47,6 @@ function Navbar({ slide, setToggleSlide }) {
                            className={`dropdown-box ${
                               showSetting ? "show" : null
                            }`}
-                           ref={dropdownRef}
                         >
                            <li>
                               <span className="icon">

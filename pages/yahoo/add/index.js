@@ -26,21 +26,21 @@ function YahooAddPage(props) {
          return
       }
       try {
-         const response = await fetch(
-            "/api/yahoo/clawing",
-            {
-               method: "POST",
-               headers: {
-                  "Content-type": "application/json",
-               },
-               body: JSON.stringify({ link }),
-            }
-         ).then((res) => res.json())
-         setDetail(response.detail)
-         setImages(response.image)
-         setName(response.title)
-         const num = parseFloat(response.price.replace(/,/g, ""))
-         setPrice(num)
+         const response = await fetch("/api/yahoo/clawing", {
+            method: "POST",
+            headers: {
+               "Content-type": "application/json",
+            },
+            body: JSON.stringify({ link }),
+         })
+         const responseJson = await response.json()
+         console.log(responseJson)
+         setDetail(responseJson.detail)
+         setImages(responseJson.image)
+         setName(responseJson.title)
+         // console.log(responseJson.price)
+         // setPrice(responseJson.price)
+         setPrice(parseFloat(responseJson.price.replace(/,/g, "")))
       } catch (err) {
          console.log(err)
          alert("Error")
@@ -152,7 +152,7 @@ function YahooAddPage(props) {
                         ค้นหาลิ้งค์ประมูล
                      </button>
                   </div>
-                  {name && images && detail && price && (
+                  {images && (
                      <div>
                         <img src={images[0]} alt={name} />
                         <h3>{name}</h3>

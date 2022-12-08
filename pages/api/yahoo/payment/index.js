@@ -6,7 +6,8 @@ async function handler(req, res) {
       await mysql.connect()
       // eslint-disable-next-line prefer-const
       let yahoo_payments = await mysql.query(
-         "SELECT `yahoo-auction-payment`.*, users.username, `yahoo-auction-order`.image, `yahoo-auction-order`.link FROM `yahoo-auction-payment` LEFT JOIN `yahoo-auction-order` ON `yahoo-auction-payment`.order_id = `yahoo-auction-order`.id LEFT JOIN users ON users.id = `yahoo-auction-payment`.user_id"
+         "SELECT `yahoo-auction-payment`.*, users.username, `yahoo-auction-order`.image, `yahoo-auction-order`.link FROM `yahoo-auction-payment` LEFT JOIN `yahoo-auction-order` ON `yahoo-auction-payment`.order_id = `yahoo-auction-order`.id LEFT JOIN users ON users.id = `yahoo-auction-payment`.user_id WHERE `yahoo-auction-order`.status = ? and `yahoo-auction-payment`.payment_status != ?",
+         ["ชนะ", "ชำระเงินเสร็จสิ้น"]
       )
       await mysql.end()
       res.status(200).json({
@@ -22,9 +23,47 @@ async function handler(req, res) {
          tranfer_fee,
          delivery_fee,
          payment_status,
+         status,
       } = req.body
       const date = genDate()
       await mysql.connect()
+      if (status === "แพ้") {
+         await mysql.query(
+            "UPDATE `yahoo-auction-order` SET status = ?, updated_at = ? WHERE id = ?",
+            ["แพ้", date, order_id]
+         )
+         // eslint-disable-next-line prefer-const
+         let yahoo_orders_of_lose = await mysql.query(
+            "SELECT `yahoo-auction-order`.*, users.username FROM `yahoo-auction-order` LEFT JOIN users ON `yahoo-auction-order`.user_id = users.id WHERE `yahoo-auction-order`.status IS NULL"
+         )
+         await mysql.end()
+         const admins = await mysql.query("SELECT id, username FROM admins")
+         for (let i = 0; i < yahoo_orders_of_lose.length; i++) {
+            yahoo_orders_of_lose[i].admin_maxbid_username = null
+            yahoo_orders_of_lose[i].admin_addbid1_username = null
+            yahoo_orders_of_lose[i].admin_addbid2_username = null
+            for (let j = 0; j < admins.length; j++) {
+               if (yahoo_orders_of_lose[i].admin_maxbid_id === admins[j].id) {
+                  yahoo_orders_of_lose[i].admin_maxbid_username =
+                     admins[j].username
+               }
+               if (yahoo_orders_of_lose[i].admin_addbid1_id === admins[j].id) {
+                  yahoo_orders_of_lose[i].admin_addbid1_username =
+                     admins[j].username
+               }
+               if (yahoo_orders_of_lose[i].admin_addbid2_id === admins[j].id) {
+                  yahoo_orders_of_lose[i].admin_addbid2_username =
+                     admins[j].username
+               }
+            }
+         }
+
+         res.status(200).json({
+            message: "update status (แพ้) success!",
+            orders: yahoo_orders_of_lose,
+         })
+         return
+      }
       await mysql.query(
          "UPDATE `yahoo-auction-order` SET status = ?, updated_at = ? WHERE id = ?",
          ["ชนะ", date, order_id]
@@ -73,6 +112,7 @@ async function handler(req, res) {
          yahoo_orders[i].admin_maxbid_username = null
          yahoo_orders[i].admin_addbid1_username = null
          yahoo_orders[i].admin_addbid2_username = null
+         yahoo_orders[i].key = i
          for (let j = 0; j < admins.length; j++) {
             if (yahoo_orders[i].admin_maxbid_id === admins[j].id) {
                yahoo_orders[i].admin_maxbid_username = admins[j].username
@@ -94,11 +134,48 @@ async function handler(req, res) {
    }
    if (req.method === "PUT") {
       // console.log(req.body)
-      const { date, delivery_fee, tranfer_fee, payment_status, rate_yen } =
+      const {user_id, date, delivery_fee, tranfer_fee, payment_status, rate_yen } =
          req.body
-      const {id} = req.query
+      const { id } = req.query
+      const date_created = genDate()
       await mysql.connect()
-      res.status(200).json({ message: "TEST" })
+      if (payment_status === "ชำระเงินเสร็จสิ้น") {
+         await mysql
+            .transaction()
+            .query(
+               "INSERT INTO `trackings` (user_id, channel,date, created_at, updated_at) values (?, ?, ?, ?, ?)",
+               [user_id, "yahoo", date, date_created, date_created]
+            )
+            .query((response) => [
+               "UPDATE `yahoo-auction-payment` SET tracking_id = ?, date = ?, tranfer_fee = ?, delivery_fee = ?, payment_status = ? , rate_yen = ? where id = ?",
+               [
+                  response.insertId,
+                  date,
+                  tranfer_fee,
+                  delivery_fee,
+                  payment_status,
+                  rate_yen,
+                  id,
+               ],
+            ])
+            .rollback((error) => console.log(error))
+            .commit()
+      } else {
+         await mysql.query(
+            "UPDATE `yahoo-auction-payment` SET date = ?, tranfer_fee = ?, delivery_fee = ?, payment_status = ? , rate_yen = ? where id = ?",
+            [date, tranfer_fee, delivery_fee, payment_status, rate_yen, id]
+         )
+      }
+      const yahoo_payments = await mysql.query(
+         "SELECT `yahoo-auction-payment`.*, users.username, `yahoo-auction-order`.image, `yahoo-auction-order`.link FROM `yahoo-auction-payment` LEFT JOIN `yahoo-auction-order` ON `yahoo-auction-payment`.order_id = `yahoo-auction-order`.id LEFT JOIN users ON users.id = `yahoo-auction-payment`.user_id WHERE `yahoo-auction-order`.status = ? and `yahoo-auction-payment`.payment_status != ?",
+         ["ชนะ", "ชำระเงินเสร็จสิ้น"]
+      )
+      await mysql.end()
+      res.status(200).json({
+         message: "update payment success!",
+         payments: yahoo_payments,
+      })
    }
 }
+
 export default handler

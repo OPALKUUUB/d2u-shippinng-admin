@@ -8,9 +8,13 @@ import {
    Modal,
    Select,
    Space,
+   Switch,
    Table,
 } from "antd"
-import { DownOutlined, SearchOutlined } from "@ant-design/icons"
+import {
+   DownOutlined,
+   SearchOutlined,
+} from "@ant-design/icons"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useRef, useState } from "react"
 import Highlighter from "react-highlight-words"
@@ -46,6 +50,14 @@ const ordersModel = {
    admin_addbid2_username: null,
 }
 
+const statusFormModel = {
+   status: "ชนะ",
+   bid: "",
+   tranfer_fee: "",
+   delivery_fee: "",
+   payment_status: "รอค่าโอนและค่าส่ง",
+}
+
 function YahooBiddingPage(props) {
    const [data, setData] = useState(props.orders)
    const [filteredInfo, setFilteredInfo] = useState({})
@@ -56,13 +68,24 @@ function YahooBiddingPage(props) {
    const [selectedRow, setSelectedRow] = useState(ordersModel)
    const [showEditModal, setShowEditModal] = useState(false)
    const [showEditStatusModal, setShowEditStatusModal] = useState(false)
-   const [statusForm, setStatusForm] = useState({
-      status: "ชนะประมูล",
-      bid: "",
-      tranfer_fee: "",
-      delivery_fee: "",
-      payment_status: "รอค่าโอนและค่าส่ง",
-   })
+   const [statusForm, setStatusForm] = useState(statusFormModel)
+   const handleCheck = async (name, check, id) => {
+      try {
+         const response = await fetch(`/api/yahoo/order/addbid/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               name,
+               check,
+            }),
+         }).then((res) => res.json())
+         // setCheck(!check)
+         setData(response.orders)
+      } catch (err) {
+         console.log(err)
+         alert("Error!")
+      }
+   }
    const handleShowEditModal = (id) => {
       setSelectedRow(data.find((element) => element.id === id))
       setShowEditModal(true)
@@ -71,18 +94,62 @@ function YahooBiddingPage(props) {
       setSelectedRow(data.find((element) => element.id === id))
       setShowEditStatusModal(true)
    }
-   const handleOkEditModal = () => {
-      console.log("ok")
+   const handleOkEditModal = async () => {
+      // console.log("ok")
+      console.log(selectedRow.remark_admin)
+      const { id } = selectedRow
+      const remark = selectedRow.remark_admin
+      try {
+         // eslint-disable-next-line prefer-template
+         const response = await fetch("/api/yahoo/order/remark-admin/" + id, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ remark }),
+         }).then((res) => res.json())
+         setShowEditModal(false)
+         setData(response.orders)
+      } catch (err) {
+         console.log(err)
+         alert("Error!")
+      }
    }
-   const handleOkEditStatusModal = () => {
-      console.log("ok")
+   const handleOkEditStatusModal = async () => {
+      const { id, user_id } = selectedRow
+      const order_id = id
+      const { status, bid, tranfer_fee, delivery_fee, payment_status } =
+         statusForm
+      try {
+         const response = await fetch("/api/yahoo/payment", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               order_id,
+               user_id,
+               bid,
+               delivery_fee,
+               tranfer_fee,
+               payment_status,
+               status,
+            }),
+         }).then((res) => res.json())
+         alert("Add Payment Success!")
+         setData(response.orders)
+         setShowEditStatusModal(false)
+      } catch (err) {
+         console.log(err)
+         alert("Error!")
+      }
    }
    const handleCancelEditModal = () => {
       console.log("cancel edit modal")
       setShowEditModal(false)
    }
    const handleCancelEditStatusModal = () => {
-      console.log("cancel edit status modal")
+      setStatusForm(statusFormModel)
       setShowEditStatusModal(false)
    }
    const handleChange = (pagination, filters, sorter) => {
@@ -183,7 +250,7 @@ function YahooBiddingPage(props) {
       ),
       onFilter: (value, record) =>
          record[dataIndex]
-            .toString()
+            ?.toString()
             .toLowerCase()
             .includes(value.toLowerCase()),
       onFilterDropdownOpenChange: (visible) => {
@@ -210,6 +277,7 @@ function YahooBiddingPage(props) {
       {
          title: "วันที่",
          dataIndex: "created_at",
+         width: "100px",
          key: "created_at",
          sorter: (a, b) => {
             let datetime_a = a.created_at
@@ -260,9 +328,9 @@ function YahooBiddingPage(props) {
          title: "รูปภาพ",
          dataIndex: "image",
          key: "image",
+         width: "120px",
          filteredValue: null,
          render: (text) => <img src={text} alt="" width="100" />,
-         ellipsis: true,
       },
       {
          title: "ชื่อลูกค้า",
@@ -281,11 +349,13 @@ function YahooBiddingPage(props) {
          sortOrder:
             sortedInfo.columnKey === "username" ? sortedInfo.order : null,
          ellipsis: true,
+         width: "120px",
       },
       {
          title: "ลิ้งค์",
          dataIndex: "link",
          key: "link",
+         width: "125px",
          render: (text, record, index) => {
             const link_code = text.split(
                "https://page.auctions.yahoo.co.jp/jp/auction/"
@@ -300,17 +370,105 @@ function YahooBiddingPage(props) {
          ellipsis: false,
       },
       {
-         title: "ราคาประมูล",
-         dataIndex: "maxbid",
+         title: "ราคาประมูล#1",
+         dataIndex: "id",
          key: "maxbid",
          filteredValue: null,
-         render: (text) =>
-            new Intl.NumberFormat("ja-JP", {
-               currency: "JPY",
-               style: "currency",
-               minimumFractionDigits: 2,
-            }).format(text),
-         ellipsis: true,
+         width: "130px",
+         render: (id) => {
+            const orders = data.filter((ft) => ft.id === id)
+            const order = orders[0]
+            const check = order.admin_maxbid_id !== null
+            return (
+               <div>
+                  <span>
+                     {new Intl.NumberFormat("ja-JP", {
+                        currency: "JPY",
+                        style: "currency",
+                        minimumFractionDigits: 2,
+                     }).format(order.maxbid)}
+                  </span>
+                  <br />
+                  <Switch
+                     checked={check}
+                     onClick={() => handleCheck("maxbid", check, id)}
+                  />
+                  <span>{order.admin_maxbid_username}</span>
+               </div>
+            )
+         },
+      },
+      {
+         title: "ราคาประมูล#2",
+         dataIndex: "id",
+         key: "addbid1",
+         filteredValue: null,
+         render: (id) => {
+            const orders = data.filter((ft) => ft.id === id)
+            const order = orders[0]
+            const check = order.admin_addbid1_id !== null
+            if (order.addbid1 === null) {
+               return new Intl.NumberFormat("ja-JP", {
+                  currency: "JPY",
+                  style: "currency",
+                  minimumFractionDigits: 2,
+               }).format(order.addbid1)
+            }
+            return (
+               <div>
+                  <span>
+                     {new Intl.NumberFormat("ja-JP", {
+                        currency: "JPY",
+                        style: "currency",
+                        minimumFractionDigits: 2,
+                     }).format(order.addbid1)}
+                  </span>
+                  <br />
+                  <Switch
+                     checked={check}
+                     onClick={() => handleCheck("addbid1", check, id)}
+                  />
+                  <span>{order.admin_addbid1_username}</span>
+               </div>
+            )
+         },
+         width: "130px",
+      },
+      {
+         title: "ราคาประมูล#3",
+         dataIndex: "id",
+         key: "addbid2",
+         filteredValue: null,
+         render: (id) => {
+            const orders = data.filter((ft) => ft.id === id)
+            const order = orders[0]
+            const check = order.admin_addbid2_id !== null
+            if (order.addbid2 === null) {
+               return new Intl.NumberFormat("ja-JP", {
+                  currency: "JPY",
+                  style: "currency",
+                  minimumFractionDigits: 2,
+               }).format(order.addbid2)
+            }
+            return (
+               <div>
+                  <span>
+                     {new Intl.NumberFormat("ja-JP", {
+                        currency: "JPY",
+                        style: "currency",
+                        minimumFractionDigits: 2,
+                     }).format(order.addbid2)}
+                  </span>
+                  <br />
+                  <Switch
+                     checked={check}
+                     onClick={() => handleCheck("addbid2", check, id)}
+                  />
+                  <span>{order.admin_addbid2_username}</span>
+               </div>
+            )
+         },
+         width: "130px",
       },
       {
          title: "หมายเหตุลูกค้า",
@@ -331,10 +489,11 @@ function YahooBiddingPage(props) {
       {
          title: "จัดการ",
          dataIndex: "id",
-         key: "id",
+         key: "manage",
          filteredValue: null,
          ellipsis: true,
-         width: "100px",
+         width: "90px",
+         fixed: "right",
          render: (id) => {
             const items = [
                {
@@ -372,6 +531,10 @@ function YahooBiddingPage(props) {
                columns={columns}
                dataSource={data}
                onChange={handleChange}
+               scroll={{
+                  x: 1500,
+                  y: 450,
+               }}
             />
          </div>
          {/* Edit Modal */}
@@ -385,7 +548,16 @@ function YahooBiddingPage(props) {
          >
             <div>
                <label>หมายเหตุแอดมิน: </label>
-               <TextArea rows={4} />
+               <TextArea
+                  rows={4}
+                  value={selectedRow.remark_admin}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        remark_admin: e.target.value,
+                     })
+                  }
+               />
             </div>
          </Modal>
          {/* Edit Status Modal */}
@@ -397,25 +569,44 @@ function YahooBiddingPage(props) {
             okText="ยืนยันการเปลี่ยนสถานะ"
             cancelText="ยกเลิก"
          >
-            <div>
+            <div className="UpdateStatusModal">
                <label>สถานะประมูล: </label>
                <Select
                   defaultValue={statusForm.status}
                   options={[
-                     { value: "ชนะประมูล", label: "ชนะประมูล" },
-                     { value: "แพ้ประมูล", label: "แพ้ประมูล" },
+                     { value: "ชนะ", label: "ชนะประมูล" },
+                     { value: "แพ้", label: "แพ้ประมูล" },
                   ]}
+                  onChange={(value) =>
+                     setStatusForm({ ...statusForm, status: value })
+                  }
                />
-               {statusForm.status === "ชนะประมูล" ? (
+               {statusForm.status === "ชนะ" ? (
                   <>
                      <label>*ราคาที่ประมูลได้: </label>
-                     <InputNumber value={statusForm.bid} />
+                     <InputNumber
+                        value={statusForm.bid}
+                        onChange={(value) =>
+                           setStatusForm({ ...statusForm, bid: value })
+                        }
+                     />
                      <label>ค่าธรรมเนียมการโอน(฿): </label>
-                     <InputNumber value={statusForm.tranfer_fee} />
+                     <InputNumber
+                        value={statusForm.tranfer_fee}
+                        onChange={(value) =>
+                           setStatusForm({ ...statusForm, tranfer_fee: value })
+                        }
+                     />
                      <label>ค่าขนส่ง(￥): </label>
-                     <InputNumber value={statusForm.delivery_fee} />
+                     <InputNumber
+                        value={statusForm.delivery_fee}
+                        onChange={(value) =>
+                           setStatusForm({ ...statusForm, delivery_fee: value })
+                        }
+                     />
                      <label>*สถานะการชำระเงิน:</label>
                      <Select
+                        name="payment_status"
                         defaultValue={statusForm.payment_status}
                         options={[
                            {
@@ -427,11 +618,29 @@ function YahooBiddingPage(props) {
                               label: "รอการชำระเงิน",
                            },
                         ]}
+                        onChange={(value) =>
+                           setStatusForm({
+                              ...statusForm,
+                              payment_status: value,
+                           })
+                        }
                      />
                   </>
                ) : undefined}
             </div>
          </Modal>
+         <style jsx global>
+            {`
+               .UpdateStatusModal .ant-input-number {
+                  width: 100%;
+                  margin-bottom: 10px;
+               }
+               .UpdateStatusModal .ant-select {
+                  width: 100%;
+                  margin-bottom: 10px;
+               }
+            `}
+         </style>
          <style jsx>
             {`
                .container-table {
@@ -454,7 +663,6 @@ export async function getServerSideProps(context) {
    // eslint-disable-next-line prefer-template
    const api = process.env.BACKEND_URL + "/api/yahoo/order"
    const response = await fetch(api).then((res) => res.json())
-   // console.log(response)
    if (!session) {
       return {
          redirect: {
