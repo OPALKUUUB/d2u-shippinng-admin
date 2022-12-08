@@ -1,4 +1,8 @@
-import { AppstoreAddOutlined } from "@ant-design/icons"
+import {
+   AppstoreAddOutlined,
+   DownOutlined,
+   FilterFilled,
+} from "@ant-design/icons"
 import {
    Button,
    DatePicker,
@@ -7,6 +11,9 @@ import {
    Input,
    InputNumber,
    Select,
+   Space,
+   Dropdown,
+   Upload,
 } from "antd"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useState } from "react"
@@ -14,8 +21,10 @@ import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+// import ImgCrop from "antd-img-crop"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
+// import UploadImages from "../../../components/UploadImages"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -32,6 +41,26 @@ const addForm_model = {
    remark_admin: "",
    channel: "shimizu",
 }
+const trackingForm_model = {
+   id: "",
+   username: "",
+   user_id: 1,
+   rate_yen: "",
+   date: "",
+   link: "",
+   price: "",
+   weight: "",
+   track_no: "",
+   box_no: "",
+   voyage: "",
+   channel: "",
+   remark_user: "",
+   remark_admin: "",
+   received: "",
+   finished: "",
+   created_at: "",
+   updated_at: "",
+}
 function ShimizuTrackingsPage(props) {
    const { users } = props
    const [data, setData] = useState(props.trackings)
@@ -39,6 +68,107 @@ function ShimizuTrackingsPage(props) {
    const [InputDate, setInputDate] = useState(null)
    const [InputVoyageDate, setInputVoyageDate] = useState(null)
    const [showAddModal, setShowAddModal] = useState(false)
+   const [selectedRow, setSelectedRow] = useState(trackingForm_model)
+   const [showEditModal, setshowEditModal] = useState(false)
+   const [showImagesModal, setShowImagesModal] = useState(false)
+   const [addImages, setAddImages] = useState([])
+   const [deleteImages, setDeleteImages] = useState([])
+   const [fileList, setFileList] = useState([])
+   const [trackingId, setTrackingId] = useState("")
+   const handleOkUploadImages = async () => {
+      // console.log(deleteImages)
+      // console.log(addImages)
+      try {
+         const response = await fetch(
+            `/api/tracking/images?tracking_id=${trackingId}`,
+            {
+               method: "PATCH",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ deleteImages, addImages }),
+            }
+         )
+         const responseJson = await response.json()
+         setShowImagesModal(false)
+      } catch (err) {
+         console.log(err)
+      }
+   }
+   const onChange = ({ fileList: newFileList }) => {
+      const temp1 = fileList.filter((ft) => ft.status === "removed")
+      const temp2 = fileList.filter(
+         (ft) => ft.status === "uploading" && ft.percent === 100
+      )
+      if (temp1.length === 1) {
+         setDeleteImages((prev) => [...prev, temp1[0].id])
+      }
+      if (temp2.length === 1) {
+         setAddImages((prev) => [...prev, temp2[0].thumbUrl])
+      }
+      setFileList(newFileList)
+   }
+   const onPreview = async (file) => {
+      let src = file.url
+      if (!src) {
+         src = await new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.readAsDataURL(file.originFileObj)
+            reader.onload = () => resolve(reader.result)
+         })
+      }
+      const image = new Image()
+      image.src = src
+      const imgWindow = window.open(src)
+      imgWindow?.document.write(image.outerHTML)
+   }
+   const handleCancelImagesModal = () => {
+      setShowImagesModal(false)
+   }
+   const handleShowImages = async (id) => {
+      // set images by fetch id tracking
+      try {
+         const response = await fetch(`/api/tracking/images?id=${id}`)
+         const responseJson = await response.json()
+         const { tracking_image } = responseJson
+         setTrackingId(id)
+         setFileList(
+            tracking_image.reduce((accumulator, currentValue, index) => {
+               const a = 0
+               return [
+                  ...accumulator,
+                  {
+                     uid: index,
+                     name: `image${index}.png`,
+                     status: "done",
+                     url: currentValue.image,
+                     id: currentValue.id,
+                  },
+               ]
+            }, [])
+         )
+      } catch (err) {
+         console.log(err)
+      }
+      setShowImagesModal(true)
+   }
+   const handleCancelEditModal = () => {
+      setshowEditModal(false)
+   }
+   const handleOkEditModal = () => {
+      console.log(selectedRow)
+   }
+   const handleShowEditModal = (id) => {
+      const temp = data.filter((ft) => ft.id === id)
+      const tracking = temp[0]
+      setInputDate(
+         tracking.date === null ? null : dayjs(tracking.date, "D/M/YYYY")
+      )
+      setInputVoyageDate(
+         tracking.voyage === null ? null : dayjs(tracking.voyage, "D/M/YYYY")
+      )
+      setSelectedRow(tracking)
+      setshowEditModal(true)
+   }
+
    const handleCancelAddModal = () => {
       setShowAddModal(false)
    }
@@ -87,6 +217,15 @@ function ShimizuTrackingsPage(props) {
          key: "date",
       },
       {
+         title: "รูปภาพ",
+         dataIndex: "id",
+         width: "120px",
+         key: "images",
+         render: (id) => (
+            <button onClick={() => handleShowImages(id)}>ดูรูปภาพ</button>
+         ),
+      },
+      {
          title: "ชื่อลูกค้า",
          dataIndex: "username",
          width: "120px",
@@ -120,7 +259,30 @@ function ShimizuTrackingsPage(props) {
          title: "จัดการ",
          dataIndex: "id",
          key: "manage",
-         render: (text) => text,
+         width: "90px",
+         fixed: "right",
+         render: (id) => {
+            const items = [
+               {
+                  key: "1",
+                  label: "แก้ไข",
+                  onClick: () => handleShowEditModal(id),
+               },
+               {
+                  key: "2",
+                  label: "ลบ",
+               },
+            ]
+            return (
+               <Space>
+                  <Dropdown menu={{ items }}>
+                     <span>
+                        จัดการ <DownOutlined />
+                     </span>
+                  </Dropdown>
+               </Space>
+            )
+         },
       },
    ]
    return (
@@ -274,6 +436,174 @@ function ShimizuTrackingsPage(props) {
                      />
                   </>
                )}
+               e
+            </div>
+         </Modal>
+         <Modal
+            title="แก้ไขรายการ Shimizu"
+            open={showEditModal}
+            onCancel={handleCancelEditModal}
+            onOk={handleOkEditModal}
+         >
+            <div className="container-table">
+               <label>ชื่อลูกค้า: </label>
+               <Select
+                  value={selectedRow.user_id}
+                  onChange={(value) =>
+                     setAddForm({ ...selectedRow, user_id: value })
+                  }
+                  showSearch
+                  style={{ width: 200 }}
+                  placeholder="เลือกลูกค้า"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                     (option?.label ?? "").includes(input)
+                  }
+                  filterSort={(optionA, optionB) =>
+                     (optionA?.label ?? "")
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? "").toLowerCase())
+                  }
+                  options={users.reduce((accumulator, currentValue) => {
+                     const { id, username } = currentValue
+                     return [
+                        ...accumulator,
+                        {
+                           value: id,
+                           label: username,
+                        },
+                     ]
+                  }, [])}
+               />
+               <label>วันที่: </label>
+               <DatePicker
+                  value={InputDate}
+                  format="D/M/YYYY"
+                  onChange={(value) => {
+                     if (value === null) {
+                        setSelectedRow((prev) => ({
+                           ...prev,
+                           date: null,
+                        }))
+                        setInputDate(null)
+                     } else {
+                        setSelectedRow((prev) => ({
+                           ...prev,
+                           date: new Date(value).toLocaleDateString("th-TH"),
+                        }))
+                        setInputDate(value)
+                     }
+                  }}
+               />
+            </div>
+            <label>รอบเรือ: </label>
+            <DatePicker
+               value={InputVoyageDate}
+               format="D/M/YYYY"
+               onChange={(value) => {
+                  if (value === null) {
+                     setSelectedRow((prev) => ({
+                        ...prev,
+                        voyage: null,
+                     }))
+                     setInputVoyageDate(null)
+                  } else {
+                     setSelectedRow((prev) => ({
+                        ...prev,
+                        voyage: new Date(value).toLocaleDateString("th-TH"),
+                     }))
+                     setInputVoyageDate(value)
+                  }
+               }}
+            />
+            <label>เลขแทรกกิงค์: </label>
+            <Input
+               value={selectedRow.track_no}
+               onChange={(e) =>
+                  setSelectedRow({
+                     ...selectedRow,
+                     track_no: e.target.value,
+                  })
+               }
+            />
+            <label>เลขกล่อง: </label>
+            <Input
+               value={selectedRow.box_no}
+               onChange={(e) =>
+                  setSelectedRow({
+                     ...selectedRow,
+                     box_no: e.target.value,
+                  })
+               }
+            />
+            <label>น้ำหนัก: </label>
+            <InputNumber
+               value={selectedRow.weight}
+               onChange={(value) =>
+                  setSelectedRow({
+                     ...selectedRow,
+                     weight: value,
+                  })
+               }
+            />
+            <label>รอบเรือ: </label>
+            <DatePicker
+               value={InputVoyageDate}
+               format="D/M/YYYY"
+               onChange={(value) => {
+                  if (value === null) {
+                     setSelectedRow((prev) => ({
+                        ...prev,
+                        voyage: null,
+                     }))
+                     setInputVoyageDate(null)
+                  } else {
+                     setSelectedRow((prev) => ({
+                        ...prev,
+                        voyage: new Date(value).toLocaleDateString("th-TH"),
+                     }))
+                     setInputVoyageDate(value)
+                  }
+               }}
+            />
+            <label>หมายเหตุลูกค้า: </label>
+            <TextArea
+               rows={2}
+               value={selectedRow.remark_user}
+               onChange={(e) => {
+                  setSelectedRow({
+                     ...selectedRow,
+                     remark_user: e.target.value,
+                  })
+               }}
+            />
+            <label>หมายเหตุแอดมิน: </label>
+            <TextArea
+               rows={2}
+               value={selectedRow.remark_admin}
+               onChange={(e) =>
+                  setSelectedRow({
+                     ...selectedRow,
+                     remark_admin: e.target.value,
+                  })
+               }
+            />
+         </Modal>
+         <Modal
+            title="เพิ่มรูปภาพ"
+            open={showImagesModal}
+            onCancel={handleCancelImagesModal}
+            onOk={handleOkUploadImages}
+         >
+            <div>
+               <Upload
+                  listType="picture-card"
+                  fileList={fileList}
+                  onChange={onChange}
+                  onPreview={onPreview}
+               >
+                  {fileList.length < 3 && "+ Upload"}
+               </Upload>
             </div>
          </Modal>
          <style jsx>

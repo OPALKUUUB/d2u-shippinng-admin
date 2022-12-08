@@ -54,6 +54,36 @@ async function handler(req, res) {
       await mysql.end()
       res.status(201).json({ message: "test", trackings })
    }
+   if (req.method === "PATCH") {
+      const { id } = req.query
+      const {
+         user_id,
+         date,
+         voyage,
+         track_no,
+         box_no,
+         weight,
+         remark_user,
+         remark_admin,
+      } = req.body
+      await mysql.connect()
+      await mysql.query(
+         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, remark_user = ?, remark_admin = ? WHERE id = ?",
+         [
+            user_id,
+            date,
+            voyage,
+            track_no,
+            box_no,
+            weight,
+            remark_user,
+            remark_admin,
+            id,
+         ]
+      )
+      await mysql.end()
+      res.status(200).json({ message: "update data success!", trackings: [] })
+   }
 }
 
 export default handler
