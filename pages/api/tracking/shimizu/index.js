@@ -81,8 +81,12 @@ async function handler(req, res) {
             id,
          ]
       )
+      const trackings = await mysql.query(
+         "SELECT * FROM trackings WHERE channel = ?",
+         ["shimizu"]
+      )
       await mysql.end()
-      res.status(200).json({ message: "update data success!", trackings: [] })
+      res.status(200).json({ message: "update data success!", trackings })
    }
 }
 

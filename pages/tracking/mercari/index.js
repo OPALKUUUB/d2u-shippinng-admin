@@ -7,7 +7,7 @@ import Layout from "../../../components/layout/layout"
 function ShimizuTrackingsPage() {
    return (
       <Fragment>
-         <CardHead name="Shimizu Trackings Page" />
+         <CardHead name="Mercari Trackings Page" />
          <div>
             <Table />
          </div>
@@ -21,8 +21,8 @@ ShimizuTrackingsPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
    // eslint-disable-next-line prefer-template
-   const api = process.env.BACKEND_URL + "/api/tracking/yahoo"
-   const response = await fetch(api).then((res) => res.json())
+   // const api = process.env.BACKEND_URL + "/api/tracking/mercari"
+   // const response = await fetch(api).then((res) => res.json())
    if (!session) {
       return {
          redirect: {
@@ -33,7 +33,7 @@ export async function getServerSideProps(context) {
    }
    return {
       props: {
-         trackings: response.trackings,
+         // trackings: response.trackings,
       },
    }
 }
