@@ -43,10 +43,10 @@ const sidebarMenuData = [
          { id: 5, name: "7-Eleven", to: "/" },
          { id: 6, name: "Donki", to: "/" },
          { id: 7, name: "Disney", to: "/" },
-         { id: 8, name: "Disnayland", to: "/" },
+         { id: 8, name: "Disnayland", to: "/mart/disneyland" },
       ],
    },
-   { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/" },
+   { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/shipbilling" },
 ]
 
 export default sidebarMenuData

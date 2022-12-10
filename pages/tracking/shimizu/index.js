@@ -76,8 +76,6 @@ function ShimizuTrackingsPage(props) {
    const [fileList, setFileList] = useState([])
    const [trackingId, setTrackingId] = useState("")
    const handleOkUploadImages = async () => {
-      // console.log(deleteImages)
-      // console.log(addImages)
       try {
          const doneImage =
             fileList.map((file, index) => ({
@@ -87,14 +85,6 @@ function ShimizuTrackingsPage(props) {
                uid: file.uid,
                url: file.url ? file.url : file.thumbUrl,
             })) || []
-         // const response = await fetch(
-         //    `/api/tracking/images?tracking_id=${trackingId}`,
-         //    {
-         //       method: "PATCH",
-         //       headers: { "Content-Type": "application/json" },
-         //       body: JSON.stringify({ deleteImages, addImages }),
-         //    }
-         // )
          const response = await fetch(
             `/api/tracking/images?tracking_id=${trackingId}`,
             {
@@ -110,16 +100,6 @@ function ShimizuTrackingsPage(props) {
       }
    }
    const onChange = ({ fileList: newFileList }) => {
-      // const temp1 = fileList.filter((ft) => ft.status === "removed")
-      // const temp2 = fileList.filter(
-      //    (ft) => ft.status === "uploading" && ft.percent === 100
-      // )
-      // if (temp1.length === 1) {
-      //    setDeleteImages((prev) => [...prev, temp1[0].id])
-      // }
-      // if (temp2.length === 1) {
-      //    setAddImages((prev) => [...prev, temp2[0].thumbUrl])
-      // }
       setFileList(newFileList)
    }
    const onPreview = async (file) => {
