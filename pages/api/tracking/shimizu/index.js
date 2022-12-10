@@ -48,11 +48,11 @@ async function handler(req, res) {
          ]
       )
       const trackings = await mysql.query(
-         "SELECT * FROM trackings WHERE channel = ?",
-         [channel]
+         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
+         ["shimizu"]
       )
       await mysql.end()
-      res.status(201).json({ message: "test", trackings })
+      res.status(201).json({ message: "insert data success!", trackings })
    }
    if (req.method === "PATCH") {
       const { id } = req.query
@@ -82,7 +82,7 @@ async function handler(req, res) {
          ]
       )
       const trackings = await mysql.query(
-         "SELECT * FROM trackings WHERE channel = ?",
+         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
          ["shimizu"]
       )
       await mysql.end()
