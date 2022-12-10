@@ -49,7 +49,6 @@ async function handler(req, res) {
    if (req.method === "PATCH") {
       const { tracking_id } = req.query
       const { doneImage } = req.body
-      console.log("doneApi", doneImage)
       await mysql.connect()
       await mysql.query("DELETE FROM `tracking-image` WHERE tracking_id = ?", [
          parseInt(tracking_id, 10),
