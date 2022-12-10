@@ -80,6 +80,7 @@ function Navbar({ slide, setToggleSlide }) {
                padding: 10px 0;
                box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px,
                   rgba(0, 0, 0, 0.23) 0px 3px 6px;
+                  z-index: 999;
             }
             ul {
                margin: 0;
