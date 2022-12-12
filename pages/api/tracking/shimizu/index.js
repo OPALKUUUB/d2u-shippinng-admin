@@ -21,6 +21,7 @@ async function handler(req, res) {
          box_no,
          track_no,
          weight,
+         price,
          voyage,
          remark_user,
          remark_admin,
@@ -31,7 +32,7 @@ async function handler(req, res) {
       const preference = await mysql.query("SELECT rate_yen FROM preference")
       const { rate_yen } = preference[0]
       await mysql.query(
-         "INSERT INTO trackings (rate_yen, date, user_id, box_no, track_no, weight, voyage, remark_user, remark_admin, channel, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+         "INSERT INTO trackings (rate_yen, date, user_id, box_no, track_no, weight, price, voyage, remark_user, remark_admin, channel, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
          [
             rate_yen,
             date,
@@ -39,6 +40,7 @@ async function handler(req, res) {
             box_no,
             track_no,
             weight,
+            price,
             voyage,
             remark_user,
             remark_admin,
@@ -63,12 +65,13 @@ async function handler(req, res) {
          track_no,
          box_no,
          weight,
+         price,
          remark_user,
          remark_admin,
       } = req.body
       await mysql.connect()
       await mysql.query(
-         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, remark_user = ?, remark_admin = ? WHERE id = ?",
+         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ? WHERE id = ?",
          [
             user_id,
             date,
@@ -76,6 +79,7 @@ async function handler(req, res) {
             track_no,
             box_no,
             weight,
+            price,
             remark_user,
             remark_admin,
             id,

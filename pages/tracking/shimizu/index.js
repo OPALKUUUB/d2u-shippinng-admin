@@ -38,7 +38,8 @@ const addForm_model = {
    user_id: "",
    box_no: "",
    track_no: "",
-   weight: "",
+   weight: null,
+   price: null,
    voyage: "",
    remark_user: "",
    remark_admin: "",
@@ -158,6 +159,7 @@ function ShimizuTrackingsPage(props) {
          box_no: selectedRow.box_no,
          track_no: selectedRow.track_no,
          weight: selectedRow.weight,
+         price: selectedRow.price,
          voyage: selectedRow.voyage,
          remark_user: selectedRow.remark_user,
          remark_admin: selectedRow.remark_admin,
@@ -213,6 +215,7 @@ function ShimizuTrackingsPage(props) {
          box_no: addForm.box_no,
          track_no: addForm.track_no,
          weight: addForm.weight,
+         price: addForm.price,
          voyage: addForm.voyage,
          remark_user: addForm.remark_user,
          remark_admin: addForm.remark_admin,
@@ -424,6 +427,12 @@ function ShimizuTrackingsPage(props) {
          render: (text) => (text === null ? "-" : text),
       },
       {
+         title: "ราคา",
+         dataIndex: "price",
+         key: "price",
+         render: (text) => (text === null ? "-" : text),
+      },
+      {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
@@ -561,8 +570,6 @@ function ShimizuTrackingsPage(props) {
                            })
                         }
                      />
-                  </Space>
-                  <Space style={{ marginBottom: 10 }}>
                      <label>น้ำหนัก: </label>
                      <InputNumber
                         value={addForm.weight}
@@ -572,6 +579,19 @@ function ShimizuTrackingsPage(props) {
                               weight: value,
                            })
                         }
+                     />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
+                     <label>ราคา: </label>
+                     <InputNumber
+                        value={addForm.price}
+                        onChange={(value) =>
+                           setAddForm({
+                              ...addForm,
+                              price: value,
+                           })
+                        }
+                        step="0.1"
                      />
                      <label>รอบเรือ: </label>
                      <DatePicker
@@ -705,8 +725,6 @@ function ShimizuTrackingsPage(props) {
                      })
                   }
                />
-            </Space>
-            <Space style={{ marginBottom: 10 }}>
                <label>น้ำหนัก: </label>
                <InputNumber
                   value={selectedRow.weight}
@@ -716,6 +734,19 @@ function ShimizuTrackingsPage(props) {
                         weight: value,
                      })
                   }
+               />
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>ราคา: </label>
+               <InputNumber
+                  value={selectedRow.price}
+                  onChange={(value) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        price: value,
+                     })
+                  }
+                  step="0.1"
                />
                <label>รอบเรือ: </label>
                <DatePicker
