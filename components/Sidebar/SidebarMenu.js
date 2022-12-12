@@ -27,8 +27,9 @@ const sidebarMenuData = [
          { id: 2, name: "Shimizu", to: "/tracking/shimizu" },
          { id: 3, name: "Mercari", to: "/tracking/mercari" },
          { id: 4, name: "Web123", to: "/tracking/web123" },
-         { id: 5, name: "Yahoo", to: "/tracking/yahoo" },
-         { id: 6, name: "Mart", to: "/tracking/mart" },
+         { id: 5, name: "Frill", to: "/tracking/frill" },
+         { id: 6, name: "Yahoo", to: "/tracking/yahoo" },
+         { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
    {

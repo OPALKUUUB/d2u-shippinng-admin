@@ -40,7 +40,8 @@ const addForm_model = {
    link: "",
    box_no: "",
    track_no: "",
-   weight: "",
+   weight: null,
+   price: null,
    voyage: "",
    remark_user: "",
    remark_admin: "",
@@ -181,6 +182,7 @@ function MercariTrackingsPage(props) {
          box_no: selectedRow.box_no,
          track_no: selectedRow.track_no,
          weight: selectedRow.weight,
+         price: selectedRow.price,
          voyage: selectedRow.voyage,
          received: selectedRow.received,
          finished: selectedRow.finished,
@@ -239,6 +241,7 @@ function MercariTrackingsPage(props) {
          box_no: addForm.box_no,
          track_no: addForm.track_no,
          weight: addForm.weight,
+         price: addForm.price,
          voyage: addForm.voyage,
          received: 0,
          finished: 0,
@@ -464,6 +467,12 @@ function MercariTrackingsPage(props) {
          render: (text) => (text === null ? "-" : text),
       },
       {
+         title: "ราคา",
+         dataIndex: "price",
+         key: "price",
+         render: (text) => (text === null ? "-" : text),
+      },
+      {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
@@ -625,8 +634,6 @@ function MercariTrackingsPage(props) {
                            })
                         }
                      />
-                  </Space>
-                  <Space style={{ marginBottom: 10 }}>
                      <label>น้ำหนัก: </label>
                      <InputNumber
                         value={addForm.weight}
@@ -634,6 +641,18 @@ function MercariTrackingsPage(props) {
                            setAddForm({
                               ...addForm,
                               weight: value,
+                           })
+                        }
+                     />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
+                     <label>ราคา: </label>
+                     <InputNumber
+                        value={addForm.price}
+                        onChange={(value) =>
+                           setAddForm({
+                              ...addForm,
+                              price: value,
                            })
                         }
                      />
@@ -781,8 +800,6 @@ function MercariTrackingsPage(props) {
                      })
                   }
                />
-            </Space>
-            <Space style={{ marginBottom: 10 }}>
                <label>น้ำหนัก: </label>
                <InputNumber
                   value={selectedRow.weight}
@@ -790,6 +807,18 @@ function MercariTrackingsPage(props) {
                      setSelectedRow({
                         ...selectedRow,
                         weight: value,
+                     })
+                  }
+               />
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>ราคา: </label>
+               <InputNumber
+                  value={selectedRow.price}
+                  onChange={(value) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        price: value,
                      })
                   }
                />
