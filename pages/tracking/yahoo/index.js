@@ -86,23 +86,6 @@ function YahooTrackingsPage(props) {
          dataIndex: "date",
          width: "120px",
          key: "date",
-         // sorter: (a, b) => {
-         //    let date_a = a.date.split("/")
-         //    let date_a_f = [
-         //       parseInt(date_a[2], 10),
-         //       parseInt(date_a[1], 10),
-         //       parseInt(date_a[0], 10)
-         //    ]
-         //    let date_b = a.date.split("/")
-         //    let date_b_f = [
-         //       parseInt(date_b[2], 10),
-         //       parseInt(date_b[1], 10),
-         //       parseInt(date_b[0], 10)
-         //    ]
-         //    return 0
-         // },
-         // sortOrder:
-         //    sortedInfo.columnKey === "date" ? sortedInfo.order : null,
          ellipsis: false,
       },
       {
