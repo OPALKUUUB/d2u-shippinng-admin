@@ -1,6 +1,7 @@
 /* eslint-disable prefer-const */
 import { DownOutlined } from "@ant-design/icons"
 import {
+   Button,
    DatePicker,
    Dropdown,
    InputNumber,
@@ -10,8 +11,8 @@ import {
    Table,
 } from "antd"
 import dayjs from "dayjs"
-import weekday from 'dayjs/plugin/weekday'
-import localeData from 'dayjs/plugin/localeData'
+import weekday from "dayjs/plugin/weekday"
+import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 
 import { getSession } from "next-auth/react"
@@ -27,7 +28,6 @@ const payment_model = {
    key: "7",
    id: 7,
    slip_id: null,
-   order_id: 11,
    user_id: 12,
    tracking_id: null,
    admin_id: null,
@@ -52,6 +52,8 @@ function YahooPaymentPage(props) {
    const [selectedRow, setSelectedRow] = useState(payment_model)
    const [showEditModal, setshowEditModal] = useState(false)
    const [InputDate, setInputDate] = useState(null)
+   const [slip, setSlip] = useState({ id: "", image: "" })
+   const [showSlipModal, setShowSlipModal] = useState(false)
    const handleShowEditModal = (id) => {
       const temp = data.filter((ft) => ft.id === id)[0]
       setInputDate(dayjs(temp.date, "D/M/YYYY"))
@@ -102,6 +104,16 @@ function YahooPaymentPage(props) {
       // console.log("handleCancleEdittModal")
       setSelectedRow(payment_model)
       setshowEditModal(false)
+   }
+   const handleShowSlip = async (id) => {
+      try {
+         const response = await fetch(`/api/yahoo/slip/${id}`)
+         const responseJson = await response.json()
+         setSlip(responseJson.slip)
+         setShowSlipModal(true)
+      } catch (err) {
+         console.log(err)
+      }
    }
    const columns = [
       {
@@ -188,6 +200,17 @@ function YahooPaymentPage(props) {
                currency: "THB",
                style: "currency",
             }).format(s)
+         },
+      },
+      {
+         title: "Slip",
+         dataIndex: "slip_id",
+         key: "slip_id",
+         render: (slip_id) => {
+            if (slip_id === null) {
+               return "-"
+            }
+            return <Button onClick={() => handleShowSlip(slip_id)}>slip</Button>
          },
       },
       {
@@ -336,6 +359,15 @@ function YahooPaymentPage(props) {
                   ]}
                />
             </div>
+         </Modal>
+         <Modal
+            title="Slip"
+            open={showSlipModal}
+            onCancel={() => setShowSlipModal(false)}
+            okText="ยืนยัน"
+            cancelText="ยกเลิก"
+         >
+            <img src={slip.image} alt="" />
          </Modal>
          <style jsx global>
             {`

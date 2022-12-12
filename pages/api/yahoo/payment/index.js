@@ -4,10 +4,25 @@ import genDate from "../../../../utils/genDate"
 async function handler(req, res) {
    if (req.method === "GET") {
       await mysql.connect()
-      // eslint-disable-next-line prefer-const
-      let yahoo_payments = await mysql.query(
-         "SELECT `yahoo-auction-payment`.*, users.username, `yahoo-auction-order`.image, `yahoo-auction-order`.link FROM `yahoo-auction-payment` LEFT JOIN `yahoo-auction-order` ON `yahoo-auction-payment`.order_id = `yahoo-auction-order`.id LEFT JOIN users ON users.id = `yahoo-auction-payment`.user_id WHERE `yahoo-auction-order`.status = ? and `yahoo-auction-payment`.payment_status != ?",
-         ["ชนะ", "ชำระเงินเสร็จสิ้น"]
+      const yahoo_payments = await mysql.query(
+         `SELECT 
+            ${'`yahoo-auction-payment`'}.*,
+            users.username, 
+            ${'`yahoo-auction-order`'}.image, 
+            ${'`yahoo-auction-order`'}.link
+         FROM 
+            ${'`yahoo-auction-payment`'} 
+         JOIN 
+            ${'`yahoo-auction-order`'} 
+         ON 
+            ${'`yahoo-auction-order`'}.payment_id = ${'`yahoo-auction-payment`'}.id 
+         JOIN 
+            users 
+         ON 
+            users.id = ${'`yahoo-auction-payment`'}.user_id
+         WHERE
+            ${'`yahoo-auction-payment`'}.payment_status != ?`,
+         ["ชำระเงินเสร็จสิ้น"]
       )
       await mysql.end()
       res.status(200).json({
@@ -64,10 +79,6 @@ async function handler(req, res) {
          })
          return
       }
-      await mysql.query(
-         "UPDATE `yahoo-auction-order` SET status = ?, updated_at = ? WHERE id = ?",
-         ["ชนะ", date, order_id]
-      )
       const preferences = await mysql.query("SELECT * FROM preference")
       if (preferences.lenght === 0) {
          res.status(400).json({
@@ -78,11 +89,10 @@ async function handler(req, res) {
 
       const { rate_yen } = preference
       const result_add = await mysql.query(
-         "INSERT INTO `yahoo-auction-payment` (date, user_id, order_id, bid, tranfer_fee, delivery_fee, payment_status,rate_yen, created_at, updated_at) VALUES(?,?, ?, ?, ?, ?, ?, ?, ?, ?)",
+         "INSERT INTO `yahoo-auction-payment` (date, user_id, bid, tranfer_fee, delivery_fee, payment_status,rate_yen, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
          [
             date.split(" ")[0],
             user_id,
-            order_id,
             bid,
             tranfer_fee,
             delivery_fee,
@@ -93,6 +103,11 @@ async function handler(req, res) {
          ]
       )
       const payment_id = result_add.insertId
+      await mysql.query(
+         "UPDATE `yahoo-auction-order` SET payment_id = ?, status = ?, updated_at = ? WHERE id = ?",
+         [payment_id, "ชนะ", date, order_id]
+      )
+
       const payments = await mysql.query(
          "SELECT * FROM `yahoo-auction-payment` WHERE id = ?",
          [payment_id]
@@ -167,8 +182,24 @@ async function handler(req, res) {
          )
       }
       const yahoo_payments = await mysql.query(
-         "SELECT `yahoo-auction-payment`.*, users.username, `yahoo-auction-order`.image, `yahoo-auction-order`.link FROM `yahoo-auction-payment` LEFT JOIN `yahoo-auction-order` ON `yahoo-auction-payment`.order_id = `yahoo-auction-order`.id LEFT JOIN users ON users.id = `yahoo-auction-payment`.user_id WHERE `yahoo-auction-order`.status = ? and `yahoo-auction-payment`.payment_status != ?",
-         ["ชนะ", "ชำระเงินเสร็จสิ้น"]
+         `SELECT 
+            ${'`yahoo-auction-payment`'}.*,
+            users.username, 
+            ${'`yahoo-auction-order`'}.image, 
+            ${'`yahoo-auction-order`'}.link 
+         FROM 
+            ${'`yahoo-auction-payment`'} 
+         JOIN 
+            ${'`yahoo-auction-order`'} 
+         ON 
+            ${'`yahoo-auction-order`'}.payment_id = ${'`yahoo-auction-payment`'}.id 
+         JOIN 
+            users 
+         ON 
+            users.id = ${'`yahoo-auction-payment`'}.user_id 
+         WHERE
+            ${'`yahoo-auction-payment`'}.payment_status != ?`,
+         ["ชำระเงินเสร็จสิ้น"]
       )
       await mysql.end()
       res.status(200).json({
