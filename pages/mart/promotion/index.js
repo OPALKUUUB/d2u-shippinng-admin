@@ -112,6 +112,12 @@ function MartPromotionPage(props) {
          dataIndex: "created_at",
          width: "120px",
          key: "created_at",
+         render: (text) => (
+            <>
+               <p>{text.split(" ")[0]}</p>
+               <p>{text.split(" ")[1]}</p>
+            </>
+         ),
       },
       {
          title: "รูปสินค้า",
@@ -156,7 +162,7 @@ function MartPromotionPage(props) {
             return (
                <Space>
                   <Dropdown menu={{ items }}>
-                     <span>
+                     <span style={{ cursor: "pointer" }}>
                         จัดการ <DownOutlined />
                      </span>
                   </Dropdown>
