@@ -20,12 +20,12 @@ async function handler(req, res) {
       //   console.log("doneApi", doneImage)
       await mysql.connect()
       await mysql.query(
-         "DELETE FROM `mart-product-image` WHERE product_id = ?",
+         "DELETE FROM `mart-product-image` WHERE mart_product_id = ?",
          [parseInt(product_id, 10)]
       )
       if (doneImage.length > 0) {
          let sql =
-            "INSERT INTO `mart-product-image` (image, product_id) VALUES (?,?)"
+            "INSERT INTO `mart-product-image` (image, mart_product_id) VALUES (?,?)"
          for (let i = 1; i < doneImage.length; i++) {
             sql += ",(?,?) "
          }
