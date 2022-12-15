@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+/* eslint-disable no-nested-ternary */
 import {
    Button,
    Dropdown,
@@ -13,8 +15,9 @@ import {
 import { AppstoreAddOutlined, DownOutlined } from "@ant-design/icons"
 import React, { Fragment, useState } from "react"
 import { getSession } from "next-auth/react"
-import CardHead from "../../../components/CardHead"
+import dayjs from "dayjs"
 import Layout from "../../../components/layout/layout"
+import CardHead from "../../../components/CardHead"
 
 const { TextArea } = Input
 const addForm_model = {
@@ -39,20 +42,29 @@ const mart_model = {
 function MartDisneylandPage(props) {
    const [data, setData] = useState(props.products)
    const [addForm, setAddForm] = useState(addForm_model)
-   const [expireDate, setExpireDate] = useState("")
    const [InputDate, setInputDate] = useState(null)
+   const [expireDate, setExpireDate] = useState("")
+   const [checked, setChecked] = useState(false)
    const [showEditModal, setShowEditModal] = useState(false)
    const [showAddModal, setShowAddModal] = useState(false)
+   const [showDeleteModal, setShowDeleteModal] = useState(false)
    const [selectedRow, setSelectedRow] = useState(mart_model)
    const [productId, setProductId] = useState("")
    const [fileList, setFileList] = useState([])
    const [showImagesModal, setShowImagesModal] = useState(false)
-   console.log(
-      "data",
-      data.filter((element) => element.name === "test")
-   )
-   console.log("addForm", addForm)
-   console.log("selectedRow", selectedRow)
+   // console.log(
+   //    "data",
+   //    data.filter((element) => element.name === "test")
+   // )
+   // console.log("addForm", addForm)
+   // console.log("selectedRow", selectedRow)
+   // console.log("InputDate", InputDate)
+   // console.log(
+   //    "InputDateString",
+   //    InputDate !== null
+   //       ? new Date(InputDate).toLocaleDateString("th-TH")
+   //       : InputDate
+   // )
    const onChange = ({ fileList: newFileList }) => {
       setFileList(newFileList)
    }
@@ -100,11 +112,18 @@ function MartDisneylandPage(props) {
    const handleOkEditModal = async () => {
       const body = {
          name: selectedRow.name,
-         category: `[${selectedRow.category}]`,
+         category:
+            selectedRow.category === "" ? "[]" : `["${selectedRow.category}"]`,
          price: selectedRow.price,
-         expire_date: selectedRow.expire_date,
+         expire_date:
+            selectedRow.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน" && checked
+               ? selectedRow.expire_date
+               : InputDate !== null
+               ? new Date(InputDate).toLocaleDateString("th-TH")
+               : "",
          description: selectedRow.description,
       }
+      // console.log("selectedRowBody", body)
       try {
          const response = await fetch(
             `/api/mart/disneyland?id=${selectedRow.id}`,
@@ -119,21 +138,91 @@ function MartDisneylandPage(props) {
          const responseJson = await response.json()
          const { marts } = responseJson
          setData(marts)
-         setAddForm(addForm_model)
+         setSelectedRow(mart_model)
          setInputDate(null)
          setExpireDate("")
+         setChecked(false)
          setShowEditModal(false)
       } catch (err) {
          console.log(err)
       }
    }
    const handleCancelEditModal = () => {
+      setInputDate(null)
+      setExpireDate("")
+      setChecked(false)
       setShowEditModal(false)
    }
 
    const handleShowEditModal = (id) => {
-      setSelectedRow(data.filter((ft) => ft.id === id)[0])
+      const keepExpireDate = data
+         .filter((ft) => ft.id === id)[0]
+         .expire_date.split("/")
+      // console.log("expireDate", keepExpireDate)
+      // console.log(
+      //    "expireDateDayjs",
+      //    dayjs(
+      //       `${parseInt(keepExpireDate[0], 10)}/${parseInt(
+      //          keepExpireDate[1],
+      //          10
+      //       )}/${parseInt(keepExpireDate[2], 10) - 543}`,
+      //       "D/M/YYYY"
+      //    )
+      // )
+      setSelectedRow(
+         data.filter((ft) => ft.id === id)[0].category === "[]"
+            ? { ...data.filter((ft) => ft.id === id)[0], category: "" }
+            : {
+                 ...data.filter((ft) => ft.id === id)[0],
+                 category: JSON.parse(
+                    data.filter((ft) => ft.id === id)[0].category
+                 )[0],
+              }
+      )
+      setExpireDate(data.filter((ft) => ft.id === id)[0].expire_date)
+      if (keepExpireDate.length === 1) {
+         setInputDate(null)
+      } else {
+         setInputDate(
+            dayjs(
+               `${parseInt(keepExpireDate[0], 10)}/${parseInt(
+                  keepExpireDate[1],
+                  10
+               )}/${parseInt(keepExpireDate[2], 10) - 543}`,
+               "D/M/YYYY"
+            )
+         )
+      }
+      if (
+         data.filter((ft) => ft.id === id)[0].expire_date ===
+         "หมดอายุไม่น้อยกว่า 3 เดือน"
+      ) {
+         setChecked(true)
+      }
       setShowEditModal(true)
+   }
+
+   const handleShowDeleteModal = (id) => {
+      setSelectedRow(data.filter((ft) => ft.id === id)[0])
+      setShowDeleteModal(true)
+   }
+
+   const handleDeleteEditModal = async (id) => {
+      try {
+         const response = await fetch(`/api/mart/disneyland?id=${id}`, {
+            method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: selectedRow.id }),
+         })
+         const responseJson = await response.json()
+         const { marts } = responseJson
+         setData(marts)
+         setShowDeleteModal(false)
+      } catch (err) {
+         console.log(err)
+      }
    }
 
    const handleShowImages = async (id) => {
@@ -168,15 +257,25 @@ function MartDisneylandPage(props) {
    const handleOpenAddModal = () => {
       setShowAddModal(true)
    }
+   const handleCancelDeleteModal = () => {
+      setSelectedRow(mart_model)
+      setShowDeleteModal(false)
+   }
    const handleOkAddModal = async () => {
       const body = {
          name: addForm.name,
-         category: `[${addForm.category}]`,
+         category: addForm.category === "" ? "[]" : `["${addForm.category}"]`,
          price: addForm.price,
-         expire_date: addForm.expire_date,
+         expire_date:
+            addForm.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน"
+               ? addForm.expire_date
+               : InputDate !== null
+               ? new Date(InputDate).toLocaleDateString("th-TH")
+               : "",
          description: addForm.description,
          channel: addForm.channel,
       }
+      // console.log("body", body)
       try {
          const response = await fetch("/api/mart/disneyland", {
             method: "POST",
@@ -184,28 +283,26 @@ function MartDisneylandPage(props) {
                "Content-Type": "application/json",
             },
             body: JSON.stringify(body),
-            setExpireDate,
          })
          const responseJson = await response.json()
          const { marts } = responseJson
          setData(marts)
          setAddForm(addForm_model)
          setInputDate(null)
-         setExpireDate("")
+         setChecked(false)
          setShowAddModal(false)
       } catch (err) {
          console.log(err)
       }
    }
    const onChangeExpireDate = (e) => {
+      setChecked(e.target.checked)
       if (e.target.checked) {
-         setExpireDate("หมดอายุไม่น้อยกว่า 3 เดือน")
          setAddForm({
             ...addForm,
             expire_date: "หมดอายุไม่น้อยกว่า 3 เดือน",
          })
       } else {
-         setExpireDate("")
          setAddForm({
             ...addForm,
             expire_date: "",
@@ -213,17 +310,16 @@ function MartDisneylandPage(props) {
       }
    }
    const onChangeExpireDateSelectedRow = (e) => {
+      setChecked(e.target.checked)
       if (e.target.checked) {
-         setExpireDate("หมดอายุไม่น้อยกว่า 3 เดือน")
          setSelectedRow({
             ...selectedRow,
             expire_date: "หมดอายุไม่น้อยกว่า 3 เดือน",
          })
       } else {
-         setExpireDate("")
          setSelectedRow({
             ...selectedRow,
-            expire_date: "",
+            expire_date: expireDate,
          })
       }
    }
@@ -288,12 +384,11 @@ function MartDisneylandPage(props) {
             text === "[]" ? (
                "-"
             ) : (
-               // <ol>
-               //    {JSON.parse(text).map((element, index) => (
-               //       <li key={index}>{element}</li>
-               //    ))}
-               // </ol>
-               <p>{text}</p>
+               <ol style={{ marginBottom: 0 }}>
+                  {JSON.parse(text).map((element, index) => (
+                     <li key={index}>{element}</li>
+                  ))}
+               </ol>
             ),
       },
       {
@@ -315,7 +410,7 @@ function MartDisneylandPage(props) {
          dataIndex: "description",
          width: "120px",
          key: "description",
-         render: (text) => (text === "" ? "-" : <p>{text}</p>),
+         render: (text) => (text === "" ? "-" : text),
       },
       {
          title: "จัดการ",
@@ -333,6 +428,7 @@ function MartDisneylandPage(props) {
                {
                   key: "2",
                   label: "ลบ",
+                  onClick: () => handleShowDeleteModal(id),
                },
             ]
             return (
@@ -406,11 +502,11 @@ function MartDisneylandPage(props) {
                   />
                </Space>
                <Space>
-                  <Checkbox onChange={onChangeExpireDate}>
+                  <Checkbox onChange={onChangeExpireDate} checked={checked}>
                      หมดอายุไม่น้อยกว่า 3 เดือน
                   </Checkbox>
                </Space>
-               {!expireDate ? (
+               {!addForm.expire_date ? (
                   <Space>
                      <label>วันที่หมดอายุของสินค้า: </label>
                      <DatePicker
@@ -419,18 +515,8 @@ function MartDisneylandPage(props) {
                         format="D/M/YYYY"
                         onChange={(value) => {
                            if (value === null) {
-                              setAddForm((prev) => ({
-                                 ...prev,
-                                 expire_date: "",
-                              }))
                               setInputDate(null)
                            } else {
-                              setAddForm((prev) => ({
-                                 ...prev,
-                                 expire_date: new Date(
-                                    value
-                                 ).toLocaleDateString("th-TH"),
-                              }))
                               setInputDate(value)
                            }
                         }}
@@ -497,31 +583,24 @@ function MartDisneylandPage(props) {
                   />
                </Space>
                <Space>
-                  <Checkbox onChange={onChangeExpireDateSelectedRow}>
+                  <Checkbox
+                     onChange={onChangeExpireDateSelectedRow}
+                     checked={checked}
+                  >
                      หมดอายุไม่น้อยกว่า 3 เดือน
                   </Checkbox>
                </Space>
-               {!expireDate ? (
+               {!checked ? (
                   <Space>
                      <label>วันที่หมดอายุของสินค้า: </label>
                      <DatePicker
-                        defaultValue={null}
+                        defaultValue={InputDate}
                         value={InputDate}
                         format="D/M/YYYY"
                         onChange={(value) => {
                            if (value === null) {
-                              setSelectedRow((prev) => ({
-                                 ...prev,
-                                 expire_date: "",
-                              }))
                               setInputDate(null)
                            } else {
-                              setSelectedRow((prev) => ({
-                                 ...prev,
-                                 expire_date: new Date(
-                                    value
-                                 ).toLocaleDateString("th-TH"),
-                              }))
                               setInputDate(value)
                            }
                         }}
@@ -560,6 +639,12 @@ function MartDisneylandPage(props) {
                </Upload>
             </div>
          </Modal>
+         <Modal
+            title="คุณต้องการลบหรือไม่"
+            open={showDeleteModal}
+            onCancel={handleCancelDeleteModal}
+            onOk={() => handleDeleteEditModal(selectedRow.id)}
+         ></Modal>
          <style jsx>
             {`
                .container-table {

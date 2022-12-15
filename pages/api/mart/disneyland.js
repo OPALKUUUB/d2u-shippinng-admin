@@ -54,6 +54,17 @@ async function handler(req, res) {
       await mysql.end()
       res.status(200).json({ message: "update data success!", marts })
    }
+   if (req.method === "DELETE") {
+      const { id } = req.query
+      await mysql.connect()
+      await mysql.query("DELETE FROM `mart-product` WHERE id = ?", [id])
+      const marts = await mysql.query(
+         "SELECT * FROM `mart-product` WHERE channel = ?",
+         ["disneyland"]
+      )
+      await mysql.end()
+      res.status(200).json({ message: "delete data success!", marts })
+   }
 }
 
 export default handler
