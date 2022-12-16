@@ -45,6 +45,7 @@ function MartDisneylandPage(props) {
    const [InputDate, setInputDate] = useState(null)
    const [expireDate, setExpireDate] = useState("")
    const [checked, setChecked] = useState(false)
+   const [category, setCategory] = useState("")
    const [showEditModal, setShowEditModal] = useState(false)
    const [showAddModal, setShowAddModal] = useState(false)
    const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -110,10 +111,13 @@ function MartDisneylandPage(props) {
       setShowImagesModal(false)
    }
    const handleOkEditModal = async () => {
+      const arrayCategory = []
+      if (category !== "") {
+         arrayCategory.push(category)
+      }
       const body = {
          name: selectedRow.name,
-         category:
-            selectedRow.category === "" ? "[]" : `["${selectedRow.category}"]`,
+         category: JSON.stringify(arrayCategory),
          price: selectedRow.price,
          expire_date:
             selectedRow.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน" && checked
@@ -142,6 +146,7 @@ function MartDisneylandPage(props) {
          setInputDate(null)
          setExpireDate("")
          setChecked(false)
+         setCategory("")
          setShowEditModal(false)
       } catch (err) {
          console.log(err)
@@ -169,16 +174,12 @@ function MartDisneylandPage(props) {
       //       "D/M/YYYY"
       //    )
       // )
-      setSelectedRow(
+      setCategory(
          data.filter((ft) => ft.id === id)[0].category === "[]"
-            ? { ...data.filter((ft) => ft.id === id)[0], category: "" }
-            : {
-                 ...data.filter((ft) => ft.id === id)[0],
-                 category: JSON.parse(
-                    data.filter((ft) => ft.id === id)[0].category
-                 )[0],
-              }
+            ? ""
+            : JSON.parse(data.filter((ft) => ft.id === id)[0].category)[0]
       )
+      setSelectedRow(data.filter((ft) => ft.id === id)[0])
       setExpireDate(data.filter((ft) => ft.id === id)[0].expire_date)
       if (keepExpireDate.length === 1) {
          setInputDate(null)
@@ -252,6 +253,10 @@ function MartDisneylandPage(props) {
       setShowImagesModal(true)
    }
    const handleCancelAddModal = () => {
+      setAddForm(addForm_model)
+      setInputDate(null)
+      setChecked(false)
+      setCategory("")
       setShowAddModal(false)
    }
    const handleOpenAddModal = () => {
@@ -262,9 +267,13 @@ function MartDisneylandPage(props) {
       setShowDeleteModal(false)
    }
    const handleOkAddModal = async () => {
+      const arrayCategory = []
+      if (category !== "") {
+         arrayCategory.push(category)
+      }
       const body = {
          name: addForm.name,
-         category: addForm.category === "" ? "[]" : `["${addForm.category}"]`,
+         category: JSON.stringify(arrayCategory),
          price: addForm.price,
          expire_date:
             addForm.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน"
@@ -290,6 +299,7 @@ function MartDisneylandPage(props) {
          setAddForm(addForm_model)
          setInputDate(null)
          setChecked(false)
+         setCategory("")
          setShowAddModal(false)
       } catch (err) {
          console.log(err)
@@ -479,13 +489,8 @@ function MartDisneylandPage(props) {
                <Space>
                   <label>หมวดหมู่สินค้า: </label>
                   <Input
-                     value={addForm.category}
-                     onChange={(e) =>
-                        setAddForm({
-                           ...addForm,
-                           category: e.target.value,
-                        })
-                     }
+                     value={category}
+                     onChange={(e) => setCategory(e.target.value)}
                   />
                </Space>
                <Space>
@@ -560,13 +565,8 @@ function MartDisneylandPage(props) {
                <Space>
                   <label>หมวดหมู่สินค้า: </label>
                   <Input
-                     value={selectedRow.category}
-                     onChange={(e) =>
-                        setSelectedRow({
-                           ...selectedRow,
-                           category: e.target.value,
-                        })
-                     }
+                     value={category}
+                     onChange={(e) => setCategory(e.target.value)}
                   />
                </Space>
                <Space>
