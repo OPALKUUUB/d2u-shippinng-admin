@@ -196,6 +196,10 @@ YahooAddPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
+   const response = await fetch(`${process.env.BACKEND_URL}/api/user`)
+   const responseJson = await response.json()
+   // console.log(responseJson)
+   const { users } = responseJson
    if (!session) {
       return {
          redirect: {
@@ -204,13 +208,10 @@ export async function getServerSideProps(context) {
          },
       }
    }
-   const response = await axios
-      // eslint-disable-next-line prefer-template
-      .get(process.env.BACKEND_URL + "/api/user")
-      .then((res) => res.data)
+
    return {
       props: {
-         users: response.users,
+         users,
          session,
       },
    }
