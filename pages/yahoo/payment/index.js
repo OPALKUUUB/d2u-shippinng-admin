@@ -109,6 +109,7 @@ function YahooPaymentPage(props) {
       try {
          const response = await fetch(`/api/yahoo/slip/${id}`)
          const responseJson = await response.json()
+         console.log(responseJson)
          setSlip(responseJson.slip)
          setShowSlipModal(true)
       } catch (err) {
@@ -367,7 +368,7 @@ function YahooPaymentPage(props) {
             okText="ยืนยัน"
             cancelText="ยกเลิก"
          >
-            <img src={slip.image} alt="" />
+            <img src={slip.image} alt="" width={100} />
          </Modal>
          <style jsx global>
             {`
