@@ -1,16 +1,38 @@
-import { Button, Dropdown, Input, Modal, Space, Table, Upload } from "antd"
+/* eslint-disable indent */
+/* eslint-disable no-nested-ternary */
+import {
+   Button,
+   Dropdown,
+   Input,
+   InputNumber,
+   Checkbox,
+   DatePicker,
+   Modal,
+   Space,
+   Table,
+   Upload,
+} from "antd"
 import { AppstoreAddOutlined, DownOutlined } from "@ant-design/icons"
 import React, { Fragment, useState } from "react"
 import { getSession } from "next-auth/react"
+import dayjs from "dayjs"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 
 const { TextArea } = Input
+const addForm_model = {
+   name: "",
+   category: "",
+   price: null,
+   expire_date: "",
+   description: "",
+   channel: "donki",
+}
 const mart_model = {
    id: "",
    name: "",
-   category: "[]",
-   price: "",
+   category: "",
+   price: null,
    expire_date: "",
    description: "",
    channel: "",
@@ -19,11 +41,31 @@ const mart_model = {
 }
 function MartDonkiPage(props) {
    const [data, setData] = useState(props.products)
+   const [addForm, setAddForm] = useState(addForm_model)
+   const [InputDate, setInputDate] = useState(null)
+   const [expireDate, setExpireDate] = useState("")
+   const [checked, setChecked] = useState(false)
+   const [category, setCategory] = useState("")
    const [showEditModal, setShowEditModal] = useState(false)
+   const [showAddModal, setShowAddModal] = useState(false)
+   const [showDeleteModal, setShowDeleteModal] = useState(false)
    const [selectedRow, setSelectedRow] = useState(mart_model)
    const [productId, setProductId] = useState("")
    const [fileList, setFileList] = useState([])
    const [showImagesModal, setShowImagesModal] = useState(false)
+   // console.log(
+   //    "data",
+   //    data.filter((element) => element.name === "test")
+   // )
+   // console.log("addForm", addForm)
+   // console.log("selectedRow", selectedRow)
+   // console.log("InputDate", InputDate)
+   // console.log(
+   //    "InputDateString",
+   //    InputDate !== null
+   //       ? new Date(InputDate).toLocaleDateString("th-TH")
+   //       : InputDate
+   // )
    const onChange = ({ fileList: newFileList }) => {
       setFileList(newFileList)
    }
@@ -68,18 +110,122 @@ function MartDonkiPage(props) {
    const handleCancelImagesModal = () => {
       setShowImagesModal(false)
    }
-   const handleOkEditModal = () => {
-      setShowEditModal(false)
+   const handleOkEditModal = async () => {
+      const arrayCategory = []
+      if (category !== "") {
+         arrayCategory.push(category)
+      }
+      const body = {
+         name: selectedRow.name,
+         category: JSON.stringify(arrayCategory),
+         price: selectedRow.price,
+         expire_date:
+            selectedRow.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน" && checked
+               ? selectedRow.expire_date
+               : InputDate !== null
+               ? new Date(InputDate).toLocaleDateString("th-TH")
+               : "",
+         description: selectedRow.description,
+      }
+      // console.log("selectedRowBody", body)
+      try {
+         const response = await fetch(`/api/mart/donki?id=${selectedRow.id}`, {
+            method: "PATCH",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+         })
+         const responseJson = await response.json()
+         const { marts } = responseJson
+         setData(marts)
+         setSelectedRow(mart_model)
+         setInputDate(null)
+         setExpireDate("")
+         setChecked(false)
+         setCategory("")
+         setShowEditModal(false)
+      } catch (err) {
+         console.log(err)
+      }
    }
    const handleCancelEditModal = () => {
+      setInputDate(null)
+      setExpireDate("")
+      setChecked(false)
+      setCategory("")
       setShowEditModal(false)
    }
 
    const handleShowEditModal = (id) => {
+      const keepExpireDate = data
+         .filter((ft) => ft.id === id)[0]
+         .expire_date.split("/")
+      // console.log("expireDate", keepExpireDate)
+      // console.log(
+      //    "expireDateDayjs",
+      //    dayjs(
+      //       `${parseInt(keepExpireDate[0], 10)}/${parseInt(
+      //          keepExpireDate[1],
+      //          10
+      //       )}/${parseInt(keepExpireDate[2], 10) - 543}`,
+      //       "D/M/YYYY"
+      //    )
+      // )
+      setCategory(
+         data.filter((ft) => ft.id === id)[0].category === "[]"
+            ? ""
+            : JSON.parse(data.filter((ft) => ft.id === id)[0].category)[0]
+      )
       setSelectedRow(data.filter((ft) => ft.id === id)[0])
+      setExpireDate(data.filter((ft) => ft.id === id)[0].expire_date)
+      if (keepExpireDate.length === 1) {
+         setInputDate(null)
+      } else {
+         setInputDate(
+            dayjs(
+               `${parseInt(keepExpireDate[0], 10)}/${parseInt(
+                  keepExpireDate[1],
+                  10
+               )}/${parseInt(keepExpireDate[2], 10) - 543}`,
+               "D/M/YYYY"
+            )
+         )
+      }
+      if (
+         data.filter((ft) => ft.id === id)[0].expire_date ===
+         "หมดอายุไม่น้อยกว่า 3 เดือน"
+      ) {
+         setChecked(true)
+      }
       setShowEditModal(true)
    }
+   const handleShowDeleteModal = (id) => {
+      setSelectedRow(data.filter((ft) => ft.id === id)[0])
+      setShowDeleteModal(true)
+   }
+   const handleCancelDeleteModal = () => {
+      setSelectedRow(mart_model)
+      setShowDeleteModal(false)
+   }
 
+   const handleDeleteEditModal = async (id) => {
+      try {
+         const response = await fetch(`/api/mart/donki?id=${id}`, {
+            method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: selectedRow.id }),
+         })
+         const responseJson = await response.json()
+         const { marts } = responseJson
+         setData(marts)
+         setShowDeleteModal(false)
+      } catch (err) {
+         console.log(err)
+      }
+   }
    const handleShowImages = async (id) => {
       // set images by fetch id tracking
       try {
@@ -106,12 +252,112 @@ function MartDonkiPage(props) {
       }
       setShowImagesModal(true)
    }
+   const handleCancelAddModal = () => {
+      setAddForm(addForm_model)
+      setInputDate(null)
+      setChecked(false)
+      setCategory("")
+      setShowAddModal(false)
+   }
+   const handleOpenAddModal = () => {
+      setShowAddModal(true)
+   }
+   const handleOkAddModal = async () => {
+      const arrayCategory = []
+      if (category !== "") {
+         arrayCategory.push(category)
+      }
+      const body = {
+         name: addForm.name,
+         category: JSON.stringify(arrayCategory),
+         price: addForm.price,
+         expire_date:
+            addForm.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน"
+               ? addForm.expire_date
+               : InputDate !== null
+               ? new Date(InputDate).toLocaleDateString("th-TH")
+               : "",
+         description: addForm.description,
+         channel: addForm.channel,
+      }
+      // console.log("body", body)
+      try {
+         const response = await fetch("/api/mart/donki", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+         })
+         const responseJson = await response.json()
+         const { marts } = responseJson
+         setData(marts)
+         setAddForm(addForm_model)
+         setInputDate(null)
+         setChecked(false)
+         setCategory("")
+         setShowAddModal(false)
+      } catch (err) {
+         console.log(err)
+      }
+   }
+   const onChangeExpireDate = (e) => {
+      setChecked(e.target.checked)
+      if (e.target.checked) {
+         setAddForm({
+            ...addForm,
+            expire_date: "หมดอายุไม่น้อยกว่า 3 เดือน",
+         })
+      } else {
+         setAddForm({
+            ...addForm,
+            expire_date: "",
+         })
+      }
+   }
+   const onChangeExpireDateSelectedRow = (e) => {
+      setChecked(e.target.checked)
+      if (e.target.checked) {
+         setSelectedRow({
+            ...selectedRow,
+            expire_date: "หมดอายุไม่น้อยกว่า 3 เดือน",
+         })
+      } else {
+         setSelectedRow({
+            ...selectedRow,
+            expire_date: expireDate,
+         })
+      }
+   }
    const columns = [
       {
          title: "วันที่",
          dataIndex: "created_at",
          width: "120px",
          key: "created_at",
+         sorter: (a, b) => {
+            const datetime_a = a.created_at
+            const date_a_f = datetime_a.split("/")
+            // [y,m,d,h,m,s]
+            const datetime_a_f = [
+               parseInt(date_a_f[2], 10),
+               parseInt(date_a_f[1], 10),
+               parseInt(date_a_f[0], 10),
+            ]
+            const datetime_b = b.created_at
+            const date_b_f = datetime_b.split("/")
+            const datetime_b_f = [
+               parseInt(date_b_f[2], 10),
+               parseInt(date_b_f[1], 10),
+               parseInt(date_b_f[0], 10),
+            ]
+            for (let i = 0; i < 3; i++) {
+               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
+                  return datetime_a_f[i] - datetime_b_f[i]
+               }
+            }
+            return 0
+         },
          render: (text) => (
             <>
                <p>{text.split(" ")[0]}</p>
@@ -133,13 +379,44 @@ function MartDonkiPage(props) {
          dataIndex: "name",
          width: "120px",
          key: "name",
+         render: (text) => (text === "" ? "-" : text),
       },
       {
-         title: "รายละเอียด",
+         title: "หมวดหมู่สินค้า",
+         dataIndex: "category",
+         width: "120px",
+         key: "category",
+         render: (text) =>
+            text === "[]" ? (
+               "-"
+            ) : (
+               <ol style={{ marginBottom: 0 }}>
+                  {JSON.parse(text).map((element, index) => (
+                     <li key={index}>{element}</li>
+                  ))}
+               </ol>
+            ),
+      },
+      {
+         title: "ราคาสินค้า",
+         dataIndex: "price",
+         width: "120px",
+         key: "price",
+         render: (text) => (text === null ? "-" : text),
+      },
+      {
+         title: "วันหมดอายุของสินค้า",
+         dataIndex: "expire_date",
+         width: "120px",
+         key: "expire_date",
+         render: (text) => (text === "" ? "-" : text),
+      },
+      {
+         title: "รายละเอียดสินค้า",
          dataIndex: "description",
          width: "120px",
          key: "description",
-         render: (text) => <p>{text}</p>,
+         render: (text) => (text === "" ? "-" : text),
       },
       {
          title: "จัดการ",
@@ -157,6 +434,7 @@ function MartDonkiPage(props) {
                {
                   key: "2",
                   label: "ลบ",
+                  onClick: () => handleShowDeleteModal(id),
                },
             ]
             return (
@@ -175,24 +453,170 @@ function MartDonkiPage(props) {
       <Fragment>
          <CardHead name="Mart Donki Page" />
          <div className="container-table">
-            <Button icon={<AppstoreAddOutlined />}>เพิ่มรายการ</Button>
+            <div style={{ marginBottom: "10px" }}>
+               <Button
+                  icon={<AppstoreAddOutlined />}
+                  onClick={handleOpenAddModal}
+               >
+                  เพิ่มรายการ
+               </Button>
+            </div>
             <Table columns={columns} dataSource={data} />
          </div>
          <Modal
             title="เพิ่มรายการ Donki"
+            open={showAddModal}
+            onCancel={handleCancelAddModal}
+            onOk={handleOkAddModal}
+         >
+            <Space direction="vertical" style={{ margin: "10px auto" }}>
+               <Space>
+                  <label>ชื่อสินค้า: </label>
+                  <Input
+                     value={addForm.name}
+                     onChange={(e) =>
+                        setAddForm({
+                           ...addForm,
+                           name: e.target.value,
+                        })
+                     }
+                  />
+               </Space>
+               <Space>
+                  <label>หมวดหมู่สินค้า: </label>
+                  <Input
+                     value={category}
+                     onChange={(e) => setCategory(e.target.value)}
+                  />
+               </Space>
+               <Space>
+                  <label>ราคาสินค้า: </label>
+                  <InputNumber
+                     value={addForm.price}
+                     onChange={(value) =>
+                        setAddForm({
+                           ...addForm,
+                           price: value,
+                        })
+                     }
+                     step="0.1"
+                  />
+               </Space>
+               <Space>
+                  <Checkbox onChange={onChangeExpireDate} checked={checked}>
+                     หมดอายุไม่น้อยกว่า 3 เดือน
+                  </Checkbox>
+               </Space>
+               {!addForm.expire_date ? (
+                  <Space>
+                     <label>วันที่หมดอายุของสินค้า: </label>
+                     <DatePicker
+                        defaultValue={null}
+                        value={InputDate}
+                        format="D/M/YYYY"
+                        onChange={(value) => {
+                           if (value === null) {
+                              setInputDate(null)
+                           } else {
+                              setInputDate(value)
+                           }
+                        }}
+                     />
+                  </Space>
+               ) : null}
+               <Space>
+                  <label>รายละเอียดสินค้า: </label>
+                  <TextArea
+                     rows={4}
+                     value={addForm.description}
+                     onChange={(e) => {
+                        setAddForm({
+                           ...addForm,
+                           description: e.target.value,
+                        })
+                     }}
+                  />
+               </Space>
+            </Space>
+         </Modal>
+         <Modal
+            title="แก้ไขรายการ Donki"
             open={showEditModal}
             onCancel={handleCancelEditModal}
             onOk={handleOkEditModal}
          >
-            <div>
-               <label>ชื่อสินค้า: </label>
-               <Input
-                  value={selectedRow.name}
-                  onChange={(value) => console.log(value)}
-               />
-               <label>รายละเอียด: </label>
-               <TextArea rows={4} value={selectedRow.description} />
-            </div>
+            <Space direction="vertical" style={{ margin: "10px auto" }}>
+               <Space>
+                  <label>ชื่อสินค้า: </label>
+                  <Input
+                     value={selectedRow.name}
+                     onChange={(e) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           name: e.target.value,
+                        })
+                     }
+                  />
+               </Space>
+               <Space>
+                  <label>หมวดหมู่สินค้า: </label>
+                  <Input
+                     value={category}
+                     onChange={(e) => setCategory(e.target.value)}
+                  />
+               </Space>
+               <Space>
+                  <label>ราคาสินค้า: </label>
+                  <InputNumber
+                     value={selectedRow.price}
+                     onChange={(value) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           price: value,
+                        })
+                     }
+                     step="0.1"
+                  />
+               </Space>
+               <Space>
+                  <Checkbox
+                     onChange={onChangeExpireDateSelectedRow}
+                     checked={checked}
+                  >
+                     หมดอายุไม่น้อยกว่า 3 เดือน
+                  </Checkbox>
+               </Space>
+               {!checked ? (
+                  <Space>
+                     <label>วันที่หมดอายุของสินค้า: </label>
+                     <DatePicker
+                        defaultValue={InputDate}
+                        value={InputDate}
+                        format="D/M/YYYY"
+                        onChange={(value) => {
+                           if (value === null) {
+                              setInputDate(null)
+                           } else {
+                              setInputDate(value)
+                           }
+                        }}
+                     />
+                  </Space>
+               ) : null}
+               <Space>
+                  <label>รายละเอียดสินค้า: </label>
+                  <TextArea
+                     rows={4}
+                     value={selectedRow.description}
+                     onChange={(e) => {
+                        setSelectedRow({
+                           ...selectedRow,
+                           description: e.target.value,
+                        })
+                     }}
+                  />
+               </Space>
+            </Space>
          </Modal>
          <Modal
             title="เพิ่มรูปภาพ"
@@ -211,6 +635,12 @@ function MartDonkiPage(props) {
                </Upload>
             </div>
          </Modal>
+         <Modal
+            title="คุณต้องการลบหรือไม่"
+            open={showDeleteModal}
+            onCancel={handleCancelDeleteModal}
+            onOk={() => handleDeleteEditModal(selectedRow.id)}
+         ></Modal>
          <style jsx>
             {`
                .container-table {
