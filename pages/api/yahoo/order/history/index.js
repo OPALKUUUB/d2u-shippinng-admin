@@ -22,9 +22,8 @@ async function handler(req, res) {
             ${"`yahoo-auction-order`"}.status IS NOT NULL AND
             ${"`yahoo-auction-payment`"}.payment_status != ? AND
             ${"`yahoo-auction-payment`"}.payment_status != ? AND
-            ${"`yahoo-auction-payment`"}.payment_status != ?
-        `,
-         [("รอค่าโอนและค่าส่ง", "รอการชำระเงิน", "รอการตรวจสอบ")]
+            ${"`yahoo-auction-payment`"}.payment_status != ?`,
+         ["รอค่าโอนและค่าส่ง", "รอการชำระเงิน", "รอการตรวจสอบ"]
       )
       await mysql.end()
       res.status(200).json({
