@@ -156,6 +156,7 @@ function MartDisneylandPage(props) {
       setInputDate(null)
       setExpireDate("")
       setChecked(false)
+      setCategory("")
       setShowEditModal(false)
    }
 
@@ -206,6 +207,10 @@ function MartDisneylandPage(props) {
    const handleShowDeleteModal = (id) => {
       setSelectedRow(data.filter((ft) => ft.id === id)[0])
       setShowDeleteModal(true)
+   }
+   const handleCancelDeleteModal = () => {
+      setSelectedRow(mart_model)
+      setShowDeleteModal(false)
    }
 
    const handleDeleteEditModal = async (id) => {
@@ -261,10 +266,6 @@ function MartDisneylandPage(props) {
    }
    const handleOpenAddModal = () => {
       setShowAddModal(true)
-   }
-   const handleCancelDeleteModal = () => {
-      setSelectedRow(mart_model)
-      setShowDeleteModal(false)
    }
    const handleOkAddModal = async () => {
       const arrayCategory = []
