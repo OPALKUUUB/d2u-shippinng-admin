@@ -16,7 +16,7 @@ import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 
@@ -48,7 +48,7 @@ const payment_model = {
 }
 
 function YahooPaymentPage(props) {
-   const [data, setData] = useState(props.payments)
+   const [data, setData] = useState([])
    const [selectedRow, setSelectedRow] = useState(payment_model)
    const [showEditModal, setshowEditModal] = useState(false)
    const [InputDate, setInputDate] = useState(null)
@@ -295,6 +295,13 @@ function YahooPaymentPage(props) {
          },
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/yahoo/payment")
+         const responseJson = await response.json()
+         setData(responseJson.payments)
+      })()
+   })
    return (
       <Fragment>
          <CardHead
@@ -428,10 +435,7 @@ YahooPaymentPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   // eslint-disable-next-line prefer-template
-   const api = "/api/yahoo/payment"
 
-   const response = await fetch(api).then((res) => res.json())
    if (!session) {
       return {
          redirect: {
@@ -441,9 +445,7 @@ export async function getServerSideProps(context) {
       }
    }
    return {
-      props: {
-         payments: response.payments,
-      },
+      props: { session },
    }
 }
 export default YahooPaymentPage

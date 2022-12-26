@@ -1,3 +1,4 @@
+import { Select } from "antd"
 import axios from "axios"
 import { getSession } from "next-auth/react"
 import { useRouter } from "next/router"
@@ -87,7 +88,12 @@ function YahooAddPage(props) {
       ;(async () => {
          const response = await fetch("/api/user")
          const responseJson = await response.json()
-         setUsers(responseJson.users)
+         setUsers(
+            responseJson.users.reduce(
+               (a, c) => [...a, { label: c.username, value: c.username }],
+               []
+            )
+         )
       })()
    }, [])
    return (
@@ -100,57 +106,22 @@ function YahooAddPage(props) {
             <div className="box-form">
                <div>
                   <label>เลือกผู้ประมูล: </label>
-                  <input
-                     type="text"
-                     value={nameUserInput}
-                     onChange={(e) => setNameUserInput(e.target.value)}
-                     onFocus={() => setshowUsersOption(true)}
-                     onBlur={() => {
-                        setTimeout(() => {
-                           setshowUsersOption(false)
-                        }, 1500)
-                     }}
-                     onKeyDown={(e) => {
-                        if (e.keyCode === 13) {
-                           setNameUserInput(() => {
-                              const findUser = users.filter(
-                                 (ft) =>
-                                    ft.username.includes(nameUserInput) ||
-                                    ft.name
-                                       .toLowerCase()
-                                       .includes(nameUserInput)
-                              )
-                              if (findUser.length === 0) {
-                                 alert(
-                                    // eslint-disable-next-line prefer-template
-                                    "not found user that include " +
-                                       e.target.value
-                                 )
-                                 return e.target.value
-                              }
-                              return findUser[0].username
-                           })
-                        }
-                     }}
+                  <Select
+                     showSearch
+                     style={{ width: 200 }}
+                     placeholder="เลือกลูกค้า"
+                     optionFilterProp="children"
+                     filterOption={(input, option) =>
+                        (option?.label ?? "").includes(input)
+                     }
+                     filterSort={(optionA, optionB) =>
+                        (optionA?.label ?? "")
+                           .toLowerCase()
+                           .localeCompare((optionB?.label ?? "").toLowerCase())
+                     }
+                     options={users}
+                     onSelect={(value) => setNameUserInput(value)}
                   />
-                  {showUsersOption && (
-                     <ul>
-                        {users
-                           .filter(
-                              (ft) =>
-                                 ft.username.includes(nameUserInput) ||
-                                 ft.name.toLowerCase().includes(nameUserInput)
-                           )
-                           .map((user) => (
-                              <li
-                                 key={`UserOption-${user.id}`}
-                                 onClick={() => setNameUserInput(user.username)}
-                              >
-                                 {user.username}
-                              </li>
-                           ))}
-                     </ul>
-                  )}
                </div>
                <form onSubmit={handleSubmit}>
                   <div className="box-input">

@@ -11,10 +11,7 @@ import {
    Switch,
    Table,
 } from "antd"
-import {
-   DownOutlined,
-   SearchOutlined,
-} from "@ant-design/icons"
+import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useRef, useState } from "react"
 import Highlighter from "react-highlight-words"
@@ -59,7 +56,7 @@ const statusFormModel = {
 }
 
 function YahooBiddingPage(props) {
-   const [data, setData] = useState(props.orders)
+   const [data, setData] = useState([])
    const [filteredInfo, setFilteredInfo] = useState({})
    const [sortedInfo, setSortedInfo] = useState({})
    const [searchText, setSearchText] = useState("")
@@ -336,7 +333,7 @@ function YahooBiddingPage(props) {
          title: "ชื่อลูกค้า",
          dataIndex: "username",
          key: "username",
-         filters: props.orders.reduce(
+         filters: data?.reduce(
             (accumulator, currentValue) => [
                ...accumulator,
                { text: currentValue.username, value: currentValue.username },
@@ -520,6 +517,13 @@ function YahooBiddingPage(props) {
          },
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/yahoo/order")
+         const responseJson = await response.json()
+         setData(responseJson.orders)
+      })()
+   }, [])
    return (
       <Fragment>
          <CardHead
@@ -661,8 +665,7 @@ YahooBiddingPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
    // eslint-disable-next-line prefer-template
-   const api = "/api/yahoo/order"
-   const response = await fetch(api).then((res) => res.json())
+
    if (!session) {
       return {
          redirect: {
@@ -673,7 +676,7 @@ export async function getServerSideProps(context) {
    }
    return {
       props: {
-         orders: response.orders,
+         session,
       },
    }
 }

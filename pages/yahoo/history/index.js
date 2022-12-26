@@ -1,11 +1,11 @@
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import { Table } from "antd"
 import Layout from "../../../components/layout/layout"
 import CardHead from "../../../components/CardHead"
 
 function YahooHistoryPage(props) {
-   const [data, setData] = useState(props.historys)
+   const [data, setData] = useState([])
    const columns = [
       {
          title: "วันที่",
@@ -80,6 +80,14 @@ function YahooHistoryPage(props) {
          key: "payment_status",
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/yahoo/order/history")
+         const responseJson = await response.json()
+         console.log(responseJson)
+         setData(responseJson.history)
+      })()
+   },[])
    return (
       <Fragment>
          <CardHead name="Yahoo Historys Auction" />
@@ -106,9 +114,7 @@ YahooHistoryPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
    // eslint-disable-next-line prefer-template
-   const api = "/api/yahoo/order/history"
 
-   const response = await fetch(api).then((res) => res.json())
    if (!session) {
       return {
          redirect: {
@@ -118,9 +124,7 @@ export async function getServerSideProps(context) {
       }
    }
    return {
-      props: {
-         historys: response.history,
-      },
+      props: { session },
    }
 }
 
