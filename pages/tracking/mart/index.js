@@ -9,7 +9,12 @@ function ShimizuTrackingsPage() {
       <Fragment>
          <CardHead name="Shimizu Trackings Page" />
          <div>
-            <Table />
+            <Table
+               scroll={{
+                  x: 1500,
+                  y: 450,
+               }}
+            />
          </div>
       </Fragment>
    )

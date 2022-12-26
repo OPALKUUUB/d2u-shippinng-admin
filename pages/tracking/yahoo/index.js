@@ -377,7 +377,7 @@ function YahooTrackingsPage(props) {
                columns={columns}
                scroll={{
                   x: 1500,
-                  y: 500,
+                  y: 450,
                }}
             />
          </div>
