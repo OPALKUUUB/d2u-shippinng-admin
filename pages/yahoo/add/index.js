@@ -1,19 +1,20 @@
 import axios from "axios"
 import { getSession } from "next-auth/react"
 import { useRouter } from "next/router"
-import React, { Fragment, useRef, useState } from "react"
+import React, { Fragment, useEffect, useRef, useState } from "react"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 
 function YahooAddPage(props) {
    const router = useRouter()
-   const { users } = props
+   // const { users } = props
    const [detail, setDetail] = useState()
    const [images, setImages] = useState()
    const [name, setName] = useState()
    const [price, setPrice] = useState()
    const [nameUserInput, setNameUserInput] = useState("")
    const [showUsersOption, setshowUsersOption] = useState(false)
+   const [users, setUsers] = useState([])
    const linkRef = useRef()
    const maxbidRef = useRef()
    const remarkUserRef = useRef()
@@ -82,6 +83,13 @@ function YahooAddPage(props) {
          // alert(err.response.data.message)
       }
    }
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/user")
+         const responseJson = await response.json()
+         setUsers(responseJson.users)
+      })()
+   }, [])
    return (
       <Fragment>
          <CardHead
@@ -196,10 +204,10 @@ YahooAddPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const response = await fetch('/api/user')
-   const responseJson = await response.json()
-   console.log(responseJson)
-   const { users } = responseJson
+   // const response = await fetch('/api/user')
+   // const responseJson = await response.json()
+   // console.log(responseJson)
+   // const { users } = responseJson
    if (!session) {
       return {
          redirect: {
@@ -211,7 +219,7 @@ export async function getServerSideProps(context) {
 
    return {
       props: {
-         users,
+         // users,
          session,
       },
    }
