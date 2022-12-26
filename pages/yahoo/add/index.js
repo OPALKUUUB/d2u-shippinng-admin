@@ -196,7 +196,7 @@ YahooAddPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const response = await fetch(`${process.env.BACKEND_URL}/api/user`)
+   const response = await fetch(`/api/user`)
    const responseJson = await response.json()
    // console.log(responseJson)
    const { users } = responseJson

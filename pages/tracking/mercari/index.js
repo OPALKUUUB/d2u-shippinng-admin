@@ -955,12 +955,12 @@ MercariTrackingsPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
    // get trackings shimizu
-   const api_tracking_mercari = `${process.env.BACKEND_URL}/api/tracking/mercari`
+   const api_tracking_mercari = `/api/tracking/mercari`
    const response = await fetch(api_tracking_mercari)
    const responseJson = await response.json()
    const { trackings } = responseJson
    // get users
-   const api_user = `${process.env.BACKEND_URL}/api/user`
+   const api_user = `/api/user`
    const response2 = await fetch(api_user)
    const respones2Json = await response2.json()
    const { users } = respones2Json

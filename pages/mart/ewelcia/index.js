@@ -675,7 +675,7 @@ MartEwelciaPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const api = `${process.env.BACKEND_URL}/api/mart/ewelcia`
+   const api = `/api/mart/ewelcia`
    const response = await fetch(api)
    const responseJson = await response.json()
    const { products } = await responseJson

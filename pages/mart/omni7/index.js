@@ -758,7 +758,7 @@ MartOmni7Page.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const api = `${process.env.BACKEND_URL}/api/mart/omni7`
+   const api = `/api/mart/omni7`
    const response = await fetch(api)
    const responseJson = await response.json()
    const { products } = await responseJson

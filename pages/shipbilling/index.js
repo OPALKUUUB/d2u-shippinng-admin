@@ -142,7 +142,7 @@ ShipBilling.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const api = `${process.env.BACKEND_URL}/api/shipbilling/voyage`
+   const api = `/api/shipbilling/voyage`
    const response = await fetch(api)
    const responseJson = await response.json()
    const { voyages } = await responseJson

@@ -661,7 +661,7 @@ YahooBiddingPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
    // eslint-disable-next-line prefer-template
-   const api = process.env.BACKEND_URL + "/api/yahoo/order"
+   const api = "/api/yahoo/order"
    const response = await fetch(api).then((res) => res.json())
    if (!session) {
       return {

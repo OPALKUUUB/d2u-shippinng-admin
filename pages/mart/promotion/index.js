@@ -766,7 +766,7 @@ MartPromotionPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const api = `${process.env.BACKEND_URL}/api/mart/promotion`
+   const api = `/api/mart/promotion`
    const response = await fetch(api)
    const responseJson = await response.json()
    const { products } = await responseJson
