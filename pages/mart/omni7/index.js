@@ -417,21 +417,33 @@ function MartOmni7Page(props) {
          key: "created_at",
          sorter: (a, b) => {
             const datetime_a = a.created_at
-            const date_a_f = datetime_a.split("/")
+            const date_a = datetime_a.split(" ")[0]
+            const time_a = datetime_a.split(" ")[1]
+            const date_a_f = date_a.split("/")
+            const time_a_f = time_a.split(":")
             // [y,m,d,h,m,s]
             const datetime_a_f = [
                parseInt(date_a_f[2], 10),
                parseInt(date_a_f[1], 10),
                parseInt(date_a_f[0], 10),
+               parseInt(time_a_f[0], 10),
+               parseInt(time_a_f[1], 10),
+               parseInt(time_a_f[2], 10),
             ]
             const datetime_b = b.created_at
-            const date_b_f = datetime_b.split("/")
+            const date_b = datetime_b.split(" ")[0]
+            const time_b = datetime_b.split(" ")[1]
+            const date_b_f = date_b.split("/")
+            const time_b_f = time_b.split(":")
             const datetime_b_f = [
                parseInt(date_b_f[2], 10),
                parseInt(date_b_f[1], 10),
                parseInt(date_b_f[0], 10),
+               parseInt(time_b_f[0], 10),
+               parseInt(time_b_f[1], 10),
+               parseInt(time_b_f[2], 10),
             ]
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 6; i++) {
                if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
                   return datetime_a_f[i] - datetime_b_f[i]
                }
