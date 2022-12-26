@@ -27,8 +27,9 @@ const sidebarMenuData = [
          { id: 2, name: "Shimizu", to: "/tracking/shimizu" },
          { id: 3, name: "Mercari", to: "/tracking/mercari" },
          { id: 4, name: "Web123", to: "/tracking/web123" },
-         { id: 5, name: "Yahoo", to: "/tracking/yahoo" },
-         { id: 6, name: "Mart", to: "/tracking/mart" },
+         { id: 5, name: "Frill", to: "/tracking/frill" },
+         { id: 6, name: "Yahoo", to: "/tracking/yahoo" },
+         { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
    {
@@ -38,15 +39,15 @@ const sidebarMenuData = [
       childs: [
          { id: 1, name: "Order", to: "/" },
          { id: 2, name: "Buy List", to: "/" },
-         { id: 3, name: "Promotion", to: "/" },
-         { id: 4, name: "Gachapong", to: "/" },
-         { id: 5, name: "7-Eleven", to: "/" },
-         { id: 6, name: "Donki", to: "/" },
-         { id: 7, name: "Disney", to: "/" },
-         { id: 8, name: "Disnayland", to: "/" },
+         { id: 3, name: "Promotion", to: "/mart/promotion" },
+         { id: 4, name: "Gachapong", to: "/mart/ewelcia" },
+         { id: 5, name: "7-Eleven", to: "/mart/omni7" },
+         { id: 6, name: "Donki", to: "/mart/donki" },
+         { id: 7, name: "Disney", to: "/mart/disney" },
+         { id: 8, name: "Disnayland", to: "/mart/disneyland" },
       ],
    },
-   { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/" },
+   { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/shipbilling" },
 ]
 
 export default sidebarMenuData

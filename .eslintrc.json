@@ -50,6 +50,7 @@
         "react/no-unknown-property": ["error", { "ignore": ["jsx", "global"] }],
         "react/self-closing-comp": "off",
         "react/function-component-definition": "off",
+        "react/no-unstable-nested-components": "off",
         "@next/next/no-img-element": "off",
         "no-unused-vars": "off"
     }

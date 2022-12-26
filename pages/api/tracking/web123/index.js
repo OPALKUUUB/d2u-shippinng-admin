@@ -6,11 +6,11 @@ async function handler(req, res) {
       await mysql.connect()
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
+         ["123"]
       )
       await mysql.end()
       res.status(200).json({
-         message: "get shimizu tracking success!",
+         message: "get 123 tracking success!",
          trackings,
       })
    }
@@ -23,6 +23,8 @@ async function handler(req, res) {
          weight,
          price,
          voyage,
+         received,
+         finished,
          remark_user,
          remark_admin,
          channel,
@@ -32,7 +34,7 @@ async function handler(req, res) {
       const preference = await mysql.query("SELECT rate_yen FROM preference")
       const { rate_yen } = preference[0]
       await mysql.query(
-         "INSERT INTO trackings (rate_yen, date, user_id, box_no, track_no, weight, price, voyage, remark_user, remark_admin, channel, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+         "INSERT INTO trackings (rate_yen, date, user_id, box_no, track_no, weight, price, voyage, remark_user, remark_admin, received, finished, channel, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
          [
             rate_yen,
             date,
@@ -44,6 +46,8 @@ async function handler(req, res) {
             voyage,
             remark_user,
             remark_admin,
+            received,
+            finished,
             channel,
             date_created,
             date_created,
@@ -51,7 +55,7 @@ async function handler(req, res) {
       )
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
+         ["123"]
       )
       await mysql.end()
       res.status(201).json({ message: "insert data success!", trackings })
@@ -62,6 +66,8 @@ async function handler(req, res) {
          user_id,
          date,
          voyage,
+         received,
+         finished,
          track_no,
          box_no,
          weight,
@@ -71,7 +77,7 @@ async function handler(req, res) {
       } = req.body
       await mysql.connect()
       await mysql.query(
-         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ? WHERE id = ?",
+         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ?, received = ?, finished = ? WHERE id = ?",
          [
             user_id,
             date,
@@ -82,12 +88,14 @@ async function handler(req, res) {
             price,
             remark_user,
             remark_admin,
+            received,
+            finished,
             id,
          ]
       )
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
+         ["123"]
       )
       await mysql.end()
       res.status(200).json({ message: "update data success!", trackings })

@@ -2,7 +2,9 @@ import {
    AppstoreAddOutlined,
    DownOutlined,
    FilterFilled,
+   SearchOutlined,
 } from "@ant-design/icons"
+
 import {
    Button,
    DatePicker,
@@ -15,8 +17,9 @@ import {
    Dropdown,
    Upload,
 } from "antd"
+import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useState, useRef } from "react"
 import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
@@ -35,7 +38,8 @@ const addForm_model = {
    user_id: "",
    box_no: "",
    track_no: "",
-   weight: "",
+   weight: null,
+   price: null,
    voyage: "",
    remark_user: "",
    remark_admin: "",
@@ -76,15 +80,21 @@ function ShimizuTrackingsPage(props) {
    const [fileList, setFileList] = useState([])
    const [trackingId, setTrackingId] = useState("")
    const handleOkUploadImages = async () => {
-      // console.log(deleteImages)
-      // console.log(addImages)
       try {
+         const doneImage =
+            fileList.map((file, index) => ({
+               id: index,
+               name: file.name,
+               status: file.status,
+               uid: file.uid,
+               url: file.url ? file.url : file.thumbUrl,
+            })) || []
          const response = await fetch(
             `/api/tracking/images?tracking_id=${trackingId}`,
             {
                method: "PATCH",
                headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ deleteImages, addImages }),
+               body: JSON.stringify({ doneImage }),
             }
          )
          const responseJson = await response.json()
@@ -94,16 +104,6 @@ function ShimizuTrackingsPage(props) {
       }
    }
    const onChange = ({ fileList: newFileList }) => {
-      const temp1 = fileList.filter((ft) => ft.status === "removed")
-      const temp2 = fileList.filter(
-         (ft) => ft.status === "uploading" && ft.percent === 100
-      )
-      if (temp1.length === 1) {
-         setDeleteImages((prev) => [...prev, temp1[0].id])
-      }
-      if (temp2.length === 1) {
-         setAddImages((prev) => [...prev, temp2[0].thumbUrl])
-      }
       setFileList(newFileList)
    }
    const onPreview = async (file) => {
@@ -129,22 +129,21 @@ function ShimizuTrackingsPage(props) {
          const response = await fetch(`/api/tracking/images?id=${id}`)
          const responseJson = await response.json()
          const { tracking_image } = responseJson
-         setTrackingId(id)
-         setFileList(
-            tracking_image.reduce((accumulator, currentValue, index) => {
-               const a = 0
-               return [
-                  ...accumulator,
-                  {
-                     uid: index,
-                     name: `image${index}.png`,
-                     status: "done",
-                     url: currentValue.image,
-                     id: currentValue.id,
-                  },
-               ]
-            }, [])
+         const new_tracking_image = tracking_image.reduce(
+            (accumulator, currentValue, index) => [
+               ...accumulator,
+               {
+                  uid: index,
+                  name: `image${index}.png`,
+                  status: "done",
+                  url: currentValue.image,
+                  id: currentValue.id,
+               },
+            ],
+            []
          )
+         setTrackingId(id)
+         setFileList(new_tracking_image)
       } catch (err) {
          console.log(err)
       }
@@ -153,17 +152,48 @@ function ShimizuTrackingsPage(props) {
    const handleCancelEditModal = () => {
       setshowEditModal(false)
    }
-   const handleOkEditModal = () => {
-      console.log(selectedRow)
+   const handleOkEditModal = async () => {
+      const body = {
+         date: selectedRow.date,
+         user_id: selectedRow.user_id,
+         box_no: selectedRow.box_no,
+         track_no: selectedRow.track_no,
+         weight: selectedRow.weight,
+         price: selectedRow.price,
+         voyage: selectedRow.voyage,
+         remark_user: selectedRow.remark_user,
+         remark_admin: selectedRow.remark_admin,
+      }
+      try {
+         const response = await fetch(
+            `/api/tracking/shimizu?id=${selectedRow.id}`,
+            {
+               method: "PATCH",
+               headers: {
+                  "Content-Type": "application/json",
+               },
+               body: JSON.stringify(body),
+            }
+         )
+         const responseJson = await response.json()
+         const { trackings } = responseJson
+         setData(trackings)
+         setAddForm(addForm_model)
+         setInputDate(null)
+         setInputVoyageDate(null)
+         setshowEditModal(false)
+      } catch (err) {
+         console.log(err)
+      }
    }
    const handleShowEditModal = (id) => {
       const temp = data.filter((ft) => ft.id === id)
       const tracking = temp[0]
       setInputDate(
-         tracking.date === null ? null : dayjs(tracking.date, "D/M/YYYY")
+         tracking.date === "" ? null : dayjs(tracking.date, "D/M/YYYY")
       )
       setInputVoyageDate(
-         tracking.voyage === null ? null : dayjs(tracking.voyage, "D/M/YYYY")
+         tracking.voyage === "" ? null : dayjs(tracking.voyage, "D/M/YYYY")
       )
       setSelectedRow(tracking)
       setshowEditModal(true)
@@ -185,6 +215,7 @@ function ShimizuTrackingsPage(props) {
          box_no: addForm.box_no,
          track_no: addForm.track_no,
          weight: addForm.weight,
+         price: addForm.price,
          voyage: addForm.voyage,
          remark_user: addForm.remark_user,
          remark_admin: addForm.remark_admin,
@@ -209,20 +240,163 @@ function ShimizuTrackingsPage(props) {
          console.log(err)
       }
    }
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+      confirm()
+      setSearchText(selectedKeys[0])
+      setSearchedColumn(dataIndex)
+   }
+   const handleReset = (clearFilters) => {
+      clearFilters()
+      setSearchText("")
+   }
+   const getColumnSearchProps = (dataIndex) => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1890ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) =>
+         record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+      render: (text) =>
+         searchedColumn === dataIndex ? (
+            <Highlighter
+               highlightStyle={{
+                  backgroundColor: "#ffc069",
+                  padding: 0,
+               }}
+               searchWords={[searchText]}
+               autoEscape
+               textToHighlight={text ? text.toString() : ""}
+            />
+         ) : (
+            text
+         ),
+   })
    const columns = [
       {
          title: "วันที่",
          dataIndex: "date",
          width: "120px",
          key: "date",
+         sorter: (a, b) => {
+            const datetime_a = a.date
+            const date_a_f = datetime_a.split("/")
+            // [y,m,d,h,m,s]
+            const datetime_a_f = [
+               parseInt(date_a_f[2], 10),
+               parseInt(date_a_f[1], 10),
+               parseInt(date_a_f[0], 10),
+            ]
+            const datetime_b = b.date
+            const date_b_f = datetime_b.split("/")
+            const datetime_b_f = [
+               parseInt(date_b_f[2], 10),
+               parseInt(date_b_f[1], 10),
+               parseInt(date_b_f[0], 10),
+            ]
+            for (let i = 0; i < 3; i++) {
+               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
+                  return datetime_a_f[i] - datetime_b_f[i]
+               }
+            }
+            return 0
+         },
+         ...getColumnSearchProps("date"),
       },
       {
          title: "รูปภาพ",
          dataIndex: "id",
          width: "120px",
-         key: "images",
+         key: "id",
          render: (id) => (
-            <button onClick={() => handleShowImages(id)}>ดูรูปภาพ</button>
+            <Button onClick={() => handleShowImages(id)}>ดูรูปภาพ</Button>
          ),
       },
       {
@@ -230,18 +404,21 @@ function ShimizuTrackingsPage(props) {
          dataIndex: "username",
          width: "120px",
          key: "username",
+         ...getColumnSearchProps("username"),
       },
       {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
          render: (text) => (text === null ? "-" : text),
+         ...getColumnSearchProps("track_no"),
       },
       {
          title: "เลขกล่อง",
          dataIndex: "box_no",
          key: "box_no",
          render: (text) => (text === null ? "-" : text),
+         ...getColumnSearchProps("box_no"),
       },
       {
          title: "น้ำหนัก",
@@ -250,10 +427,17 @@ function ShimizuTrackingsPage(props) {
          render: (text) => (text === null ? "-" : text),
       },
       {
+         title: "ราคา",
+         dataIndex: "price",
+         key: "price",
+         render: (text) => (text === null ? "-" : text),
+      },
+      {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
          render: (text) => (text === null ? "-" : text),
+         ...getColumnSearchProps("voyage"),
       },
       {
          title: "จัดการ",
@@ -276,7 +460,7 @@ function ShimizuTrackingsPage(props) {
             return (
                <Space>
                   <Dropdown menu={{ items }}>
-                     <span>
+                     <span style={{ cursor: "pointer" }}>
                         จัดการ <DownOutlined />
                      </span>
                   </Dropdown>
@@ -297,7 +481,14 @@ function ShimizuTrackingsPage(props) {
                   เพิ่มรายการ
                </Button>
             </div>
-            <Table dataSource={data} columns={columns} />
+            <Table
+               dataSource={data}
+               columns={columns}
+               scroll={{
+                  x: 1500,
+                  y: 450,
+               }}
+            />
          </div>
          <Modal
             title="เพิ่มรายการ Shimizu"
@@ -305,7 +496,7 @@ function ShimizuTrackingsPage(props) {
             onCancel={handleCancelAddModal}
             onOk={handleOkAddModal}
          >
-            <div className="AddShimizuTrackingModal">
+            <Space style={{ margin: "10px auto" }}>
                <label>ชื่อลูกค้า: </label>
                <Select
                   value={addForm.user_id}
@@ -335,8 +526,10 @@ function ShimizuTrackingsPage(props) {
                      ]
                   }, [])}
                />
-               {addForm.user_id !== "" && (
-                  <>
+            </Space>
+            {addForm.user_id !== "" && (
+               <>
+                  <Space style={{ marginLeft: 8 }}>
                      <label>วันที่: </label>
                      <DatePicker
                         defaultValue={null}
@@ -360,6 +553,8 @@ function ShimizuTrackingsPage(props) {
                            }
                         }}
                      />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
                      <label>เลขแทรกกิงค์: </label>
                      <Input
                         value={addForm.track_no}
@@ -370,6 +565,8 @@ function ShimizuTrackingsPage(props) {
                            })
                         }
                      />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
                      <label>เลขกล่อง: </label>
                      <Input
                         value={addForm.box_no}
@@ -389,6 +586,19 @@ function ShimizuTrackingsPage(props) {
                               weight: value,
                            })
                         }
+                     />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
+                     <label>ราคา: </label>
+                     <InputNumber
+                        value={addForm.price}
+                        onChange={(value) =>
+                           setAddForm({
+                              ...addForm,
+                              price: value,
+                           })
+                        }
+                        step="0.1"
                      />
                      <label>รอบเรือ: </label>
                      <DatePicker
@@ -412,6 +622,8 @@ function ShimizuTrackingsPage(props) {
                            }
                         }}
                      />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
                      <label>หมายเหตุลูกค้า: </label>
                      <TextArea
                         rows={2}
@@ -423,6 +635,8 @@ function ShimizuTrackingsPage(props) {
                            })
                         }}
                      />
+                  </Space>
+                  <Space>
                      <label>หมายเหตุแอดมิน: </label>
                      <TextArea
                         rows={2}
@@ -434,10 +648,9 @@ function ShimizuTrackingsPage(props) {
                            })
                         }
                      />
-                  </>
-               )}
-               e
-            </div>
+                  </Space>
+               </>
+            )}
          </Modal>
          <Modal
             title="แก้ไขรายการ Shimizu"
@@ -445,7 +658,7 @@ function ShimizuTrackingsPage(props) {
             onCancel={handleCancelEditModal}
             onOk={handleOkEditModal}
          >
-            <div className="container-table">
+            <Space style={{ margin: "10px auto" }}>
                <label>ชื่อลูกค้า: </label>
                <Select
                   value={selectedRow.user_id}
@@ -495,99 +708,100 @@ function ShimizuTrackingsPage(props) {
                      }
                   }}
                />
-            </div>
-            <label>รอบเรือ: </label>
-            <DatePicker
-               value={InputVoyageDate}
-               format="D/M/YYYY"
-               onChange={(value) => {
-                  if (value === null) {
-                     setSelectedRow((prev) => ({
-                        ...prev,
-                        voyage: null,
-                     }))
-                     setInputVoyageDate(null)
-                  } else {
-                     setSelectedRow((prev) => ({
-                        ...prev,
-                        voyage: new Date(value).toLocaleDateString("th-TH"),
-                     }))
-                     setInputVoyageDate(value)
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>เลขแทรกกิงค์: </label>
+               <Input
+                  value={selectedRow.track_no}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        track_no: e.target.value,
+                     })
                   }
-               }}
-            />
-            <label>เลขแทรกกิงค์: </label>
-            <Input
-               value={selectedRow.track_no}
-               onChange={(e) =>
-                  setSelectedRow({
-                     ...selectedRow,
-                     track_no: e.target.value,
-                  })
-               }
-            />
-            <label>เลขกล่อง: </label>
-            <Input
-               value={selectedRow.box_no}
-               onChange={(e) =>
-                  setSelectedRow({
-                     ...selectedRow,
-                     box_no: e.target.value,
-                  })
-               }
-            />
-            <label>น้ำหนัก: </label>
-            <InputNumber
-               value={selectedRow.weight}
-               onChange={(value) =>
-                  setSelectedRow({
-                     ...selectedRow,
-                     weight: value,
-                  })
-               }
-            />
-            <label>รอบเรือ: </label>
-            <DatePicker
-               value={InputVoyageDate}
-               format="D/M/YYYY"
-               onChange={(value) => {
-                  if (value === null) {
-                     setSelectedRow((prev) => ({
-                        ...prev,
-                        voyage: null,
-                     }))
-                     setInputVoyageDate(null)
-                  } else {
-                     setSelectedRow((prev) => ({
-                        ...prev,
-                        voyage: new Date(value).toLocaleDateString("th-TH"),
-                     }))
-                     setInputVoyageDate(value)
+               />
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>เลขกล่อง: </label>
+               <Input
+                  value={selectedRow.box_no}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        box_no: e.target.value,
+                     })
                   }
-               }}
-            />
-            <label>หมายเหตุลูกค้า: </label>
-            <TextArea
-               rows={2}
-               value={selectedRow.remark_user}
-               onChange={(e) => {
-                  setSelectedRow({
-                     ...selectedRow,
-                     remark_user: e.target.value,
-                  })
-               }}
-            />
-            <label>หมายเหตุแอดมิน: </label>
-            <TextArea
-               rows={2}
-               value={selectedRow.remark_admin}
-               onChange={(e) =>
-                  setSelectedRow({
-                     ...selectedRow,
-                     remark_admin: e.target.value,
-                  })
-               }
-            />
+               />
+               <label>น้ำหนัก: </label>
+               <InputNumber
+                  value={selectedRow.weight}
+                  onChange={(value) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        weight: value,
+                     })
+                  }
+               />
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>ราคา: </label>
+               <InputNumber
+                  value={selectedRow.price}
+                  onChange={(value) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        price: value,
+                     })
+                  }
+                  step="0.1"
+               />
+               <label>รอบเรือ: </label>
+               <DatePicker
+                  value={InputVoyageDate}
+                  format="D/M/YYYY"
+                  onChange={(value) => {
+                     if (value === null) {
+                        setSelectedRow((prev) => ({
+                           ...prev,
+                           voyage: null,
+                        }))
+                        setInputVoyageDate(null)
+                     } else {
+                        setSelectedRow((prev) => ({
+                           ...prev,
+                           voyage: new Date(value).toLocaleDateString("th-TH"),
+                        }))
+                        setInputVoyageDate(value)
+                     }
+                  }}
+               />
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>หมายเหตุลูกค้า: </label>
+               <TextArea
+                  rows={2}
+                  value={selectedRow.remark_user}
+                  onChange={(e) => {
+                     setSelectedRow({
+                        ...selectedRow,
+                        remark_user: e.target.value,
+                     })
+                  }}
+               />
+            </Space>
+            <Space>
+               <label>หมายเหตุแอดมิน: </label>
+               <TextArea
+                  rows={2}
+                  value={selectedRow.remark_admin}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        remark_admin: e.target.value,
+                     })
+                  }
+               />
+            </Space>
          </Modal>
          <Modal
             title="เพิ่มรูปภาพ"
@@ -602,7 +816,7 @@ function ShimizuTrackingsPage(props) {
                   onChange={onChange}
                   onPreview={onPreview}
                >
-                  {fileList.length < 3 && "+ Upload"}
+                  {fileList.length < 7 && "+ Upload"}
                </Upload>
             </div>
          </Modal>
