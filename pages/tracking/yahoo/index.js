@@ -1,5 +1,6 @@
 /* eslint-disable prefer-const */
 import {
+   Button,
    DatePicker,
    Dropdown,
    Input,
@@ -8,8 +9,9 @@ import {
    Space,
    Table,
 } from "antd"
+import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useState, useRef } from "react"
 import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
@@ -27,6 +29,10 @@ dayjs.extend(localeData)
 function YahooTrackingsPage(props) {
    const { trackings } = props
    const [data, setData] = useState(trackings)
+   console.log(
+      "data",
+      data.filter((ele) => ele.date.includes("/"))
+   )
    const [selectedRow, setSelectedRow] = useState({})
    const [sortedInfo, setSortedInfo] = useState({})
    const [filteredInfo, setFilteredInfo] = useState({})
@@ -80,6 +86,125 @@ function YahooTrackingsPage(props) {
       setSelectedRow({ ...temp })
       setShowEditModal(true)
    }
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+      confirm()
+      setSearchText(selectedKeys[0])
+      setSearchedColumn(dataIndex)
+   }
+   const handleReset = (clearFilters) => {
+      clearFilters()
+      setSearchText("")
+   }
+   const getColumnSearchProps = (dataIndex) => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1890ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) =>
+         record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+      render: (text) =>
+         searchedColumn === dataIndex ? (
+            <Highlighter
+               highlightStyle={{
+                  backgroundColor: "#ffc069",
+                  padding: 0,
+               }}
+               searchWords={[searchText]}
+               autoEscape
+               textToHighlight={text ? text.toString() : ""}
+            />
+         ) : (
+            text
+         ),
+   })
    const columns = [
       {
          title: "วันที่",
@@ -87,6 +212,30 @@ function YahooTrackingsPage(props) {
          width: "120px",
          key: "date",
          ellipsis: false,
+         sorter: (a, b) => {
+            const datetime_a = a.date
+            const date_a_f = datetime_a.split("/")
+            // [y,m,d,h,m,s]
+            const datetime_a_f = [
+               parseInt(date_a_f[2], 10),
+               parseInt(date_a_f[1], 10),
+               parseInt(date_a_f[0], 10),
+            ]
+            const datetime_b = b.date
+            const date_b_f = datetime_b.split("/")
+            const datetime_b_f = [
+               parseInt(date_b_f[2], 10),
+               parseInt(date_b_f[1], 10),
+               parseInt(date_b_f[0], 10),
+            ]
+            for (let i = 0; i < 3; i++) {
+               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
+                  return datetime_a_f[i] - datetime_b_f[i]
+               }
+            }
+            return 0
+         },
+         ...getColumnSearchProps("date"),
       },
       {
          title: "รูปภาพ",
@@ -223,7 +372,14 @@ function YahooTrackingsPage(props) {
             description="* แสดงรายการประมูลสินค้าที่ลูกค้าสั่งประมูล"
          />
          <div className="container-table">
-            <Table dataSource={data} columns={columns} />
+            <Table
+               dataSource={data}
+               columns={columns}
+               scroll={{
+                  x: 1500,
+                  y: 500,
+               }}
+            />
          </div>
          <Modal
             title="แก้ไขรายการ"

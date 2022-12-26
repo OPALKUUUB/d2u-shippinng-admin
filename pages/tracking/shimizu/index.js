@@ -481,7 +481,14 @@ function ShimizuTrackingsPage(props) {
                   เพิ่มรายการ
                </Button>
             </div>
-            <Table dataSource={data} columns={columns} />
+            <Table
+               dataSource={data}
+               columns={columns}
+               scroll={{
+                  x: 1500,
+                  y: 500,
+               }}
+            />
          </div>
          <Modal
             title="เพิ่มรายการ Shimizu"
