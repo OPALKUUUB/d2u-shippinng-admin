@@ -1,4 +1,4 @@
-import mysql from "../../../lib/db"
+import mysql from "../../../../lib/db"
 
 async function handler(req, res) {
    if (req.method === "GET") {

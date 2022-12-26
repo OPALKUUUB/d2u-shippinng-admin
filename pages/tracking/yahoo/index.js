@@ -223,7 +223,14 @@ function YahooTrackingsPage(props) {
             description="* แสดงรายการประมูลสินค้าที่ลูกค้าสั่งประมูล"
          />
          <div className="container-table">
-            <Table dataSource={data} columns={columns} />
+            <Table
+               dataSource={data}
+               columns={columns}
+               scroll={{
+                  x: 1500,
+                  y: 450,
+               }}
+            />
          </div>
          <Modal
             title="แก้ไขรายการ"

@@ -1,32 +1,41 @@
-import { Button, Table, Dropdown, message, Space } from "antd"
+import { Button, Table, Dropdown, message, Space, Select } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useState } from "react"
+import { useRouter } from "next/router"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
 
 function ShipBilling(props) {
+   const router = useRouter()
    const { voyages } = props
    const [data, setData] = useState([])
-   //    console.log(voyages)
-   const onClick = async ({ key }) => {
-      message.info(`voyage ${key}`)
+   const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
+   const items = voyages.reduce(
+      (accumulator, currentValue) => [
+         ...accumulator,
+         { label: currentValue.voyage, value: currentValue.voyage },
+      ],
+      []
+   )
+   const handleChangeSelect = async (value) => {
+      message.info(`voyage ${value}`)
+      setVoyageSelect(value)
       try {
-         const response = await fetch(`/api/shipbilling?voyage=${key}`)
+         const response = await fetch(`/api/shipbilling?voyage=${value}`)
          const responseJson = await response.json()
-         console.log(responseJson.trackings)
+         // console.log(responseJson.trackings)
          setData(responseJson.trackings)
       } catch (err) {
          console.log(err)
       }
    }
-   const items = voyages.reduce(
-      (accumulator, currentValue) => [
-         ...accumulator,
-         { label: currentValue.voyage, key: currentValue.voyage },
-      ],
-      []
-   )
+   const handleSelectRow = async ( voyage, user_id) => {
+      console.log( voyage, user_id)
+      router.replace(
+         `/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`
+      )
+   }
    const columns = [
       {
          title: "วันที่",
@@ -70,30 +79,49 @@ function ShipBilling(props) {
       },
       {
          title: "จัดการ",
+         fixed: "right",
          dataIndex: "id",
-         width: "120px",
+         width: "80px",
          key: "id",
+         render: (id) => {
+            const tracking_id = id
+            const voyage = voyageSelect
+            return (
+               <button
+                  onClick={() =>
+                     handleSelectRow(
+                        voyage,
+                        data.filter((ft) => ft.id === tracking_id)[0].user_id
+                     )
+                  }
+               >
+                  manage
+               </button>
+            )
+         },
       },
    ]
    return (
       <Fragment>
          <CardHead name="Ship Billing" />
          <div className="container-table">
-            <Dropdown
-               menu={{
-                  items,
-                  onClick,
-               }}
-            >
-               {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-               <a onClick={(e) => e.preventDefault()}>
-                  <Space>
-                     เลือกรอบเรือ
-                     <DownOutlined />
-                  </Space>
-               </a>
-            </Dropdown>
-            <Table dataSource={data} columns={columns} />
+            <Select
+               size="middle"
+               defaultValue={voyageSelect}
+               onChange={handleChangeSelect}
+               style={{ width: 200 }}
+               options={items}
+            />
+            <div style={{ width: "100%" }}>
+               <Table
+                  dataSource={data}
+                  columns={columns}
+                  scroll={{
+                     x: 1500,
+                     y: 450,
+                  }}
+               />
+            </div>
          </div>
          <style jsx>
             {`

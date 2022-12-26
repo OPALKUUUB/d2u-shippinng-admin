@@ -533,7 +533,14 @@ function MercariTrackingsPage(props) {
                   เพิ่มรายการ
                </Button>
             </div>
-            <Table dataSource={data} columns={columns} />
+            <Table
+               dataSource={data}
+               columns={columns}
+               scroll={{
+                  x: 1500,
+                  y: 450,
+               }}
+            />
          </div>
          <Modal
             title="เพิ่มรายการ Mercari"
