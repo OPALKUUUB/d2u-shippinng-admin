@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import {
    AppstoreAddOutlined,
    DownOutlined,
@@ -226,7 +227,7 @@ function FrillPage() {
          const responseJson = await response.json()
          const { trackings } = responseJson
          setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
-         message.destroy("ลบข้อมูลเรียบร้อย!")
+         message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
@@ -413,7 +414,13 @@ function FrillPage() {
          title: "ราคา(฿)",
          dataIndex: "price",
          key: "price",
-         render: (text) => text=== null ? "-" : new Intl.NumberFormat("th-TH",{"currency": "THB", style: "currency"}).format(text)
+         render: (text) =>
+            text === null
+               ? "-"
+               : new Intl.NumberFormat("th-TH", {
+                    currency: "THB",
+                    style: "currency",
+                 }).format(text),
       },
       {
          title: "รอบเรือ(d/m/y)",
