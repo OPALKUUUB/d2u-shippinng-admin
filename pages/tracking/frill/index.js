@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import {
    AppstoreAddOutlined,
    DownOutlined,
@@ -413,7 +414,13 @@ function FrillPage() {
          title: "ราคา(฿)",
          dataIndex: "price",
          key: "price",
-         render: (text) => text=== null ? "-" : new Intl.NumberFormat("th-TH",{"currency": "THB", style: "currency"}).format(text)
+         render: (text) =>
+            text === null
+               ? "-"
+               : new Intl.NumberFormat("th-TH", {
+                    currency: "THB",
+                    style: "currency",
+                 }).format(text),
       },
       {
          title: "รอบเรือ(d/m/y)",
