@@ -6,11 +6,11 @@ async function handler(req, res) {
       await mysql.connect()
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["frill"]
+         ["fril"]
       )
       await mysql.end()
       res.status(200).json({
-         message: "get frill tracking success!",
+         message: "get fril tracking success!",
          trackings,
       })
    }
@@ -55,7 +55,7 @@ async function handler(req, res) {
       )
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["frill"]
+         ["fril"]
       )
       await mysql.end()
       res.status(201).json({ message: "insert data success!", trackings })
@@ -95,7 +95,7 @@ async function handler(req, res) {
       )
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["frill"]
+         ["fril"]
       )
       await mysql.end()
       res.status(200).json({ message: "update data success!", trackings })

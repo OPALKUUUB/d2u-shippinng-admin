@@ -1,10 +1,8 @@
 import {
    AppstoreAddOutlined,
    DownOutlined,
-   FilterFilled,
    SearchOutlined,
 } from "@ant-design/icons"
-
 import {
    Button,
    DatePicker,
@@ -16,59 +14,27 @@ import {
    Space,
    Dropdown,
    Upload,
+   message,
 } from "antd"
 import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState, useRef } from "react"
+import React, { Fragment, useState, useRef, useEffect } from "react"
 import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
-// import ImgCrop from "antd-img-crop"
-import Link from "next/link"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
-// import UploadImages from "../../../components/UploadImages"
+import { addForm_model, trackingForm_model } from "../../../model/tracking"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
-const addForm_model = {
-   date: "",
-   user_id: "",
-   box_no: "",
-   track_no: "",
-   weight: null,
-   price: null,
-   voyage: "",
-   remark_user: "",
-   remark_admin: "",
-   channel: "frill",
-}
-const trackingForm_model = {
-   id: "",
-   username: "",
-   user_id: 1,
-   rate_yen: "",
-   date: "",
-   link: "",
-   price: "",
-   weight: "",
-   track_no: "",
-   box_no: "",
-   voyage: "",
-   channel: "",
-   remark_user: "",
-   remark_admin: "",
-   received: "",
-   finished: "",
-   created_at: "",
-   updated_at: "",
-}
-function FrillPage(props) {
-   const { users } = props
-   const [data, setData] = useState(props.trackings)
+
+function FrillPage() {
+   const [users, setUsers] = useState([])
+   const [data, setData] = useState([])
    const [addForm, setAddForm] = useState(addForm_model)
    const [InputDate, setInputDate] = useState(null)
    const [InputVoyageDate, setInputVoyageDate] = useState(null)
@@ -76,13 +42,13 @@ function FrillPage(props) {
    const [selectedRow, setSelectedRow] = useState(trackingForm_model)
    const [showEditModal, setshowEditModal] = useState(false)
    const [showImagesModal, setShowImagesModal] = useState(false)
-   const [addImages, setAddImages] = useState([])
-   const [deleteImages, setDeleteImages] = useState([])
    const [fileList, setFileList] = useState([])
    const [trackingId, setTrackingId] = useState("")
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+
    const handleOkUploadImages = async () => {
-      // console.log(deleteImages)
-      // console.log(addImages)
       try {
          const doneImage =
             fileList.map((file, index) => ({
@@ -92,39 +58,19 @@ function FrillPage(props) {
                uid: file.uid,
                url: file.url ? file.url : file.thumbUrl,
             })) || []
-         // const response = await fetch(
-         //    `/api/tracking/images?tracking_id=${trackingId}`,
-         //    {
-         //       method: "PATCH",
-         //       headers: { "Content-Type": "application/json" },
-         //       body: JSON.stringify({ deleteImages, addImages }),
-         //    }
-         // )
-         const response = await fetch(
-            `/api/tracking/images?tracking_id=${trackingId}`,
-            {
-               method: "PATCH",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ doneImage }),
-            }
-         )
-         const responseJson = await response.json()
+         await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ doneImage }),
+         })
+         message.success("เพิ่มรูปภาพสำเร็จ!")
          setShowImagesModal(false)
       } catch (err) {
          console.log(err)
+         message.error("เพิ่มรูปภาพผิดพลาด!")
       }
    }
    const onChange = ({ fileList: newFileList }) => {
-      // const temp1 = fileList.filter((ft) => ft.status === "removed")
-      // const temp2 = fileList.filter(
-      //    (ft) => ft.status === "uploading" && ft.percent === 100
-      // )
-      // if (temp1.length === 1) {
-      //    setDeleteImages((prev) => [...prev, temp1[0].id])
-      // }
-      // if (temp2.length === 1) {
-      //    setAddImages((prev) => [...prev, temp2[0].thumbUrl])
-      // }
       setFileList(newFileList)
    }
    const onPreview = async (file) => {
@@ -189,7 +135,7 @@ function FrillPage(props) {
       }
       try {
          const response = await fetch(
-            `/api/tracking/frill?id=${selectedRow.id}`,
+            `/api/tracking/fril?id=${selectedRow.id}`,
             {
                method: "PATCH",
                headers: {
@@ -200,13 +146,15 @@ function FrillPage(props) {
          )
          const responseJson = await response.json()
          const { trackings } = responseJson
-         setData(trackings)
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
+         message.success("แก้ไขข้อมูลสำเร็จ!")
          setshowEditModal(false)
       } catch (err) {
          console.log(err)
+         message.error("แก้ไขข้อมูลผิดพลาด!")
       }
    }
    const handleShowEditModal = (id) => {
@@ -231,6 +179,8 @@ function FrillPage(props) {
    const handleOkAddModal = async () => {
       if (addForm.user_id === "") {
          alert("please select user before add tracking!")
+         message.warning("เลือกลูกค้าก่อนทำการเพิ่มข้อมูล!")
+         return
       }
       const body = {
          date: addForm.date,
@@ -247,7 +197,7 @@ function FrillPage(props) {
          channel: addForm.channel,
       }
       try {
-         const response = await fetch("/api/tracking/frill", {
+         const response = await fetch("/api/tracking/fril", {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
@@ -256,18 +206,18 @@ function FrillPage(props) {
          })
          const responseJson = await response.json()
          const { trackings } = responseJson
-         setData(trackings)
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
+         message.success("เพิ่มข้อมูลสำเร็จ!")
          setShowAddModal(false)
       } catch (err) {
+         message.error("เพิ่มข้อมูลผิดพลาด!")
          console.log(err)
       }
    }
-   const [searchText, setSearchText] = useState("")
-   const [searchedColumn, setSearchedColumn] = useState("")
-   const searchInput = useRef(null)
+
    const handleSearch = (selectedKeys, confirm, dataIndex) => {
       confirm()
       setSearchText(selectedKeys[0])
@@ -285,12 +235,7 @@ function FrillPage(props) {
          clearFilters,
          close,
       }) => (
-         <div
-            style={{
-               padding: 8,
-            }}
-            onKeyDown={(e) => e.stopPropagation()}
-         >
+         <div className="p-[8px]" onKeyDown={(e) => e.stopPropagation()}>
             <Input
                ref={searchInput}
                placeholder={`Search ${dataIndex}`}
@@ -301,10 +246,7 @@ function FrillPage(props) {
                onPressEnter={() =>
                   handleSearch(selectedKeys, confirm, dataIndex)
                }
-               style={{
-                  marginBottom: 8,
-                  display: "block",
-               }}
+               className="mb-[8px] block"
             />
             <Space>
                <Button
@@ -506,6 +448,24 @@ function FrillPage(props) {
          },
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/user")
+         const responseJson = await response.json()
+         setUsers(responseJson.users)
+      })()
+      ;(async () => {
+         const response = await fetch("/api/tracking/fril")
+         const responseJson = await response.json()
+         console.log(responseJson)
+         setData(
+            responseJson.trackings.reduce(
+               (a, c, i) => [...a, { ...c, key: i }],
+               []
+            )
+         )
+      })()
+   }, [])
    return (
       <Fragment>
          <CardHead name="Frill Trackings Page" />
@@ -523,7 +483,7 @@ function FrillPage(props) {
                columns={columns}
                scroll={{
                   x: 1500,
-                  y: 450
+                  y: 450,
                }}
             />
          </div>
@@ -533,7 +493,7 @@ function FrillPage(props) {
             onCancel={handleCancelAddModal}
             onOk={handleOkAddModal}
          >
-            <Space style={{ margin: "10px auto" }}>
+            <Space className="mx-auto my-auto">
                <label>ชื่อลูกค้า: </label>
                <Select
                   value={addForm.user_id}
@@ -552,7 +512,7 @@ function FrillPage(props) {
                         .toLowerCase()
                         .localeCompare((optionB?.label ?? "").toLowerCase())
                   }
-                  options={users.reduce((accumulator, currentValue) => {
+                  options={users?.reduce((accumulator, currentValue) => {
                      const { id, username } = currentValue
                      return [
                         ...accumulator,
@@ -591,7 +551,7 @@ function FrillPage(props) {
                         }}
                      />
                   </Space>
-                  <Space style={{ marginBottom: 10 }}>
+                  <Space className="mb-[10px]">
                      <label>เลขแทรกกิงค์: </label>
                      <Input
                         value={addForm.track_no}
@@ -603,7 +563,7 @@ function FrillPage(props) {
                         }
                      />
                   </Space>
-                  <Space style={{ marginBottom: 10 }}>
+                  <Space className="mb-[10px]">
                      <label>เลขกล่อง: </label>
                      <Input
                         value={addForm.box_no}
@@ -625,7 +585,7 @@ function FrillPage(props) {
                         }
                      />
                   </Space>
-                  <Space style={{ marginBottom: 10 }}>
+                  <Space className="mb-[10px]">
                      <label>ราคา: </label>
                      <InputNumber
                         value={addForm.price}
@@ -660,7 +620,7 @@ function FrillPage(props) {
                         }}
                      />
                   </Space>
-                  <Space style={{ marginBottom: 10 }}>
+                  <Space className="mb-[10px]">
                      <label>หมายเหตุลูกค้า: </label>
                      <TextArea
                         rows={2}
@@ -695,7 +655,7 @@ function FrillPage(props) {
             onCancel={handleCancelEditModal}
             onOk={handleOkEditModal}
          >
-            <Space style={{ margin: "10px auto" }}>
+            <Space className="mx-auto my-[10px]">
                <label>ชื่อลูกค้า: </label>
                <Select
                   value={selectedRow.user_id}
@@ -714,7 +674,7 @@ function FrillPage(props) {
                         .toLowerCase()
                         .localeCompare((optionB?.label ?? "").toLowerCase())
                   }
-                  options={users.reduce((accumulator, currentValue) => {
+                  options={users?.reduce((accumulator, currentValue) => {
                      const { id, username } = currentValue
                      return [
                         ...accumulator,
@@ -746,7 +706,7 @@ function FrillPage(props) {
                   }}
                />
             </Space>
-            <Space style={{ marginBottom: 10 }}>
+            <Space className="mb-[10px]">
                <label>เลขแทรกกิงค์: </label>
                <Input
                   value={selectedRow.track_no}
@@ -758,7 +718,7 @@ function FrillPage(props) {
                   }
                />
             </Space>
-            <Space style={{ marginBottom: 10 }}>
+            <Space className="mb-[10px]">
                <label>เลขกล่อง: </label>
                <Input
                   value={selectedRow.box_no}
@@ -780,7 +740,7 @@ function FrillPage(props) {
                   }
                />
             </Space>
-            <Space style={{ marginBottom: 10 }}>
+            <Space className="mb-[10px]">
                <label>ราคา: </label>
                <InputNumber
                   value={selectedRow.price}
@@ -813,7 +773,7 @@ function FrillPage(props) {
                   }}
                />
             </Space>
-            <Space style={{ marginBottom: 10 }}>
+            <Space className="mb-[10px]">
                <label>รับของ: </label>
                <Select
                   defaultValue={0}
@@ -855,7 +815,7 @@ function FrillPage(props) {
                   ]}
                />
             </Space>
-            <Space style={{ marginBottom: 10 }}>
+            <Space className="mb-[10px]">
                <label>หมายเหตุลูกค้า: </label>
                <TextArea
                   rows={2}
@@ -917,16 +877,7 @@ FrillPage.getLayout = function getLayout(page) {
 }
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   // get trackings shimizu
-   const api_tracking_frill = `/api/tracking/frill`
-   const response = await fetch(api_tracking_frill)
-   const responseJson = await response.json()
-   const { trackings } = responseJson
-   // get users
-   const api_user = `/api/user`
-   const response2 = await fetch(api_user)
-   const respones2Json = await response2.json()
-   const { users } = respones2Json
+
    if (!session) {
       return {
          redirect: {
@@ -936,10 +887,7 @@ export async function getServerSideProps(context) {
       }
    }
    return {
-      props: {
-         trackings,
-         users,
-      },
+      props: { session },
    }
 }
 export default FrillPage
