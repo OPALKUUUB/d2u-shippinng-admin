@@ -1,17 +1,18 @@
 import { Button, Table, Dropdown, message, Space, Select } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
 
 function ShipBilling(props) {
    const router = useRouter()
-   const { voyages } = props
+   // const { voyages } = props
    const [data, setData] = useState([])
    const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
-   const items = voyages.reduce(
+   // const [items, setItems] = useState([])
+   const items = data?.reduce(
       (accumulator, currentValue) => [
          ...accumulator,
          { label: currentValue.voyage, value: currentValue.voyage },
@@ -30,8 +31,8 @@ function ShipBilling(props) {
          console.log(err)
       }
    }
-   const handleSelectRow = async ( voyage, user_id) => {
-      console.log( voyage, user_id)
+   const handleSelectRow = async (voyage, user_id) => {
+      console.log(voyage, user_id)
       router.replace(
          `/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`
       )
@@ -101,6 +102,13 @@ function ShipBilling(props) {
          },
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/shipbilling/voyage")
+         const responseJson = await response.json()
+         setData(responseJson.voyages)
+      })()
+   }, [])
    return (
       <Fragment>
          <CardHead name="Ship Billing" />
@@ -142,10 +150,10 @@ ShipBilling.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   const api = `/api/shipbilling/voyage`
-   const response = await fetch(api)
-   const responseJson = await response.json()
-   const { voyages } = await responseJson
+   // const api = `/api/shipbilling/voyage`
+   // const response = await fetch(api)
+   // const responseJson = await response.json()
+   // const { voyages } = await responseJson
    if (!session) {
       return {
          redirect: {
@@ -156,7 +164,8 @@ export async function getServerSideProps(context) {
    }
    return {
       props: {
-         voyages,
+         // voyages,
+         session,
       },
    }
 }

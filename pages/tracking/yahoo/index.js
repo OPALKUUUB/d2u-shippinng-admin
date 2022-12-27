@@ -5,13 +5,14 @@ import {
    Dropdown,
    Input,
    InputNumber,
+   message,
    Modal,
    Space,
    Table,
 } from "antd"
 import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState, useRef } from "react"
+import React, { Fragment, useState, useRef, useEffect } from "react"
 import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
@@ -27,18 +28,16 @@ dayjs.extend(weekday)
 dayjs.extend(localeData)
 
 function YahooTrackingsPage(props) {
-   const { trackings } = props
-   const [data, setData] = useState(trackings)
-   console.log(
-      "data",
-      data.filter((ele) => ele.date.includes("/"))
-   )
+   const [data, setData] = useState([])
    const [selectedRow, setSelectedRow] = useState({})
    const [sortedInfo, setSortedInfo] = useState({})
    const [filteredInfo, setFilteredInfo] = useState({})
    const [InputDate, setInputDate] = useState(null)
    const [InputVoyageDate, setInputVoyageDate] = useState(null)
    const [showEditModal, setShowEditModal] = useState(false)
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
    const handleOkEditModal = async () => {
       const {
          id,
@@ -67,18 +66,41 @@ function YahooTrackingsPage(props) {
             }),
          })
          const responseJson = await response.json()
-         // console.log(responseJson.trackings)
-         setData(responseJson.trackings)
+         setData(
+            responseJson.trackings.reduce(
+               (a, c, i) => [...a, { ...c, key: i }],
+               []
+            )
+         )
+         message.success("เพิ่มข้อมูลสำเร็จ!")
          setShowEditModal(false)
       } catch (err) {
          console.log(err)
+         message.success("เพิ่มข้อมูลผิดพลาด!")
+      }
+   }
+   const handleDeleteRow = async (id) => {
+      try {
+         const response = await fetch(`/api/tracking/yahoo?id=${id}`, {
+            method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
+         })
+         const responseJson = await response.json()
+         const { trackings } = responseJson
+         message.success("ลบข้อมูลเรียบร้อย!")
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
+      } catch (err) {
+         console.log(err)
+         message.error("ลบข้อมูลผิดพลาด!")
       }
    }
    const handleCancelEditModal = () => {
       setShowEditModal(false)
    }
    const handleShowEditModal = (id) => {
-      const temp = data.filter((ft) => ft.id === id)[0]
+      const temp = data?.filter((ft) => ft.id === id)[0]
       setInputDate(dayjs(temp.date, "D/M/YYYY"))
       setInputVoyageDate(
          temp.voyage === null ? null : dayjs(temp.voyage, "D/M/YYYY")
@@ -86,9 +108,7 @@ function YahooTrackingsPage(props) {
       setSelectedRow({ ...temp })
       setShowEditModal(true)
    }
-   const [searchText, setSearchText] = useState("")
-   const [searchedColumn, setSearchedColumn] = useState("")
-   const searchInput = useRef(null)
+
    const handleSearch = (selectedKeys, confirm, dataIndex) => {
       confirm()
       setSearchText(selectedKeys[0])
@@ -191,6 +211,7 @@ function YahooTrackingsPage(props) {
          }
       },
       render: (text) =>
+         // eslint-disable-next-line no-nested-ternary
          searchedColumn === dataIndex ? (
             <Highlighter
                highlightStyle={{
@@ -201,6 +222,8 @@ function YahooTrackingsPage(props) {
                autoEscape
                textToHighlight={text ? text.toString() : ""}
             />
+         ) : text === "" || text === null ? (
+            "-"
          ) : (
             text
          ),
@@ -235,6 +258,7 @@ function YahooTrackingsPage(props) {
             }
             return 0
          },
+         filteredValue: null,
          ...getColumnSearchProps("date"),
       },
       {
@@ -249,7 +273,7 @@ function YahooTrackingsPage(props) {
          title: "ชื่อลูกค้า",
          dataIndex: "username",
          key: "username",
-         filters: props.trackings.reduce(
+         filters: data?.reduce(
             (accumulator, currentValue) => [
                ...accumulator,
                { text: currentValue.username, value: currentValue.username },
@@ -269,10 +293,11 @@ function YahooTrackingsPage(props) {
          dataIndex: "link",
          key: "link",
          width: "125px",
-         render: (text, record, index) => {
-            const link_code = text.split(
-               "https://page.auctions.yahoo.co.jp/jp/auction/"
-            )
+         render: (text) => {
+            const link_code =
+               text === null
+                  ? "-"
+                  : text.split("https://page.auctions.yahoo.co.jp/jp/auction/")
             return (
                <a href={text} target="_blank" rel="noreferrer">
                   {link_code[1]}
@@ -286,8 +311,9 @@ function YahooTrackingsPage(props) {
          title: "รวม",
          dataIndex: "id",
          key: "sum",
+         filteredValue: null,
          render: (id) => {
-            const payments = data.filter((ft) => ft.id === id)
+            const payments = data?.filter((ft) => ft.id === id)
             const payment = payments[0]
             const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
             if (!delivery_fee || !tranfer_fee) {
@@ -351,7 +377,11 @@ function YahooTrackingsPage(props) {
                   label: "แก้ไข",
                   onClick: () => handleShowEditModal(id),
                },
-               { key: "2", label: "ลบรายการ" },
+               {
+                  key: "2",
+                  label: "ลบรายการ",
+                  onClick: () => handleDeleteRow(id),
+               },
             ]
             return (
                <Space>
@@ -365,6 +395,18 @@ function YahooTrackingsPage(props) {
          },
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/tracking/yahoo")
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings.reduce(
+               (a, c, i) => [...a, { ...c, key: i }],
+               []
+            )
+         )
+      })()
+   }, [])
    return (
       <Fragment>
          <CardHead
@@ -504,9 +546,6 @@ YahooTrackingsPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   // eslint-disable-next-line prefer-template
-   const api = "/api/tracking/yahoo"
-   const response = await fetch(api).then((res) => res.json())
    if (!session) {
       return {
          redirect: {
@@ -517,7 +556,7 @@ export async function getServerSideProps(context) {
    }
    return {
       props: {
-         trackings: response.trackings,
+         session,
       },
    }
 }

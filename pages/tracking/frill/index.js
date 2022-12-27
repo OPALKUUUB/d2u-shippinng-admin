@@ -67,8 +67,8 @@ function FrillPage() {
          message.success("เพิ่มรูปภาพสำเร็จ!")
          setShowImagesModal(false)
       } catch (err) {
-         console.log(err)
          message.error("เพิ่มรูปภาพผิดพลาด!")
+         console.log(err)
       }
    }
    const onChange = ({ fileList: newFileList }) => {
@@ -88,11 +88,12 @@ function FrillPage() {
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
    }
+
    const handleCancelImagesModal = () => {
       setShowImagesModal(false)
    }
+
    const handleShowImages = async (id) => {
-      // set images by fetch id tracking
       try {
          const response = await fetch(`/api/tracking/images?id=${id}`)
          const responseJson = await response.json()
@@ -179,7 +180,6 @@ function FrillPage() {
    }
    const handleOkAddModal = async () => {
       if (addForm.user_id === "") {
-         alert("please select user before add tracking!")
          message.warning("เลือกลูกค้าก่อนทำการเพิ่มข้อมูล!")
          return
       }
