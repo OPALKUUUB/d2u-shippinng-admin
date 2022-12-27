@@ -48,7 +48,7 @@ async function handler(req, res) {
             remark_admin,
             received,
             finished,
-            channel,
+            'fril',
             date_created,
             date_created,
          ]
