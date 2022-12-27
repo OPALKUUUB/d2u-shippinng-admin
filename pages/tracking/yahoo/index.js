@@ -80,15 +80,17 @@ function YahooTrackingsPage(props) {
       }
    }
    const handleDeleteRow = async (id) => {
-      console.log("in")
       try {
          const response = await fetch(`/api/tracking/yahoo?id=${id}`, {
             method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
          })
          const responseJson = await response.json()
          const { trackings } = responseJson
+         message.success("ลบข้อมูลเรียบร้อย!")
          setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
-         message.destroy("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
@@ -256,6 +258,7 @@ function YahooTrackingsPage(props) {
             }
             return 0
          },
+         filteredValue: null,
          ...getColumnSearchProps("date"),
       },
       {
@@ -291,9 +294,10 @@ function YahooTrackingsPage(props) {
          key: "link",
          width: "125px",
          render: (text) => {
-            const link_code = text.split(
-               "https://page.auctions.yahoo.co.jp/jp/auction/"
-            )
+            const link_code =
+               text === null
+                  ? "-"
+                  : text.split("https://page.auctions.yahoo.co.jp/jp/auction/")
             return (
                <a href={text} target="_blank" rel="noreferrer">
                   {link_code[1]}
@@ -307,6 +311,7 @@ function YahooTrackingsPage(props) {
          title: "รวม",
          dataIndex: "id",
          key: "sum",
+         filteredValue: null,
          render: (id) => {
             const payments = data?.filter((ft) => ft.id === id)
             const payment = payments[0]
