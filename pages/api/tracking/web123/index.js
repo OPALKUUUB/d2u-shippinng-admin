@@ -99,6 +99,16 @@ async function handler(req, res) {
       )
       await mysql.end()
       res.status(200).json({ message: "update data success!", trackings })
+   } else if (req.method === "DELETE") {
+      const id = parseInt(req.query.id, 10)
+      await mysql.connect()
+      await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      const trackings = await mysql.query(
+         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
+         ["123"]
+      )
+      await mysql.end()
+      res.status(200).json({ message: "delete row successful !", trackings })
    }
 }
 
