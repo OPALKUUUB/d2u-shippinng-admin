@@ -218,6 +218,21 @@ function FrillPage() {
       }
    }
 
+   const handleDeleteRow = async (id) => {
+      try {
+         const response = await fetch(`/api/tracking/fril?id=${id}`, {
+            method: "DELETE",
+         })
+         const responseJson = await response.json()
+         const { trackings } = responseJson
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
+         message.destroy("ลบข้อมูลเรียบร้อย!")
+      } catch (err) {
+         console.log(err)
+         message.error("ลบข้อมูลผิดพลาด!")
+      }
+   }
+
    const handleSearch = (selectedKeys, confirm, dataIndex) => {
       confirm()
       setSearchText(selectedKeys[0])
@@ -312,6 +327,7 @@ function FrillPage() {
          }
       },
       render: (text) =>
+         // eslint-disable-next-line no-nested-ternary
          searchedColumn === dataIndex ? (
             <Highlighter
                highlightStyle={{
@@ -322,6 +338,8 @@ function FrillPage() {
                autoEscape
                textToHighlight={text ? text.toString() : ""}
             />
+         ) : text === "" || text === null ? (
+            "-"
          ) : (
             text
          ),
@@ -377,46 +395,53 @@ function FrillPage() {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
-         render: (text) => (text === null ? "-" : text),
          ...getColumnSearchProps("track_no"),
       },
       {
          title: "เลขกล่อง",
          dataIndex: "box_no",
          key: "box_no",
-         render: (text) => (text === null ? "-" : text),
          ...getColumnSearchProps("box_no"),
       },
       {
-         title: "น้ำหนัก",
+         title: "น้ำหนัก(กก.)",
          dataIndex: "weight",
          key: "weight",
          render: (text) => (text === null ? "-" : text),
       },
       {
-         title: "ราคา",
+         title: "ราคา(฿)",
          dataIndex: "price",
          key: "price",
-         render: (text) => (text === null ? "-" : text),
+         render: (text) => text=== null ? "-" : new Intl.NumberFormat("th-TH",{"currency": "THB", style: "currency"}).format(text)
       },
       {
-         title: "รอบเรือ",
+         title: "รอบเรือ(d/m/y)",
          dataIndex: "voyage",
          key: "voyage",
-         render: (text) => (text === null ? "-" : text),
          ...getColumnSearchProps("voyage"),
       },
       {
          title: "รับของ",
          dataIndex: "received",
          key: "received",
-         render: (text) => (text ? "รับของเรียบร้อย" : "ยังไม่ได้รับของ"),
+         render: (text) =>
+            text ? (
+               <span className="text-green-600">รับของเรียบร้อย</span>
+            ) : (
+               <span className="text-yellow-600">ยังไม่ได้รับของ</span>
+            ),
       },
       {
          title: "Done",
          dataIndex: "finished",
          key: "finished",
-         render: (text) => (text ? "Done" : "Not Done"),
+         render: (text) =>
+            text ? (
+               <span className="text-green-300">Done</span>
+            ) : (
+               <span className="text-yellow-300">Not Done</span>
+            ),
       },
       {
          title: "จัดการ",
@@ -434,12 +459,13 @@ function FrillPage() {
                {
                   key: "2",
                   label: "ลบ",
+                  onClick: () => handleDeleteRow(id),
                },
             ]
             return (
                <Space>
                   <Dropdown menu={{ items }}>
-                     <span style={{ cursor: "pointer" }}>
+                     <span className="cursor-pointer">
                         จัดการ <DownOutlined />
                      </span>
                   </Dropdown>
@@ -457,7 +483,8 @@ function FrillPage() {
       ;(async () => {
          const response = await fetch("/api/tracking/fril")
          const responseJson = await response.json()
-         console.log(responseJson)
+         // console.log(responseJson)
+         // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
          setData(
             responseJson.trackings.reduce(
                (a, c, i) => [...a, { ...c, key: i }],
@@ -469,7 +496,7 @@ function FrillPage() {
    return (
       <Fragment>
          <CardHead name="Frill Trackings Page" />
-         <div className="container-table">
+         <div className="m-[10px] p-[10px] bg-white">
             <div style={{ marginBottom: "10px" }}>
                <Button
                   icon={<AppstoreAddOutlined />}
@@ -859,15 +886,6 @@ function FrillPage() {
                </Upload>
             </div>
          </Modal>
-         <style jsx>
-            {`
-               .container-table {
-                  margin: 10px;
-                  background: white;
-                  padding: 10px;
-               }
-            `}
-         </style>
       </Fragment>
    )
 }
