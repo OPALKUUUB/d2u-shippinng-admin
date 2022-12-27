@@ -233,7 +233,7 @@ function Web123Page() {
          const responseJson = await response.json()
          const { trackings } = responseJson
          setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
-         message.destroy("ลบข้อมูลเรียบร้อย!")
+         message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
