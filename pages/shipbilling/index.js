@@ -1,11 +1,11 @@
-import { Button, Table, message, Select } from "antd"
+import { Table, message, Select } from "antd"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
 
-function ShipBilling(props) {
+function ShipBilling() {
    const router = useRouter()
    const [data, setData] = useState([])
    const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
@@ -24,7 +24,7 @@ function ShipBilling(props) {
    }
    const handleSelectRow = async (voyage, user_id) => {
       console.log(voyage, user_id)
-      router.replace(
+      router.push(
          `/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`
       )
    }
@@ -146,6 +146,7 @@ function ShipBilling(props) {
 ShipBilling.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
 }
+
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
