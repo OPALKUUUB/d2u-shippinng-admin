@@ -24,7 +24,7 @@ function ShipBilling(props) {
    }
    const handleSelectRow = async (voyage, user_id) => {
       console.log(voyage, user_id)
-      router.replace(
+      router.push(
          `/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`
       )
    }

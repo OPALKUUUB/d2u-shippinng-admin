@@ -256,7 +256,7 @@ function InvoicePage({ user_id, voyage }) {
    ]
    return (
       <div className="w-[90vw] mx-auto">
-         <button className="bg-black text-white p-2 mt-3" onClick={() => router.replace("/shipbilling")}>
+         <button className="bg-black text-white p-2 mt-3" onClick={() => router.push("/shipbilling")}>
             {"<<"} ย้อนกลับ
          </button>
          <div className="flex px-4 py-2">
