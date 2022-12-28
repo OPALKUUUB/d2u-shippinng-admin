@@ -1,10 +1,9 @@
+/* eslint-disable indent */
 import {
    AppstoreAddOutlined,
    DownOutlined,
-   FilterFilled,
    SearchOutlined,
 } from "@ant-design/icons"
-
 import {
    Button,
    DatePicker,
@@ -16,59 +15,27 @@ import {
    Space,
    Dropdown,
    Upload,
+   message,
 } from "antd"
 import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState, useRef } from "react"
+import React, { Fragment, useState, useRef, useEffect } from "react"
 import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
-// import ImgCrop from "antd-img-crop"
-import Link from "next/link"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
-// import UploadImages from "../../../components/UploadImages"
+import { addForm_model, trackingForm_model } from "../../../model/tracking"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
-const addForm_model = {
-   date: "",
-   user_id: "",
-   box_no: "",
-   track_no: "",
-   weight: null,
-   price: null,
-   voyage: "",
-   remark_user: "",
-   remark_admin: "",
-   channel: "web123",
-}
-const trackingForm_model = {
-   id: "",
-   username: "",
-   user_id: 1,
-   rate_yen: "",
-   date: "",
-   link: "",
-   price: "",
-   weight: "",
-   track_no: "",
-   box_no: "",
-   voyage: "",
-   channel: "",
-   remark_user: "",
-   remark_admin: "",
-   received: "",
-   finished: "",
-   created_at: "",
-   updated_at: "",
-}
-function Web123Page(props) {
-   const { users } = props
-   const [data, setData] = useState(props.trackings)
+
+function Web123Page() {
+   const [users, setUsers] = useState([])
+   const [data, setData] = useState([])
    const [addForm, setAddForm] = useState(addForm_model)
    const [InputDate, setInputDate] = useState(null)
    const [InputVoyageDate, setInputVoyageDate] = useState(null)
@@ -76,13 +43,13 @@ function Web123Page(props) {
    const [selectedRow, setSelectedRow] = useState(trackingForm_model)
    const [showEditModal, setshowEditModal] = useState(false)
    const [showImagesModal, setShowImagesModal] = useState(false)
-   const [addImages, setAddImages] = useState([])
-   const [deleteImages, setDeleteImages] = useState([])
    const [fileList, setFileList] = useState([])
    const [trackingId, setTrackingId] = useState("")
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+
    const handleOkUploadImages = async () => {
-      // console.log(deleteImages)
-      // console.log(addImages)
       try {
          const doneImage =
             fileList.map((file, index) => ({
@@ -92,41 +59,23 @@ function Web123Page(props) {
                uid: file.uid,
                url: file.url ? file.url : file.thumbUrl,
             })) || []
-         // const response = await fetch(
-         //    `/api/tracking/images?tracking_id=${trackingId}`,
-         //    {
-         //       method: "PATCH",
-         //       headers: { "Content-Type": "application/json" },
-         //       body: JSON.stringify({ deleteImages, addImages }),
-         //    }
-         // )
-         const response = await fetch(
-            `/api/tracking/images?tracking_id=${trackingId}`,
-            {
-               method: "PATCH",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ doneImage }),
-            }
-         )
-         const responseJson = await response.json()
+         await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ doneImage }),
+         })
+         message.success("เพิ่มรูปภาพสำเร็จ!")
          setShowImagesModal(false)
       } catch (err) {
+         message.error("เพิ่มรูปภาพผิดพลาด!")
          console.log(err)
       }
    }
+
    const onChange = ({ fileList: newFileList }) => {
-      // const temp1 = fileList.filter((ft) => ft.status === "removed")
-      // const temp2 = fileList.filter(
-      //    (ft) => ft.status === "uploading" && ft.percent === 100
-      // )
-      // if (temp1.length === 1) {
-      //    setDeleteImages((prev) => [...prev, temp1[0].id])
-      // }
-      // if (temp2.length === 1) {
-      //    setAddImages((prev) => [...prev, temp2[0].thumbUrl])
-      // }
       setFileList(newFileList)
    }
+
    const onPreview = async (file) => {
       let src = file.url
       if (!src) {
@@ -141,11 +90,12 @@ function Web123Page(props) {
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
    }
+
    const handleCancelImagesModal = () => {
       setShowImagesModal(false)
    }
+
    const handleShowImages = async (id) => {
-      // set images by fetch id tracking
       try {
          const response = await fetch(`/api/tracking/images?id=${id}`)
          const responseJson = await response.json()
@@ -170,9 +120,11 @@ function Web123Page(props) {
       }
       setShowImagesModal(true)
    }
+
    const handleCancelEditModal = () => {
       setshowEditModal(false)
    }
+
    const handleOkEditModal = async () => {
       const body = {
          date: selectedRow.date,
@@ -200,12 +152,14 @@ function Web123Page(props) {
          )
          const responseJson = await response.json()
          const { trackings } = responseJson
-         setData(trackings)
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
+         message.success("แก้ไขข้อมูลสำเร็จ!")
          setshowEditModal(false)
       } catch (err) {
+         message.error("แก้ไขข้อมูลผิดพลาด!")
          console.log(err)
       }
    }
@@ -225,12 +179,15 @@ function Web123Page(props) {
    const handleCancelAddModal = () => {
       setShowAddModal(false)
    }
+
    const handleOpenAddModal = () => {
       setShowAddModal(true)
    }
+
    const handleOkAddModal = async () => {
       if (addForm.user_id === "") {
-         alert("please select user before add tracking!")
+         message.warning("เลือกลูกค้าก่อนทำการเพิ่มข้อมูล!")
+         return
       }
       const body = {
          date: addForm.date,
@@ -256,18 +213,33 @@ function Web123Page(props) {
          })
          const responseJson = await response.json()
          const { trackings } = responseJson
-         setData(trackings)
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
+         message.success("เพิ่มข้อมูลสำเร็จ!")
          setShowAddModal(false)
       } catch (err) {
          console.log(err)
+         message.error("เพิ่มข้อมูลผิดพลาด!")
       }
    }
-   const [searchText, setSearchText] = useState("")
-   const [searchedColumn, setSearchedColumn] = useState("")
-   const searchInput = useRef(null)
+
+   const handleDeleteRow = async (id) => {
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "DELETE",
+         })
+         const responseJson = await response.json()
+         const { trackings } = responseJson
+         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
+         message.success("ลบข้อมูลเรียบร้อย!")
+      } catch (err) {
+         console.log(err)
+         message.error("ลบข้อมูลผิดพลาด!")
+      }
+   }
+
    const handleSearch = (selectedKeys, confirm, dataIndex) => {
       confirm()
       setSearchText(selectedKeys[0])
@@ -370,6 +342,7 @@ function Web123Page(props) {
          }
       },
       render: (text) =>
+         // eslint-disable-next-line no-nested-ternary
          searchedColumn === dataIndex ? (
             <Highlighter
                highlightStyle={{
@@ -380,6 +353,8 @@ function Web123Page(props) {
                autoEscape
                textToHighlight={text ? text.toString() : ""}
             />
+         ) : text === "" || text === null ? (
+            "-"
          ) : (
             text
          ),
@@ -435,14 +410,12 @@ function Web123Page(props) {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
-         render: (text) => (text === null ? "-" : text),
          ...getColumnSearchProps("track_no"),
       },
       {
          title: "เลขกล่อง",
          dataIndex: "box_no",
          key: "box_no",
-         render: (text) => (text === null ? "-" : text),
          ...getColumnSearchProps("box_no"),
       },
       {
@@ -455,26 +428,41 @@ function Web123Page(props) {
          title: "ราคา",
          dataIndex: "price",
          key: "price",
-         render: (text) => (text === null ? "-" : text),
+         render: (text) =>
+            text === null
+               ? "-"
+               : new Intl.NumberFormat("th-TH", {
+                    currency: "THB",
+                    style: "currency",
+                 }).format(text),
       },
       {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
-         render: (text) => (text === null ? "-" : text),
          ...getColumnSearchProps("voyage"),
       },
       {
          title: "Preorder",
          dataIndex: "received",
          key: "received",
-         render: (text) => (text ? "Preorder" : "Not Preorder"),
+         render: (text) =>
+            text ? (
+               <span className="text-green-600">preorder</span>
+            ) : (
+               <span className="text-yellow-600">not preorder</span>
+            ),
       },
       {
          title: "Done",
          dataIndex: "finished",
          key: "finished",
-         render: (text) => (text ? "Done" : "Not Done"),
+         render: (text) =>
+            text ? (
+               <span className="text-green-300">Done</span>
+            ) : (
+               <span className="text-yellow-300">Not Done</span>
+            ),
       },
       {
          title: "จัดการ",
@@ -492,12 +480,13 @@ function Web123Page(props) {
                {
                   key: "2",
                   label: "ลบ",
+                  onClick: () => handleDeleteRow(id),
                },
             ]
             return (
                <Space>
                   <Dropdown menu={{ items }}>
-                     <span style={{ cursor: "pointer" }}>
+                     <span className="cursor-pointer">
                         จัดการ <DownOutlined />
                      </span>
                   </Dropdown>
@@ -506,6 +495,25 @@ function Web123Page(props) {
          },
       },
    ]
+   useEffect(() => {
+      ;(async () => {
+         const response = await fetch("/api/user")
+         const responseJson = await response.json()
+         setUsers(responseJson.users)
+      })()
+      ;(async () => {
+         const response = await fetch("/api/tracking/fril")
+         const responseJson = await response.json()
+         // console.log(responseJson)
+         // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
+         setData(
+            responseJson.trackings.reduce(
+               (a, c, i) => [...a, { ...c, key: i }],
+               []
+            )
+         )
+      })()
+   }, [])
    return (
       <Fragment>
          <CardHead name="Web123 Trackings Page" />
@@ -917,16 +925,6 @@ Web123Page.getLayout = function getLayout(page) {
 }
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   // get trackings shimizu
-   const api_tracking_web123 = `/api/tracking/web123`
-   const response = await fetch(api_tracking_web123)
-   const responseJson = await response.json()
-   const { trackings } = responseJson
-   // get users
-   const api_user = `/api/user`
-   const response2 = await fetch(api_user)
-   const respones2Json = await response2.json()
-   const { users } = respones2Json
    if (!session) {
       return {
          redirect: {
@@ -937,8 +935,7 @@ export async function getServerSideProps(context) {
    }
    return {
       props: {
-         trackings,
-         users,
+         session,
       },
    }
 }
