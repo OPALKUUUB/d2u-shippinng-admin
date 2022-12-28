@@ -1,5 +1,4 @@
-import { Button, Table, Dropdown, message, Space, Select } from "antd"
-import { DownOutlined } from "@ant-design/icons"
+import { Button, Table, message, Select } from "antd"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useState } from "react"
 import { useRouter } from "next/router"
@@ -8,17 +7,9 @@ import Layout from "../../components/layout/layout"
 
 function ShipBilling(props) {
    const router = useRouter()
-   // const { voyages } = props
    const [data, setData] = useState([])
    const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
-   // const [items, setItems] = useState([])
-   const items = data?.reduce(
-      (accumulator, currentValue) => [
-         ...accumulator,
-         { label: currentValue.voyage, value: currentValue.voyage },
-      ],
-      []
-   )
+   const [items, setItems] = useState([])
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
       setVoyageSelect(value)
@@ -106,7 +97,15 @@ function ShipBilling(props) {
       ;(async () => {
          const response = await fetch("/api/shipbilling/voyage")
          const responseJson = await response.json()
-         setData(responseJson.voyages)
+         setItems(
+            responseJson.voyages.reduce(
+               (accumulator, currentValue) => [
+                  ...accumulator,
+                  { label: currentValue.voyage, value: currentValue.voyage },
+               ],
+               []
+            )
+         )
       })()
    }, [])
    return (
