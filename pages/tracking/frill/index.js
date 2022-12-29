@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import {
    AppstoreAddOutlined,
    DownOutlined,
@@ -66,8 +67,8 @@ function FrillPage() {
          message.success("เพิ่มรูปภาพสำเร็จ!")
          setShowImagesModal(false)
       } catch (err) {
-         console.log(err)
          message.error("เพิ่มรูปภาพผิดพลาด!")
+         console.log(err)
       }
    }
    const onChange = ({ fileList: newFileList }) => {
@@ -87,11 +88,12 @@ function FrillPage() {
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
    }
+
    const handleCancelImagesModal = () => {
       setShowImagesModal(false)
    }
+
    const handleShowImages = async (id) => {
-      // set images by fetch id tracking
       try {
          const response = await fetch(`/api/tracking/images?id=${id}`)
          const responseJson = await response.json()
@@ -178,7 +180,6 @@ function FrillPage() {
    }
    const handleOkAddModal = async () => {
       if (addForm.user_id === "") {
-         alert("please select user before add tracking!")
          message.warning("เลือกลูกค้าก่อนทำการเพิ่มข้อมูล!")
          return
       }
@@ -226,7 +227,7 @@ function FrillPage() {
          const responseJson = await response.json()
          const { trackings } = responseJson
          setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
-         message.destroy("ลบข้อมูลเรียบร้อย!")
+         message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
@@ -413,7 +414,13 @@ function FrillPage() {
          title: "ราคา(฿)",
          dataIndex: "price",
          key: "price",
-         render: (text) => text=== null ? "-" : new Intl.NumberFormat("th-TH",{"currency": "THB", style: "currency"}).format(text)
+         render: (text) =>
+            text === null
+               ? "-"
+               : new Intl.NumberFormat("th-TH", {
+                    currency: "THB",
+                    style: "currency",
+                 }).format(text),
       },
       {
          title: "รอบเรือ(d/m/y)",

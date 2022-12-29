@@ -5,11 +5,46 @@ async function handler(req, res) {
    if (req.method === "GET") {
       const { voyage } = req.query
       await mysql.connect()
-      const trackings = await mysql.query(
-         "SELECT `trackings`.*, users.username,ship_billing.id as shipbilling_id, ship_billing.payment_type, ship_billing.invoice_notificate, ship_billing.check, ship_billing.remark FROM `trackings` JOIN users ON `trackings`.user_id = users.id LEFT JOIN ship_billing ON ship_billing.voyage = trackings.voyage WHERE trackings.voyage = ?",
+      const trackings_by_voyage = await mysql.query(
+         "SELECT trackings.user_id, users.username, trackings.voyage FROM trackings JOIN users ON users.id = trackings.user_id WHERE trackings.voyage = ? GROUP BY trackings.user_id",
          [voyage]
       )
-      // console.log(trackings)
+      const ship_billing = await mysql.query(
+         `SELECT
+         ship_billing.id as shipbilling_id,
+         ship_billing.user_id,
+         ship_billing.voyage,
+         ship_billing.payment_type,
+         ship_billing.invoice_notificate,
+         ship_billing.check,
+         ship_billing.remark
+         FROM ship_billing 
+         WHERE voyage = ?`,
+         [voyage]
+      )
+      const date = genDate()
+      const trackings = trackings_by_voyage.reduce((a, c) => {
+         const billing = ship_billing.filter(
+            (ft) => ft.voyage === c.voyage && ft.user_id === c.user_id
+         )
+         if (billing.length === 0) {
+            return [
+               ...a,
+               {
+                  shipbilling_id: null,
+                  user_id: c.user_id,
+                  username: c.username,
+                  created_at: date,
+                  voyage,
+                  payment_type: null,
+                  invoice_notificate: null,
+                  check: null,
+                  remark: null,
+               },
+            ]
+         }
+         return [...a, { ...c, ...billing[0] }]
+      }, [])
       await mysql.end()
       res.status(200).json({
          message: "get disneyland product success!",
@@ -22,16 +57,25 @@ async function handler(req, res) {
       const users = await mysql.query("SELECT * FROM users WHERE id = ?", [
          user_id,
       ])
-      const trackings = await mysql.query(
+      const trackings_user = await mysql.query(
          `
             SELECT *
             FROM trackings
             WHERE
-            user_id = ? AND
-            voyage = ?
+            user_id = ?
          `,
-         [user_id, voyage]
+         [user_id]
       )
+      const trackings = trackings_user.filter((ft) => ft.voyage === voyage)
+      const point_current = trackings_user.reduce((a, c) => {
+         const price = c.price === null ? 0 : c.price
+         const weight = c.weight === null ? 0 : c.weight
+         const rate_yen = c.rate_yen === null ? 0.29 : c.rate_yen
+         const point = Math.ceil(price / rate_yen / 2000) + weight
+         // console.log(price, weight, rate_yen)
+         return a + point
+      }, 0)
+      // console.log(point_current)
       // eslint-disable-next-line prefer-destructuring
       const count_billing = await mysql.query(
          "SELECT COUNT(*) AS count FROM ship_billing WHERE voyage = ? and user_id = ?",
@@ -50,20 +94,20 @@ async function handler(req, res) {
             "SELECT * FROM ship_billing WHERE voyage = ? and user_id = ?",
             [voyage, user_id]
          )
-         console.log(result)
+         // console.log(result)
          shipbilling_id = result[0].id
       }
       const billings = await mysql.query(
          "SELECT * FROM ship_billing WHERE id = ? ",
          [shipbilling_id]
       )
-      console.log(billings)
+      // console.log(billings)
       await mysql.end()
       res.status(200).json({
          message: "get data from user and voyage success",
          trackings,
          billing: billings[0],
-         user: users[0],
+         user: {...users[0], point_current},
       })
    } else if (req.method === "PATCH") {
       const id = parseInt(req.query.id, 10)
