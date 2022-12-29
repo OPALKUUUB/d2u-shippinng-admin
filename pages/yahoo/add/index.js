@@ -1,4 +1,4 @@
-import { Select } from "antd"
+import { message, Select } from "antd"
 import axios from "axios"
 import { getSession } from "next-auth/react"
 import { useRouter } from "next/router"
@@ -57,11 +57,12 @@ function YahooAddPage(props) {
          alert("ราคาประมูลต่ำเกินไป")
          return
       }
-      console.log(nameUserInput)
+      console.log(nameUserInput, users)
       // eslint-disable-next-line prefer-const
-      let userFilter = users.filter((ft) => ft.username.includes(nameUserInput))
+      let userFilter = users.filter((ft) => ft?.value === nameUserInput)
       if (userFilter.length === 0) {
-         alert("เลือกผู้ประมูล")
+         message.warning("เลือกผู้ประมูล")
+         return
       }
       const user_id = userFilter[0].id
       const body = {
@@ -90,7 +91,7 @@ function YahooAddPage(props) {
          const responseJson = await response.json()
          setUsers(
             responseJson.users.reduce(
-               (a, c) => [...a, { label: c.username, value: c.username }],
+               (a, c) => [...a, { label: c.username, value: c.username, id: c.id }],
                []
             )
          )
