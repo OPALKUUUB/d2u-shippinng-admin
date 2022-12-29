@@ -97,6 +97,42 @@ async function handler(req, res) {
          message: "update yahoo tracking success!",
          trackings: result[1],
       })
+   }else if (req.method === "DELETE") {
+      const id = parseInt(req.query.id, 10)
+      await mysql.connect()
+      await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      const trackings = await mysql.query(
+         `SELECT 
+            trackings.*,
+            ${"`yahoo-auction-payment`"}.bid,
+            ${"`yahoo-auction-payment`"}.tranfer_fee,
+            ${"`yahoo-auction-payment`"}.delivery_fee,
+            ${"`yahoo-auction-payment`"}.rate_yen,
+            ${"`yahoo-auction-order`"}.image,
+            ${"`yahoo-auction-order`"}.link,
+            ${"`yahoo-auction-payment`"}.rate_yen,
+            users.username 
+         FROM 
+            trackings
+         JOIN 
+            ${"`yahoo-auction-payment`"}
+         ON 
+            ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
+         JOIN 
+            ${"`yahoo-auction-order`"}
+         ON 
+            ${"`yahoo-auction-order`"}.payment_id = ${"`yahoo-auction-payment`"}.id
+         JOIN 
+            users 
+         ON 
+            users.id = ${"`yahoo-auction-order`"}.user_id 
+         WHERE 
+            channel = ?`,
+         ["yahoo"]
+      )
+      await mysql.end()
+      console.log(trackings)
+      res.status(200).json({ message: "delete row successful !", trackings })
    }
 }
 
