@@ -256,7 +256,10 @@ function InvoicePage({ user_id, voyage }) {
    ]
    return (
       <div className="w-[90vw] mx-auto">
-         <button className="bg-black text-white p-2 mt-3 fixed top-2 left-3 z-10" onClick={() => router.push("/shipbilling")}>
+         <button
+            className="bg-black text-white p-2 mt-3 fixed top-2 left-3 z-10"
+            onClick={() => router.push("/shipbilling")}
+         >
             {"<<"} ย้อนกลับ
          </button>
          <div className="flex px-4 py-2">
@@ -324,22 +327,12 @@ function InvoicePage({ user_id, voyage }) {
             >
                <input ref={codRef} />
             </Modal>
-            <style jsx global>
-               {`
-                  .ant-modal
-                     .ant-modal-footer
-                     .ant-btn
-                     + .ant-btn:not(.ant-dropdown-trigger) {
-                     background: blue;
-                  }
-               `}
-            </style>
          </div>
-         <div className="Invoice-body">
-            <table className="w-full text-right text-[#DBDDD0] border-separate">
+         <div className="Invoice-body pb-6">
+            <table className="w-full  text-[#DBDDD0] border-separate border-spacing-[1px] text-center">
                <thead className="text-center">
                   <tr className="bg-[#4E514E]">
-                     <th colSpan={7} >
+                     <th colSpan={7}>
                         {user.username} {voyage}
                      </th>
                   </tr>
@@ -349,7 +342,7 @@ function InvoicePage({ user_id, voyage }) {
                      <th>Track No.</th>
                      <th>Box No.</th>
                      <th>น้ำหนัก(กก.)</th>
-                     <th>ราคา(฿)</th>
+                     <th className="w-[200px]">ราคา(฿)</th>
                      <th>COD(¥)</th>
                   </tr>
                </thead>
@@ -366,9 +359,12 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}className="bg-[#DBDDD0] text-[#4E514E]">
-                                    <td>{seq}</td>
-                                    <td></td>
+                                 <tr
+                                    key={item.id}
+                                    className="bg-[#DBDDD0] text-[#4E514E]"
+                                 >
+                                    <td className="text-center">{seq}</td>
+                                    <td>{index === 0 ? item.channel : null}</td>
                                     <td>{item.track_no}</td>
                                     <td>{item.box_no}</td>
                                     <td>
@@ -389,19 +385,32 @@ function InvoicePage({ user_id, voyage }) {
                                                100) *
                                             200}
                                     </td>
-                                    <td>{item.cod}</td>
+                                    <td className="border-2 border-solid border-t-0 border-l-0 border-r-0">
+                                       {item.cod}
+                                    </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>น้ำหนักรวม: </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>น้ำหนักรวม: </th>
+                                    <td colSpan={1} className="text-center">
                                        {Math.ceil(
                                           sumTable.mercari.weight * 100
                                        ) / 100}
                                     </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>ราคารวม(mercari): </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>ราคารวม(mercari): </th>
+                                    <td
+                                       colSpan={1}
+                                       className="border-2 border-solid border-t-0 border-l-0 border-r-0"
+                                    >
                                        {Math.ceil(
                                           sumTable.mercari.price * 100
                                        ) / 100}
@@ -411,8 +420,11 @@ function InvoicePage({ user_id, voyage }) {
                            )
                         }
                         return (
-                           <tr key={item.id} className="bg-[#DBDDD0] text-[#4E514E]">
-                              <td>{seq}</td>
+                           <tr
+                              key={item.id}
+                              className="bg-[#DBDDD0] text-[#4E514E]"
+                           >
+                              <td className="text-center">{seq}</td>
                               <td>{index === 0 ? item.channel : null}</td>
                               <td>{item.track_no}</td>
                               <td>{item.box_no}</td>
@@ -445,9 +457,12 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id} className="bg-[##DCDCD0] text-[#4E514E]">
-                                    <td>{seq}</td>
-                                    <td></td>
+                                 <tr
+                                    key={item.id}
+                                    className="bg-[#DCDCD0] text-[#4E514E]"
+                                 >
+                                    <td className="text-center">{seq}</td>
+                                    <td>{index === 0 ? item.channel : null}</td>
                                     <td>{item.track_no}</td>
                                     <td>{item.box_no}</td>
                                     <td>
@@ -468,18 +483,31 @@ function InvoicePage({ user_id, voyage }) {
                                                100) *
                                             200}
                                     </td>
-                                    <td>{item.cod}</td>
+                                    <td className="border-2 border-solid border-t-0 border-l-0 border-r-0">
+                                       {item.cod}
+                                    </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>น้ำหนักรวม: </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>น้ำหนักรวม: </th>
+                                    <td colSpan={1} className="text-center">
                                        {Math.ceil(sumTable.fril.weight * 100) /
                                           100}
                                     </td>
                                  </tr>
-                                 <tr>
-                                    <th>ราคารวม(fril): </th>
-                                    <td>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>ราคารวม(fril): </th>
+                                    <td
+                                       colSpan={1}
+                                       className="border-2 border-solid border-t-0 border-l-0 border-r-0"
+                                    >
                                        {Math.ceil(sumTable.fril.price * 100) /
                                           100}
                                     </td>
@@ -524,18 +552,30 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}>
+                                 <tr
+                                    key={item.id}
+                                    className="bg-[#DBDDD0] text-[#4E514E]"
+                                 >
                                     <td>{seq}</td>
-                                    <td></td>
+                                    <td>{index === 0 ? item.channel : null}</td>
                                     <td>{item.track_no}</td>
                                     <td>{item.box_no}</td>
                                     <td>{item.weight}</td>
                                     <td>-</td>
-                                    <td>{item.cod}</td>
+                                    <td className="border-2 border-solid border-t-0 border-l-0 border-r-0">
+                                       {item.cod}
+                                    </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>ราคารวม(shimizu): </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>ราคารวม(shimizu): </th>
+                                    <td
+                                       colSpan={1}
+                                       className="border-2 border-solid border-t-0 border-l-0 border-r-0"
+                                    >
                                        {Math.ceil(
                                           sumTable.shimizu.price * 100
                                        ) / 100}
@@ -545,7 +585,10 @@ function InvoicePage({ user_id, voyage }) {
                            )
                         }
                         return (
-                           <tr key={item.id}>
+                           <tr
+                              key={item.id}
+                              className="bg-[#DBDDD0] text-[#4E514E]"
+                           >
                               <td>{seq}</td>
                               <td>{index === 0 ? item.channel : null}</td>
                               <td>{item.track_no}</td>
@@ -567,18 +610,30 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}>
+                                 <tr
+                                    key={item.id}
+                                    className="bg-[#DBDDD0] text-[#4E514E]"
+                                 >
                                     <td>{seq}</td>
-                                    <td></td>
+                                    <td>{index === 0 ? item.channel : null}</td>
                                     <td>{item.track_no}</td>
                                     <td>{item.box_no}</td>
                                     <td>{item.weight}</td>
                                     <td>-</td>
-                                    <td>{item.cod}</td>
+                                    <td className="border-2 border-solid border-t-0 border-l-0 border-r-0">
+                                       {item.cod}
+                                    </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>ราคารวม(yahoo): </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>ราคารวม(yahoo): </th>
+                                    <td
+                                       colSpan={1}
+                                       className="border-2 border-solid border-t-0 border-l-0 border-r-0"
+                                    >
                                        {Math.ceil(sumTable.yahoo.price * 100) /
                                           100}
                                     </td>
@@ -587,7 +642,10 @@ function InvoicePage({ user_id, voyage }) {
                            )
                         }
                         return (
-                           <tr key={item.id}>
+                           <tr
+                              key={item.id}
+                              className="bg-[#DBDDD0] text-[#4E514E]"
+                           >
                               <td>{seq}</td>
                               <td>{index === 0 ? item.channel : null}</td>
                               <td>{item.track_no}</td>
@@ -608,18 +666,30 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}>
+                                 <tr
+                                    key={item.id}
+                                    className="bg-[#DBDDD0] text-[#4E514E]"
+                                 >
                                     <td>{seq}</td>
-                                    <td></td>
+                                    <td>{index === 0 ? item.channel : null}</td>
                                     <td>{item.track_no}</td>
                                     <td>{item.box_no}</td>
                                     <td>{item.weight}</td>
                                     <td>-</td>
-                                    <td>{item.cod}</td>
+                                    <td className="border-2 border-solid border-t-0 border-l-0 border-r-0">
+                                       {item.cod}
+                                    </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>ราคารวม(mart): </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>ราคารวม(mart): </th>
+                                    <td
+                                       colSpan={1}
+                                       className="border-2 border-solid border-t-0 border-l-0 border-r-0"
+                                    >
                                        {Math.ceil(sumTable.mart.price * 100) /
                                           100}
                                     </td>
@@ -628,7 +698,10 @@ function InvoicePage({ user_id, voyage }) {
                            )
                         }
                         return (
-                           <tr key={item.id}>
+                           <tr
+                              key={item.id}
+                              className="bg-[#DBDDD0] text-[#4E514E]"
+                           >
                               <td>{seq}</td>
                               <td>{index === 0 ? item.channel : null}</td>
                               <td>{item.track_no}</td>
@@ -649,18 +722,30 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}>
+                                 <tr
+                                    key={item.id}
+                                    className="bg-[#DBDDD0] text-[#4E514E]"
+                                 >
                                     <td>{seq}</td>
-                                    <td></td>
+                                    <td>{index === 0 ? item.channel : null}</td>
                                     <td>{item.track_no}</td>
                                     <td>{item.box_no}</td>
                                     <td>{item.weight}</td>
                                     <td>-</td>
-                                    <td>{item.cod}</td>
+                                    <td className="border-2 border-solid border-t-0 border-l-0 border-r-0">
+                                       {item.cod}
+                                    </td>
                                  </tr>
-                                 <tr>
-                                    <th colSpan={4}>ราคารวม(web123): </th>
-                                    <td colSpan={3}>
+                                 <tr className="bg-[#DBDDD0] text-[#4E514E]">
+                                    <td
+                                       colSpan={5}
+                                       className="bg-[#E0DFDB]"
+                                    ></td>
+                                    <th colSpan={1}>ราคารวม(web123): </th>
+                                    <td
+                                       colSpan={1}
+                                       className="border-2 border-solid border-t-0 border-l-0 border-r-0"
+                                    >
                                        {Math.ceil(sumTable.web123.price * 100) /
                                           100}
                                     </td>
@@ -669,7 +754,10 @@ function InvoicePage({ user_id, voyage }) {
                            )
                         }
                         return (
-                           <tr key={item.id}>
+                           <tr
+                              key={item.id}
+                              className="bg-[#DBDDD0] text-[#4E514E]"
+                           >
                               <td>{seq}</td>
                               <td>{index === 0 ? "web123" : null}</td>
                               <td>{item.track_no}</td>
@@ -681,10 +769,11 @@ function InvoicePage({ user_id, voyage }) {
                         )
                      })}
                </tbody>
-               <tfoot>
+               <tfoot className="bg-[#DBDDD0] text-[#4E514E]">
                   <tr>
-                     <th colSpan={4}>ราคารวม(ทุกช่องทาง): </th>
-                     <td colSpan={3}>
+                     <td colSpan={5} className="bg-[#666666]"></td>
+                     <th colSpan={1}>ราคารวม(ทุกช่องทาง): </th>
+                     <td colSpan={1}>
                         {sumTable.mercari.price +
                            sumTable.fril.price +
                            sumTable.shimizu.price +
@@ -694,13 +783,15 @@ function InvoicePage({ user_id, voyage }) {
                      </td>
                   </tr>
                   <tr>
-                     <th colSpan={4}>ค่าส่ง:</th>
-                     <td colSpan={3}>{costDelivery}</td>
+                     <td colSpan={5} className="bg-[#666666]"></td>
+                     <th colSpan={1}>ค่าส่ง:</th>
+                     <td colSpan={1}>{costDelivery}</td>
                   </tr>
                   {checkDiscount && (
                      <tr>
-                        <th colSpan={4}>ส่วนลด 5%:</th>
-                        <td colSpan={3}>
+                        <td colSpan={5} className="bg-[#666666]"></td>
+                        <th colSpan={1}>ส่วนลด 5%:</th>
+                        <td colSpan={1}>
                            {Math.floor(
                               (sumTable.mercari.price +
                                  sumTable.fril.price +
@@ -714,12 +805,17 @@ function InvoicePage({ user_id, voyage }) {
                      </tr>
                   )}
                   <tr>
-                     <th colSpan={4}>ส่วนลด:</th>
-                     <td colSpan={3}>{discount}</td>
+                     <td colSpan={5} className="bg-[#666666]"></td>
+                     <th colSpan={1}>ส่วนลด:</th>
+                     <td colSpan={1}>{discount}</td>
                   </tr>
                   <tr>
-                     <th colSpan={4}>ราคาสุทธิ(฿): </th>
-                     <td colSpan={3}>
+                     <td colSpan={5} className="bg-[#666666]"></td>
+                     <th colSpan={1}>ราคาสุทธิ(฿): </th>
+                     <td
+                        colSpan={1}
+                        className="border-4 border-double border-t-0 border-l-0 border-r-0"
+                     >
                         {sumTable.mercari.price +
                            sumTable.fril.price +
                            sumTable.shimizu.price +
