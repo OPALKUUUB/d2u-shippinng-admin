@@ -411,9 +411,14 @@ function InvoicePage({ user_id, voyage }) {
                                        colSpan={1}
                                        className="border-2 border-solid border-t-0 border-l-0 border-r-0"
                                     >
-                                       {Math.ceil(
-                                          sumTable.mercari.price * 100
-                                       ) / 100}
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          Math.ceil(
+                                             sumTable.mercari.price * 100
+                                          ) / 100
+                                       )}
                                     </td>
                                  </tr>
                               </>
@@ -508,8 +513,13 @@ function InvoicePage({ user_id, voyage }) {
                                        colSpan={1}
                                        className="border-2 border-solid border-t-0 border-l-0 border-r-0"
                                     >
-                                       {Math.ceil(sumTable.fril.price * 100) /
-                                          100}
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          Math.ceil(sumTable.fril.price * 100) /
+                                             100
+                                       )}
                                     </td>
                                  </tr>
                               </>
@@ -576,9 +586,14 @@ function InvoicePage({ user_id, voyage }) {
                                        colSpan={1}
                                        className="border-2 border-solid border-t-0 border-l-0 border-r-0"
                                     >
-                                       {Math.ceil(
-                                          sumTable.shimizu.price * 100
-                                       ) / 100}
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          Math.ceil(
+                                             sumTable.shimizu.price * 100
+                                          ) / 100
+                                       )}
                                     </td>
                                  </tr>
                               </>
@@ -634,8 +649,14 @@ function InvoicePage({ user_id, voyage }) {
                                        colSpan={1}
                                        className="border-2 border-solid border-t-0 border-l-0 border-r-0"
                                     >
-                                       {Math.ceil(sumTable.yahoo.price * 100) /
-                                          100}
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          Math.ceil(
+                                             sumTable.yahoo.price * 100
+                                          ) / 100
+                                       )}
                                     </td>
                                  </tr>
                               </>
@@ -690,8 +711,13 @@ function InvoicePage({ user_id, voyage }) {
                                        colSpan={1}
                                        className="border-2 border-solid border-t-0 border-l-0 border-r-0"
                                     >
-                                       {Math.ceil(sumTable.mart.price * 100) /
-                                          100}
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          Math.ceil(sumTable.mart.price * 100) /
+                                             100
+                                       )}
                                     </td>
                                  </tr>
                               </>
@@ -746,8 +772,14 @@ function InvoicePage({ user_id, voyage }) {
                                        colSpan={1}
                                        className="border-2 border-solid border-t-0 border-l-0 border-r-0"
                                     >
-                                       {Math.ceil(sumTable.web123.price * 100) /
-                                          100}
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          Math.ceil(
+                                             sumTable.web123.price * 100
+                                          ) / 100
+                                       )}
                                     </td>
                                  </tr>
                               </>
@@ -785,30 +817,47 @@ function InvoicePage({ user_id, voyage }) {
                   <tr>
                      <td colSpan={5} className="bg-[#666666]"></td>
                      <th colSpan={1}>ค่าส่ง:</th>
-                     <td colSpan={1}>{costDelivery}</td>
+                     <td colSpan={1}>
+                        {new Intl.NumberFormat("th-TH", {
+                           currency: "THB",
+                           style: "currency",
+                        }).format(costDelivery)}
+                     </td>
                   </tr>
                   {checkDiscount && (
                      <tr>
                         <td colSpan={5} className="bg-[#666666]"></td>
                         <th colSpan={1}>ส่วนลด 5%:</th>
                         <td colSpan={1}>
-                           {Math.floor(
-                              (sumTable.mercari.price +
-                                 sumTable.fril.price +
-                                 sumTable.shimizu.price +
-                                 sumTable.yahoo.price +
-                                 sumTable.mart.price +
-                                 sumTable.web123.price) *
-                                 5
-                           ) / 100}
+                           {new Intl.NumberFormat("th-TH", {
+                              currency: "THB",
+                              style: "currency",
+                           }).format(
+                              Math.floor(
+                                 (sumTable.mercari.price +
+                                    sumTable.fril.price +
+                                    sumTable.shimizu.price +
+                                    sumTable.yahoo.price +
+                                    sumTable.mart.price +
+                                    sumTable.web123.price) *
+                                    5
+                              ) / 100
+                           )}
                         </td>
                      </tr>
                   )}
-                  <tr>
-                     <td colSpan={5} className="bg-[#666666]"></td>
-                     <th colSpan={1}>ส่วนลด:</th>
-                     <td colSpan={1}>{discount}</td>
-                  </tr>
+                  {discount === 0 ? undefined : (
+                     <tr>
+                        <td colSpan={5} className="bg-[#666666]"></td>
+                        <th colSpan={1}>ส่วนลด:</th>
+                        <td colSpan={1}>
+                           {new Intl.NumberFormat("th-TH", {
+                              currency: "THB",
+                              style: "currency",
+                           }).format(discount)}
+                        </td>
+                     </tr>
+                  )}
                   <tr>
                      <td colSpan={5} className="bg-[#666666]"></td>
                      <th colSpan={1}>ราคาสุทธิ(฿): </th>
@@ -816,25 +865,30 @@ function InvoicePage({ user_id, voyage }) {
                         colSpan={1}
                         className="border-4 border-double border-t-0 border-l-0 border-r-0"
                      >
-                        {sumTable.mercari.price +
-                           sumTable.fril.price +
-                           sumTable.shimizu.price +
-                           sumTable.yahoo.price +
-                           sumTable.mart.price +
-                           sumTable.web123.price +
-                           costDelivery -
-                           discount -
-                           (checkDiscount
-                              ? Math.floor(
-                                   (sumTable.mercari.price +
-                                      sumTable.fril.price +
-                                      sumTable.shimizu.price +
-                                      sumTable.yahoo.price +
-                                      sumTable.mart.price +
-                                      sumTable.web123.price) *
-                                      5
-                                ) / 100
-                              : 0)}
+                        {new Intl.NumberFormat("th-TH", {
+                           currency: "THB",
+                           style: "currency",
+                        }).format(
+                           sumTable.mercari.price +
+                              sumTable.fril.price +
+                              sumTable.shimizu.price +
+                              sumTable.yahoo.price +
+                              sumTable.mart.price +
+                              sumTable.web123.price +
+                              costDelivery -
+                              discount -
+                              (checkDiscount
+                                 ? Math.floor(
+                                      (sumTable.mercari.price +
+                                         sumTable.fril.price +
+                                         sumTable.shimizu.price +
+                                         sumTable.yahoo.price +
+                                         sumTable.mart.price +
+                                         sumTable.web123.price) *
+                                         5
+                                   ) / 100
+                                 : 0)
+                        )}
                      </td>
                   </tr>
                </tfoot>

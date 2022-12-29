@@ -57,16 +57,25 @@ async function handler(req, res) {
       const users = await mysql.query("SELECT * FROM users WHERE id = ?", [
          user_id,
       ])
-      const trackings = await mysql.query(
+      const trackings_user = await mysql.query(
          `
             SELECT *
             FROM trackings
             WHERE
-            user_id = ? AND
-            voyage = ?
+            user_id = ?
          `,
-         [user_id, voyage]
+         [user_id]
       )
+      const trackings = trackings_user.filter((ft) => ft.voyage === voyage)
+      const point_current = trackings_user.reduce((a, c) => {
+         const price = c.price === null ? 0 : c.price
+         const weight = c.weight === null ? 0 : c.weight
+         const rate_yen = c.rate_yen === null ? 0.29 : c.rate_yen
+         const point = Math.ceil(price / rate_yen / 2000) + weight
+         // console.log(price, weight, rate_yen)
+         return a + point
+      }, 0)
+      // console.log(point_current)
       // eslint-disable-next-line prefer-destructuring
       const count_billing = await mysql.query(
          "SELECT COUNT(*) AS count FROM ship_billing WHERE voyage = ? and user_id = ?",
@@ -92,13 +101,13 @@ async function handler(req, res) {
          "SELECT * FROM ship_billing WHERE id = ? ",
          [shipbilling_id]
       )
-      console.log(billings)
+      // console.log(billings)
       await mysql.end()
       res.status(200).json({
          message: "get data from user and voyage success",
          trackings,
          billing: billings[0],
-         user: users[0],
+         user: {...users[0], point_current},
       })
    } else if (req.method === "PATCH") {
       const id = parseInt(req.query.id, 10)
