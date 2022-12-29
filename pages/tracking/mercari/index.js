@@ -180,7 +180,6 @@ function MercariTrackingsPage() {
    const handleOpenAddModal = () => {
       setShowAddModal(true)
    }
-   console.log("data", data)
    const handleOkAddModal = async () => {
       if (addForm.user_id === "") {
          alert("please select user before add tracking!")
