@@ -256,7 +256,7 @@ function InvoicePage({ user_id, voyage }) {
    ]
    return (
       <div className="w-[90vw] mx-auto">
-         <button className="bg-black text-white p-2 mt-3" onClick={() => router.push("/shipbilling")}>
+         <button className="bg-black text-white p-2 mt-3 fixed top-2 left-3 z-10" onClick={() => router.push("/shipbilling")}>
             {"<<"} ย้อนกลับ
          </button>
          <div className="flex px-4 py-2">
@@ -336,14 +336,14 @@ function InvoicePage({ user_id, voyage }) {
             </style>
          </div>
          <div className="Invoice-body">
-            <table>
-               <thead>
-                  <tr>
-                     <th colSpan={7}>
+            <table className="w-full text-right text-[#DBDDD0] border-separate">
+               <thead className="text-center">
+                  <tr className="bg-[#4E514E]">
+                     <th colSpan={7} >
                         {user.username} {voyage}
                      </th>
                   </tr>
-                  <tr>
+                  <tr className="bg-[#666666]">
                      <th>#</th>
                      <th>ช่องทาง</th>
                      <th>Track No.</th>
@@ -366,7 +366,7 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}>
+                                 <tr key={item.id}className="bg-[#DBDDD0] text-[#4E514E]">
                                     <td>{seq}</td>
                                     <td></td>
                                     <td>{item.track_no}</td>
@@ -411,7 +411,7 @@ function InvoicePage({ user_id, voyage }) {
                            )
                         }
                         return (
-                           <tr key={item.id}>
+                           <tr key={item.id} className="bg-[#DBDDD0] text-[#4E514E]">
                               <td>{seq}</td>
                               <td>{index === 0 ? item.channel : null}</td>
                               <td>{item.track_no}</td>
@@ -445,7 +445,7 @@ function InvoicePage({ user_id, voyage }) {
                         ) {
                            return (
                               <>
-                                 <tr key={item.id}>
+                                 <tr key={item.id} className="bg-[##DCDCD0] text-[#4E514E]">
                                     <td>{seq}</td>
                                     <td></td>
                                     <td>{item.track_no}</td>

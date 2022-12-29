@@ -5,11 +5,46 @@ async function handler(req, res) {
    if (req.method === "GET") {
       const { voyage } = req.query
       await mysql.connect()
-      const trackings = await mysql.query(
-         "SELECT `trackings`.*, users.username,ship_billing.id as shipbilling_id, ship_billing.payment_type, ship_billing.invoice_notificate, ship_billing.check, ship_billing.remark FROM `trackings` JOIN users ON `trackings`.user_id = users.id LEFT JOIN ship_billing ON ship_billing.voyage = trackings.voyage WHERE trackings.voyage = ?",
+      const trackings_by_voyage = await mysql.query(
+         "SELECT trackings.user_id, users.username, trackings.voyage FROM trackings JOIN users ON users.id = trackings.user_id WHERE trackings.voyage = ? GROUP BY trackings.user_id",
          [voyage]
       )
-      // console.log(trackings)
+      const ship_billing = await mysql.query(
+         `SELECT
+         ship_billing.id as shipbilling_id,
+         ship_billing.user_id,
+         ship_billing.voyage,
+         ship_billing.payment_type,
+         ship_billing.invoice_notificate,
+         ship_billing.check,
+         ship_billing.remark
+         FROM ship_billing 
+         WHERE voyage = ?`,
+         [voyage]
+      )
+      const date = genDate()
+      const trackings = trackings_by_voyage.reduce((a, c) => {
+         const billing = ship_billing.filter(
+            (ft) => ft.voyage === c.voyage && ft.user_id === c.user_id
+         )
+         if (billing.length === 0) {
+            return [
+               ...a,
+               {
+                  shipbilling_id: null,
+                  user_id: c.user_id,
+                  username: c.username,
+                  created_at: date,
+                  voyage,
+                  payment_type: null,
+                  invoice_notificate: null,
+                  check: null,
+                  remark: null,
+               },
+            ]
+         }
+         return [...a, { ...c, ...billing[0] }]
+      }, [])
       await mysql.end()
       res.status(200).json({
          message: "get disneyland product success!",
@@ -50,7 +85,7 @@ async function handler(req, res) {
             "SELECT * FROM ship_billing WHERE voyage = ? and user_id = ?",
             [voyage, user_id]
          )
-         console.log(result)
+         // console.log(result)
          shipbilling_id = result[0].id
       }
       const billings = await mysql.query(

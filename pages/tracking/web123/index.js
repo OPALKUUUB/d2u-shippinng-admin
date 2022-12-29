@@ -201,7 +201,7 @@ function Web123Page() {
          finished: 0,
          remark_user: addForm.remark_user,
          remark_admin: addForm.remark_admin,
-         channel: addForm.channel,
+         channel: "123",
       }
       try {
          const response = await fetch("/api/tracking/web123", {
