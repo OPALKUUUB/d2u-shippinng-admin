@@ -258,7 +258,6 @@ function YahooTrackingsPage(props) {
             }
             return 0
          },
-         filteredValue: null,
          ...getColumnSearchProps("date"),
       },
       {
@@ -266,27 +265,15 @@ function YahooTrackingsPage(props) {
          dataIndex: "image",
          key: "image",
          width: "120px",
-         filteredValue: null,
          render: (text) => <img src={text} alt="" width="100" />,
       },
       {
          title: "ชื่อลูกค้า",
          dataIndex: "username",
          key: "username",
-         filters: data?.reduce(
-            (accumulator, currentValue) => [
-               ...accumulator,
-               { text: currentValue.username, value: currentValue.username },
-            ],
-            []
-         ),
-         filteredValue: filteredInfo.username || null,
-         onFilter: (value, record) => record.username.includes(value),
-         sorter: (a, b) => a.username.length - b.username.length,
-         sortOrder:
-            sortedInfo.columnKey === "username" ? sortedInfo.order : null,
          ellipsis: true,
          width: "120px",
+         ...getColumnSearchProps("username"),
       },
       {
          title: "ลิ้งค์",
@@ -304,14 +291,12 @@ function YahooTrackingsPage(props) {
                </a>
             )
          },
-         filteredValue: null,
          ellipsis: false,
       },
       {
          title: "รวม",
          dataIndex: "id",
          key: "sum",
-         filteredValue: null,
          render: (id) => {
             const payments = data?.filter((ft) => ft.id === id)
             const payment = payments[0]
@@ -330,13 +315,13 @@ function YahooTrackingsPage(props) {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
-         render: (text) => (text === null ? "-" : text),
+         ...getColumnSearchProps("track_no"),
       },
       {
          title: "เลขกล่อง",
          dataIndex: "box_no",
          key: "box_no",
-         render: (text) => (text === null ? "-" : text),
+         ...getColumnSearchProps("box_no"),
       },
       {
          title: "น้ำหนัก",
@@ -348,7 +333,7 @@ function YahooTrackingsPage(props) {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
-         render: (text) => (text === null ? "-" : text),
+         ...getColumnSearchProps("voyage"),
       },
       {
          title: "หมายเหตุลูกค้า",
@@ -366,7 +351,6 @@ function YahooTrackingsPage(props) {
          title: "จัดการ",
          dataIndex: "id",
          key: "manage",
-         filteredValue: null,
          ellipsis: true,
          width: "90px",
          fixed: "right",
