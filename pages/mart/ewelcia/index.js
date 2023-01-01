@@ -18,6 +18,7 @@ import { getSession } from "next-auth/react"
 import dayjs from "dayjs"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
+import genDate from "../../../utils/genDate"
 
 const { TextArea } = Input
 const addForm_model = {
@@ -53,19 +54,7 @@ function MartEwelciaPage(props) {
    const [productId, setProductId] = useState("")
    const [fileList, setFileList] = useState([])
    const [showImagesModal, setShowImagesModal] = useState(false)
-   // console.log(
-   //    "data",
-   //    data.filter((element) => element.name === "test")
-   // )
-   // console.log("addForm", addForm)
-   // console.log("selectedRow", selectedRow)
-   // console.log("InputDate", InputDate)
-   // console.log(
-   //    "InputDateString",
-   //    InputDate !== null
-   //       ? new Date(InputDate).toLocaleDateString("th-TH")
-   //       : InputDate
-   // )
+   
    const onChange = ({ fileList: newFileList }) => {
       setFileList(newFileList)
    }
@@ -123,7 +112,7 @@ function MartEwelciaPage(props) {
             selectedRow.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน" && checked
                ? selectedRow.expire_date
                : InputDate !== null
-               ? new Date(InputDate).toLocaleDateString("th-TH")
+               ? genDate()
                : "",
          description: selectedRow.description,
       }
@@ -278,7 +267,7 @@ function MartEwelciaPage(props) {
             addForm.expire_date === "หมดอายุไม่น้อยกว่า 3 เดือน"
                ? addForm.expire_date
                : InputDate !== null
-               ? new Date(InputDate).toLocaleDateString("th-TH")
+               ? genDate()
                : "",
          description: addForm.description,
          channel: addForm.channel,
