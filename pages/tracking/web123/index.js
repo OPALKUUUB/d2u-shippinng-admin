@@ -503,7 +503,7 @@ function Web123Page() {
          setUsers(responseJson.users)
       })()
       ;(async () => {
-         const response = await fetch("/api/tracking/fril")
+         const response = await fetch("/api/tracking/web123")
          const responseJson = await response.json()
          // console.log(responseJson)
          // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
