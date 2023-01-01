@@ -199,10 +199,10 @@ function YahooPaymentPage(props) {
             const payments = data.filter((ft) => ft.id === id)
             const payment = payments[0]
             const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
-            if (!delivery_fee || !tranfer_fee) {
-               return "-"
-            }
-            const s = (bid + delivery_fee) * rate_yen + tranfer_fee
+
+            const s =
+               (bid + (!delivery_fee ? 0 : delivery_fee)) * rate_yen +
+               (!tranfer_fee ? 0 : tranfer_fee)
             return new Intl.NumberFormat("th-TH", {
                currency: "THB",
                style: "currency",
