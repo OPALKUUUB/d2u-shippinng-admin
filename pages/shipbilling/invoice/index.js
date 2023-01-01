@@ -55,7 +55,7 @@ function InvoicePage({ user_id, voyage }) {
    const [openModal, setOpenModal] = useState(false)
    const codRef = useRef()
    const handleSaveCod = async () => {
-      const response = await fetch(`/api/tracking?id=${selectRow?.id}`, {
+      await fetch(`/api/tracking?id=${selectRow?.id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ cod: codRef.current.value }),

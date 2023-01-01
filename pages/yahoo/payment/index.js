@@ -19,6 +19,7 @@ import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useState } from "react"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
+import genDate from "../../../utils/genDate"
 
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
@@ -343,7 +344,7 @@ function YahooPaymentPage(props) {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: new Date(value).toLocaleDateString("th-TH"),
+                           date: genDate(),
                         }))
                         setInputDate(value)
                      }

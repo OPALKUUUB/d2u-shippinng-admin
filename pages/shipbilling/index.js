@@ -24,9 +24,7 @@ function ShipBilling() {
    }
    const handleSelectRow = async (voyage, user_id) => {
       console.log(voyage, user_id)
-      router.push(
-         `/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`
-      )
+      router.push(`/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`)
    }
    const columns = [
       {
@@ -98,13 +96,39 @@ function ShipBilling() {
          const response = await fetch("/api/shipbilling/voyage")
          const responseJson = await response.json()
          setItems(
-            responseJson.voyages.reduce(
-               (accumulator, currentValue) => [
-                  ...accumulator,
-                  { label: currentValue.voyage, value: currentValue.voyage },
-               ],
-               []
-            )
+            responseJson.voyages
+               .sort((a, b) => {
+                  const date_a = a.voyage
+                  const date_b = b.voyage
+                  const date_a_f = date_a.split("/")
+                  // [y,m,d]
+                  const datetime_a_f = [
+                     parseInt(date_a_f[2], 10) >2500 ? parseInt(date_a_f[2], 10)-543 : parseInt(date_a_f[2], 10),
+                     parseInt(date_a_f[1], 10),
+                     parseInt(date_a_f[0], 10),
+                  ]
+                  const date_b_f = date_b.split("/")
+                  // [y,m,d]
+                  const datetime_b_f = [
+                     parseInt(date_b_f[2], 10) >2500 ? parseInt(date_b_f[2], 10)-543 : parseInt(date_b_f[2], 10),
+                     parseInt(date_b_f[1], 10),
+                     parseInt(date_b_f[0], 10),
+                  ]
+
+                  for (let i = 0; i < 3; i++) {
+                     if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
+                        return datetime_b_f[i] - datetime_a_f[i]
+                     }
+                  }
+                  return 0
+               })
+               .reduce(
+                  (accumulator, currentValue) => [
+                     ...accumulator,
+                     { label: currentValue.voyage , value: currentValue.voyage },
+                  ],
+                  []
+               )
          )
       })()
    }, [])
@@ -146,7 +170,6 @@ function ShipBilling() {
 ShipBilling.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
 }
-
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
