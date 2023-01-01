@@ -623,7 +623,7 @@ function ShimizuTrackingsPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 voyage: genDate(),
+                                 voyage: genDate(value),
                               }))
                               setInputVoyageDate(value)
                            }
@@ -776,7 +776,7 @@ function ShimizuTrackingsPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: genDate(),
+                           voyage: genDate(value),
                         }))
                         setInputVoyageDate(value)
                      }

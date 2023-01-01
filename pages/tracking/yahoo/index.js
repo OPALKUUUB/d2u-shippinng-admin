@@ -462,7 +462,7 @@ function YahooTrackingsPage(props) {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: genDate(),
+                           voyage: genDate(value),
                         }))
                         setInputVoyageDate(value)
                      }

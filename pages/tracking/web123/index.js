@@ -645,7 +645,7 @@ function Web123Page() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 voyage: genDate(),
+                                 voyage: genDate(value),
                               }))
                               setInputVoyageDate(value)
                            }
@@ -798,7 +798,7 @@ function Web123Page() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: genDate(),
+                           voyage: genDate(value),
                         }))
                         setInputVoyageDate(value)
                      }
