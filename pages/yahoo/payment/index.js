@@ -330,7 +330,7 @@ function YahooPaymentPage(props) {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: genDate(),
+                           date: genDate(value),
                         }))
                         setInputDate(value)
                      }

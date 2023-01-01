@@ -553,9 +553,10 @@ function ShimizuTrackingsPage() {
                               }))
                               setInputDate(null)
                            } else {
+                              // console.log(genDate(null))
                               setAddForm((prev) => ({
                                  ...prev,
-                                 date: genDate(),
+                                 date: genDate(value),
                               }))
                               setInputDate(value)
                            }
@@ -708,7 +709,7 @@ function ShimizuTrackingsPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: genDate(),
+                           date: genDate(value),
                         }))
                         setInputDate(value)
                      }
