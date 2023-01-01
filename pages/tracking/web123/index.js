@@ -133,6 +133,7 @@ function Web123Page() {
          user_id: selectedRow.user_id,
          box_no: selectedRow.box_no,
          track_no: selectedRow.track_no,
+         link: selectedRow.link,
          weight: selectedRow.weight,
          price: selectedRow.price,
          voyage: selectedRow.voyage,
@@ -199,6 +200,7 @@ function Web123Page() {
          user_id: addForm.user_id,
          box_no: addForm.box_no,
          track_no: addForm.track_no,
+         link: selectedRow.link,
          weight: addForm.weight,
          price: addForm.price,
          voyage: addForm.voyage,
@@ -394,6 +396,24 @@ function Web123Page() {
          width: "120px",
          key: "username",
          ...getColumnSearchProps("username"),
+      },
+      {
+         title: "ลิ้งค์",
+         dataIndex: "link",
+         key: "link",
+         width: "125px",
+         render: (text) => {
+            const link_code =
+               text === null || text === ""
+                  ? "-"
+                  : text.split("https://")[1].split("/")[0]
+            return (
+               <a href={text} target="_blank" rel="noreferrer">
+                  {link_code}
+               </a>
+            )
+         },
+         ellipsis: false,
       },
       {
          title: "เลขแทรกกิงค์",
@@ -598,6 +618,18 @@ function Web123Page() {
                      />
                   </Space>
                   <Space style={{ marginBottom: 10 }}>
+                     <label>URL: </label>
+                     <Input
+                        value={addForm.link}
+                        onChange={(e) =>
+                           setAddForm({
+                              ...addForm,
+                              link: e.target.value,
+                           })
+                        }
+                     />
+                  </Space>
+                  <Space style={{ marginBottom: 10 }}>
                      <label>เลขกล่อง: </label>
                      <Input
                         value={addForm.box_no}
@@ -736,6 +768,18 @@ function Web123Page() {
                         setInputDate(value)
                      }
                   }}
+               />
+            </Space>
+            <Space style={{ marginBottom: 10 }}>
+               <label>URL: </label>
+               <Input
+                  value={selectedRow.link}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        link: e.target.value,
+                     })
+                  }
                />
             </Space>
             <Space style={{ marginBottom: 10 }}>

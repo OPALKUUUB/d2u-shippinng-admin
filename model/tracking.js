@@ -1,9 +1,12 @@
+import genDate from "../utils/genDate"
+
 export const addForm_model = {
-   date: "",
+   date: genDate(),
    user_id: "",
    box_no: "",
    track_no: "",
    weight: null,
+   link: "",
    price: null,
    voyage: "",
    remark_user: "",
