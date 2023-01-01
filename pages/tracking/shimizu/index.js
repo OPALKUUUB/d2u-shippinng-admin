@@ -28,6 +28,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
+import genDate from "../../../utils/genDate"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -121,6 +122,7 @@ function ShimizuTrackingsPage() {
       setshowEditModal(false)
    }
    const handleOkEditModal = async () => {
+      console.log(selectedRow.date)
       const body = {
          date: selectedRow.date,
          user_id: selectedRow.user_id,
@@ -544,9 +546,7 @@ function ShimizuTrackingsPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 date: new Date(value).toLocaleDateString(
-                                    "th-TH"
-                                 ),
+                                 date: genDate(),
                               }))
                               setInputDate(value)
                            }
@@ -613,9 +613,7 @@ function ShimizuTrackingsPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 voyage: new Date(value).toLocaleDateString(
-                                    "th-TH"
-                                 ),
+                                 voyage: genDate(),
                               }))
                               setInputVoyageDate(value)
                            }
@@ -701,7 +699,7 @@ function ShimizuTrackingsPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: new Date(value).toLocaleDateString("th-TH"),
+                           date: genDate(),
                         }))
                         setInputDate(value)
                      }
@@ -768,7 +766,7 @@ function ShimizuTrackingsPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: new Date(value).toLocaleDateString("th-TH"),
+                           voyage: genDate(),
                         }))
                         setInputVoyageDate(value)
                      }

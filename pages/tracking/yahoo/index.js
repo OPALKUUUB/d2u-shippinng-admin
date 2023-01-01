@@ -20,6 +20,7 @@ import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
+import genDate from "../../../utils/genDate"
 
 const { TextArea } = Input
 
@@ -431,7 +432,7 @@ function YahooTrackingsPage(props) {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: new Date(value).toLocaleDateString("th-TH"),
+                           date: genDate(),
                         }))
                         setInputDate(value)
                      }
@@ -481,7 +482,7 @@ function YahooTrackingsPage(props) {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: new Date(value).toLocaleDateString("th-TH"),
+                           voyage: genDate(),
                         }))
                         setInputVoyageDate(value)
                      }
