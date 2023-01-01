@@ -567,7 +567,7 @@ function MercariTrackingsPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 date: genDate(),
+                                 date: value,
                               }))
                               setInputDate(value)
                            }
@@ -732,7 +732,7 @@ function MercariTrackingsPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: genDate(),
+                           date: value,
                         }))
                         setInputDate(value)
                      }

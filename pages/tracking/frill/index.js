@@ -567,7 +567,7 @@ function FrillPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 date: genDate(),
+                                 date: value,
                               }))
                               setInputDate(value)
                            }
@@ -720,7 +720,7 @@ function FrillPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: genDate(),
+                           date: value,
                         }))
                         setInputDate(value)
                      }
