@@ -3,6 +3,7 @@ import React, { Fragment, useEffect, useState } from "react"
 import { Table } from "antd"
 import Layout from "../../../components/layout/layout"
 import CardHead from "../../../components/CardHead"
+import sortDateTime from "../../../utils/sortDateTime"
 
 function YahooHistoryPage(props) {
    const [data, setData] = useState([])
@@ -11,41 +12,7 @@ function YahooHistoryPage(props) {
          title: "วันที่",
          dataIndex: "created_at",
          key: "created_at",
-         sorter: (a, b) => {
-            const datetime_a = a.created_at
-            const date_a = datetime_a.split(" ")[0]
-            const time_a = datetime_a.split(" ")[1]
-            const date_a_f = date_a.split("/")
-            const time_a_f = time_a.split(":")
-            // [y,m,d,h,m,s]
-            const datetime_a_f = [
-               parseInt(date_a_f[2], 10),
-               parseInt(date_a_f[1], 10),
-               parseInt(date_a_f[0], 10),
-               parseInt(time_a_f[0], 10),
-               parseInt(time_a_f[1], 10),
-               parseInt(time_a_f[2], 10),
-            ]
-            const datetime_b = b.created_at
-            const date_b = datetime_b.split(" ")[0]
-            const time_b = datetime_b.split(" ")[1]
-            const date_b_f = date_b.split("/")
-            const time_b_f = time_b.split(":")
-            const datetime_b_f = [
-               parseInt(date_b_f[2], 10),
-               parseInt(date_b_f[1], 10),
-               parseInt(date_b_f[0], 10),
-               parseInt(time_b_f[0], 10),
-               parseInt(time_b_f[1], 10),
-               parseInt(time_b_f[2], 10),
-            ]
-            for (let i = 0; i < 6; i++) {
-               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
-                  return datetime_a_f[i] - datetime_b_f[i]
-               }
-            }
-            return 0
-         },
+         sorter: (a, b) => sortDateTime(a.created_at, b.created_at),
          render: (text) => (
             <>
                <p>{text.split(" ")[0]}</p>
@@ -84,10 +51,14 @@ function YahooHistoryPage(props) {
       ;(async () => {
          const response = await fetch("/api/yahoo/order/history")
          const responseJson = await response.json()
-         console.log(responseJson)
-         setData(responseJson.history)
+         // console.log(responseJson)
+         setData(
+            responseJson.history
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
       })()
-   },[])
+   }, [])
    return (
       <Fragment>
          <CardHead name="Yahoo Historys Auction" />

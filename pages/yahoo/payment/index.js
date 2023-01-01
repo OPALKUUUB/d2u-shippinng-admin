@@ -20,6 +20,7 @@ import React, { Fragment, useEffect, useState } from "react"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import genDate from "../../../utils/genDate"
+import sortDate from "../../../utils/sortDate"
 
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
@@ -92,8 +93,11 @@ function YahooPaymentPage(props) {
             body: JSON.stringify(body),
          })
          const responseJson = await response.json()
-         const { payments } = responseJson
-         setData(payments)
+         setData(
+            responseJson.payments
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
          setshowEditModal(false)
          setSelectedRow(payment_model)
          setInputDate(null)
@@ -122,29 +126,7 @@ function YahooPaymentPage(props) {
          title: "วันที่",
          dataIndex: "date",
          key: "date",
-         sorter: (a, b) => {
-            const datetime_a = a.date
-            const date_a_f = datetime_a.split("/")
-            // [y,m,d,h,m,s]
-            const datetime_a_f = [
-               parseInt(date_a_f[2], 10),
-               parseInt(date_a_f[1], 10),
-               parseInt(date_a_f[0], 10),
-            ]
-            const datetime_b = b.date
-            const date_b_f = datetime_b.split("/")
-            const datetime_b_f = [
-               parseInt(date_b_f[2], 10),
-               parseInt(date_b_f[1], 10),
-               parseInt(date_b_f[0], 10),
-            ]
-            for (let i = 0; i < 3; i++) {
-               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
-                  return datetime_a_f[i] - datetime_b_f[i]
-               }
-            }
-            return 0
-         },
+         sorter: (a, b) => sortDate(a.date, b.date),
       },
       {
          title: "รูปภาพ",
@@ -300,7 +282,11 @@ function YahooPaymentPage(props) {
       ;(async () => {
          const response = await fetch("/api/yahoo/payment")
          const responseJson = await response.json()
-         setData(responseJson.payments)
+         setData(
+            responseJson.payments
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
       })()
    })
    return (
