@@ -158,8 +158,8 @@ async function handler(req, res) {
          await mysql
             .transaction()
             .query(
-               "INSERT INTO `trackings` (user_id, channel,date, created_at, updated_at) values (?, ?, ?, ?, ?)",
-               [user_id, "yahoo", date, date_created, date_created]
+               "INSERT INTO `trackings` (user_id, channel, date, rate_yen, created_at, updated_at) values (?, ?, ?, ?, ?, ?)",
+               [user_id, "yahoo", date, rate_yen, date_created, date_created]
             )
             .query((response) => [
                "UPDATE `yahoo-auction-payment` SET tracking_id = ?, date = ?, tranfer_fee = ?, delivery_fee = ?, payment_status = ? , rate_yen = ? where id = ?",
