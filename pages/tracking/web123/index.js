@@ -578,7 +578,7 @@ function Web123Page() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 date: value,
+                                 date: genDate(value),
                               }))
                               setInputDate(value)
                            }
@@ -731,7 +731,7 @@ function Web123Page() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           date: value,
+                           date: genDate(value),
                         }))
                         setInputDate(value)
                      }
