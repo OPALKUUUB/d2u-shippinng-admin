@@ -21,6 +21,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import genDate from "../../../utils/genDate"
+import sortDate from "../../../utils/sortDate"
 
 const { TextArea } = Input
 
@@ -68,10 +69,9 @@ function YahooTrackingsPage(props) {
          })
          const responseJson = await response.json()
          setData(
-            responseJson.trackings.reduce(
-               (a, c, i) => [...a, { ...c, key: i }],
-               []
-            )
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("เพิ่มข้อมูลสำเร็จ!")
          setShowEditModal(false)
@@ -89,9 +89,12 @@ function YahooTrackingsPage(props) {
             },
          })
          const responseJson = await response.json()
-         const { trackings } = responseJson
          message.success("ลบข้อมูลเรียบร้อย!")
-         setData(trackings.reduce((a, c, i) => [...a, { ...c, key: i }], []))
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
@@ -236,29 +239,7 @@ function YahooTrackingsPage(props) {
          width: "120px",
          key: "date",
          ellipsis: false,
-         sorter: (a, b) => {
-            const datetime_a = a.date
-            const date_a_f = datetime_a.split("/")
-            // [y,m,d,h,m,s]
-            const datetime_a_f = [
-               parseInt(date_a_f[2], 10),
-               parseInt(date_a_f[1], 10),
-               parseInt(date_a_f[0], 10),
-            ]
-            const datetime_b = b.date
-            const date_b_f = datetime_b.split("/")
-            const datetime_b_f = [
-               parseInt(date_b_f[2], 10),
-               parseInt(date_b_f[1], 10),
-               parseInt(date_b_f[0], 10),
-            ]
-            for (let i = 0; i < 3; i++) {
-               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
-                  return datetime_a_f[i] - datetime_b_f[i]
-               }
-            }
-            return 0
-         },
+         sorter: (a, b) => sortDate(a.date, b.date),
          ...getColumnSearchProps("date"),
       },
       {
@@ -385,10 +366,9 @@ function YahooTrackingsPage(props) {
          const response = await fetch("/api/tracking/yahoo")
          const responseJson = await response.json()
          setData(
-            responseJson.trackings.reduce(
-               (a, c, i) => [...a, { ...c, key: i }],
-               []
-            )
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
    }, [])

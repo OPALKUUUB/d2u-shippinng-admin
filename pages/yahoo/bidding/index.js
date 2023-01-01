@@ -17,6 +17,8 @@ import React, { Fragment, useEffect, useRef, useState } from "react"
 import Highlighter from "react-highlight-words"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
+import sortDateTime from "../../../utils/sortDateTime"
+import sortDate from "../../../utils/sortDate"
 
 const { TextArea } = Input
 
@@ -75,9 +77,14 @@ function YahooBiddingPage(props) {
                name,
                check,
             }),
-         }).then((res) => res.json())
+         })
+         const responseJson = await response.json()
          // setCheck(!check)
-         setData(response.orders)
+         setData(
+            responseJson.orders
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
       } catch (err) {
          console.log(err)
          alert("Error!")
@@ -104,9 +111,14 @@ function YahooBiddingPage(props) {
                "Content-Type": "application/json",
             },
             body: JSON.stringify({ remark }),
-         }).then((res) => res.json())
+         })
+         const responseJson = await response.json()
          setShowEditModal(false)
-         setData(response.orders)
+         setData(
+            responseJson.orders
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
       } catch (err) {
          console.log(err)
          alert("Error!")
@@ -132,9 +144,14 @@ function YahooBiddingPage(props) {
                payment_status,
                status,
             }),
-         }).then((res) => res.json())
+         })
+         const responseJson = await response.json()
          alert("Add Payment Success!")
-         setData(response.orders)
+         setData(
+            responseJson.orders
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
          setShowEditStatusModal(false)
       } catch (err) {
          console.log(err)
@@ -276,41 +293,7 @@ function YahooBiddingPage(props) {
          dataIndex: "created_at",
          width: "100px",
          key: "created_at",
-         sorter: (a, b) => {
-            let datetime_a = a.created_at
-            let date_a = datetime_a.split(" ")[0]
-            let time_a = datetime_a.split(" ")[1]
-            let date_a_f = date_a.split("/")
-            let time_a_f = time_a.split(":")
-            // [y,m,d,h,m,s]
-            let datetime_a_f = [
-               parseInt(date_a_f[2], 10),
-               parseInt(date_a_f[1], 10),
-               parseInt(date_a_f[0], 10),
-               parseInt(time_a_f[0], 10),
-               parseInt(time_a_f[1], 10),
-               parseInt(time_a_f[2], 10),
-            ]
-            let datetime_b = b.created_at
-            let date_b = datetime_b.split(" ")[0]
-            let time_b = datetime_b.split(" ")[1]
-            let date_b_f = date_b.split("/")
-            let time_b_f = time_b.split(":")
-            let datetime_b_f = [
-               parseInt(date_b_f[2], 10),
-               parseInt(date_b_f[1], 10),
-               parseInt(date_b_f[0], 10),
-               parseInt(time_b_f[0], 10),
-               parseInt(time_b_f[1], 10),
-               parseInt(time_b_f[2], 10),
-            ]
-            for (let i = 0; i < 6; i++) {
-               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
-                  return datetime_b_f[i] - datetime_a_f[i]
-               }
-            }
-            return 0
-         },
+         sorter: (a, b) => sortDateTime(a.created_at, b.created_at),
          sortOrder:
             sortedInfo.columnKey === "created_at" ? sortedInfo.order : null,
          render: (text) => (
@@ -521,7 +504,11 @@ function YahooBiddingPage(props) {
       ;(async () => {
          const response = await fetch("/api/yahoo/order")
          const responseJson = await response.json()
-         setData(responseJson.orders)
+         setData(
+            responseJson.orders
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
       })()
    }, [])
    return (
