@@ -45,6 +45,7 @@ async function handler(req, res) {
          remark_admin,
       } = req.body
       const date = genDate()
+      console.log(date)
       await mysql.connect()
       await mysql.query(
          "INSERT INTO `yahoo-auction-order` (user_id, image, link, name, price, detail, maxbid, remark_admin, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

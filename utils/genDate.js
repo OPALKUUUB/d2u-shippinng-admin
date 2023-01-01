@@ -1,5 +1,11 @@
 const genDate = (d=null) => {
-   const date = new Date(d).toLocaleString("th-Th", { timeZone: "Asia/Bangkok" })
+   let date = ''
+   if(d===null) {
+      date = new Date().toLocaleString("th-Th", { timeZone: "Asia/Bangkok" })
+   }else {
+      date = new Date(d).toLocaleString("th-Th", { timeZone: "Asia/Bangkok" })
+   }
+   
    const date_year = parseInt(date.split(" ")[0].split("/")[2], 10) - 543
    return `${date.split(" ")[0].split("/")[0]}/${
       date.split(" ")[0].split("/")[1]
