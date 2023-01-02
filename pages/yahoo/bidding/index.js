@@ -5,6 +5,7 @@ import {
    Dropdown,
    Input,
    InputNumber,
+   message,
    Modal,
    Select,
    Space,
@@ -68,6 +69,25 @@ function YahooBiddingPage(props) {
    const [showEditModal, setShowEditModal] = useState(false)
    const [showEditStatusModal, setShowEditStatusModal] = useState(false)
    const [statusForm, setStatusForm] = useState(statusFormModel)
+   const handleDeleteRow = async (id) => {
+      try {
+         const response = await fetch("/api/yahoo/order", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order_id: id }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.orders
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("ลบรายการสำเร็จ!")
+      } catch (err) {
+         console.log(err)
+         message.error("ลบไม่สำเร็จ!")
+      }
+   }
    const handleCheck = async (name, check, id) => {
       try {
          const response = await fetch(`/api/yahoo/order/addbid/${id}`, {
@@ -490,7 +510,11 @@ function YahooBiddingPage(props) {
                   label: "สถานะประมูล",
                   onClick: () => handleShowEditStatusModal(id),
                },
-               { key: "3", label: "ลบรายการ" },
+               {
+                  key: "3",
+                  label: "ลบรายการ",
+                  onClick: () => handleDeleteRow(id),
+               },
             ]
             return (
                <Space>

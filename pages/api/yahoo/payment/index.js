@@ -208,6 +208,40 @@ async function handler(req, res) {
          message: "update payment success!",
          payments: yahoo_payments,
       })
+   }else if(req.method === "DELETE") {
+      const {payment_id} = req.body
+      await mysql.connect()
+      await mysql.query("DELETE  FROM `yahoo-auction-order` WHERE payment_id = ?", [
+         payment_id,
+      ])
+      await mysql.query("DELETE  FROM `yahoo-auction-payment` WHERE id = ?", [
+         payment_id,
+      ])
+      const yahoo_payments = await mysql.query(
+         `SELECT 
+            ${'`yahoo-auction-payment`'}.*,
+            users.username, 
+            ${'`yahoo-auction-order`'}.image, 
+            ${'`yahoo-auction-order`'}.link 
+         FROM 
+            ${'`yahoo-auction-payment`'} 
+         JOIN 
+            ${'`yahoo-auction-order`'} 
+         ON 
+            ${'`yahoo-auction-order`'}.payment_id = ${'`yahoo-auction-payment`'}.id 
+         JOIN 
+            users 
+         ON 
+            users.id = ${'`yahoo-auction-payment`'}.user_id 
+         WHERE
+            ${'`yahoo-auction-payment`'}.payment_status != ?`,
+         ["ชำระเงินเสร็จสิ้น"]
+      )
+      await mysql.end()
+      res.status(200).json({
+         message: "update payment success!",
+         payments: yahoo_payments,
+      })
    }
 }
 
