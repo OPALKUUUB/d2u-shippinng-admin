@@ -638,7 +638,7 @@ function FrillPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 voyage: genDate(value),
+                                 voyage: genDate(value).split(" ")[0],
                               }))
                               setInputVoyageDate(value)
                            }
@@ -791,7 +791,7 @@ function FrillPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: genDate(value),
+                           voyage: genDate(value).split(" ")[0],
                         }))
                         setInputVoyageDate(value)
                      }

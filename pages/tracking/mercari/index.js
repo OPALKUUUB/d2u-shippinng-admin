@@ -650,7 +650,7 @@ function MercariTrackingsPage() {
                            } else {
                               setAddForm((prev) => ({
                                  ...prev,
-                                 voyage: genDate(value),
+                                 voyage: genDate(value).split(" ")[0],
                               }))
                               setInputVoyageDate(value)
                            }
@@ -815,7 +815,7 @@ function MercariTrackingsPage() {
                      } else {
                         setSelectedRow((prev) => ({
                            ...prev,
-                           voyage: genDate(value),
+                           voyage: genDate(value).split(" ")[0],
                         }))
                         setInputVoyageDate(value)
                      }
