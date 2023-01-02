@@ -332,11 +332,15 @@ function MercariTrackingsPage() {
             }}
          />
       ),
-      onFilter: (value, record) =>
-         record[dataIndex]
+      onFilter: (value, record) => {
+         if (record[dataIndex] === null) {
+            return false
+         }
+         return record[dataIndex]
             .toString()
             .toLowerCase()
-            .includes(value.toLowerCase()),
+            .includes(value.toLowerCase())
+      },
       onFilterDropdownOpenChange: (visible) => {
          if (visible) {
             setTimeout(() => searchInput.current?.select(), 100)

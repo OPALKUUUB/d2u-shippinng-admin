@@ -262,11 +262,15 @@ function YahooBiddingPage(props) {
             }}
          />
       ),
-      onFilter: (value, record) =>
-         record[dataIndex]
-            ?.toString()
+      onFilter: (value, record) => {
+         if (record[dataIndex] === null) {
+            return false
+         }
+         return record[dataIndex]
+            .toString()
             .toLowerCase()
-            .includes(value.toLowerCase()),
+            .includes(value.toLowerCase())
+      },
       onFilterDropdownOpenChange: (visible) => {
          if (visible) {
             setTimeout(() => searchInput.current?.select(), 100)
