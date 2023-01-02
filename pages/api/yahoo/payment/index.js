@@ -149,12 +149,14 @@ async function handler(req, res) {
    }
    if (req.method === "PUT") {
       // console.log(req.body)
-      const {user_id, date, delivery_fee, tranfer_fee, payment_status, rate_yen } =
+      const {user_id, date, delivery_fee, tranfer_fee, payment_status, rate_yen, notificated } =
          req.body
       const { id } = req.query
       const date_created = genDate()
       await mysql.connect()
-      if (payment_status === "ชำระเงินเสร็จสิ้น") {
+      if(notificated !== undefined) {
+         await mysql.query("update `yahoo-auction-payment` set notificated = ? where id = ?", [notificated, id])
+      }else if (payment_status === "ชำระเงินเสร็จสิ้น") {
          await mysql
             .transaction()
             .query(

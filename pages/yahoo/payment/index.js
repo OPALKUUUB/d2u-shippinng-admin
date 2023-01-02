@@ -5,9 +5,11 @@ import {
    DatePicker,
    Dropdown,
    InputNumber,
+   message,
    Modal,
    Select,
    Space,
+   Switch,
    Table,
 } from "antd"
 import dayjs from "dayjs"
@@ -21,47 +23,27 @@ import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
+import { payment_model } from "../../../model/tracking"
 
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
-const payment_model = {
-   key: "7",
-   id: 7,
-   slip_id: null,
-   user_id: 12,
-   tracking_id: null,
-   admin_id: null,
-   date: null,
-   bid: 79377,
-   tranfer_fee: 1000,
-   delivery_fee: 100,
-   rate_yen: 0.29,
-   notificated: 0,
-   payment_status: "รอค่าโอนและค่าส่ง",
-   remark_user: null,
-   remark_admin: null,
-   created_at: "6/12/2565 07:52:00",
-   updated_at: "6/12/2565 07:52:00",
-   username: "opal",
-   image: "https://auctions.c.yimg.jp/images.auctions.yahoo.co.jp/image/dr000/auc0305/users/70b1882bbe1cdc40c55efeae7e6edce2b6414e78/i-img802x1200-1652283739zmsgoi4075.jpg",
-   link: "https://page.auctions.yahoo.co.jp/jp/auction/r1051310637",
-}
-
-function YahooPaymentPage(props) {
+function YahooPaymentPage() {
    const [data, setData] = useState([])
    const [selectedRow, setSelectedRow] = useState(payment_model)
    const [showEditModal, setshowEditModal] = useState(false)
    const [InputDate, setInputDate] = useState(null)
    const [slip, setSlip] = useState({ id: "", image: "" })
    const [showSlipModal, setShowSlipModal] = useState(false)
+
    const handleShowEditModal = (id) => {
       const temp = data.filter((ft) => ft.id === id)[0]
       setInputDate(dayjs(temp.date, "D/M/YYYY"))
       setSelectedRow({ ...temp })
       setshowEditModal(true)
    }
+
    const handleOkEditModal = async () => {
       // eslint-disable-next-line prefer-const
       let {
@@ -110,6 +92,7 @@ function YahooPaymentPage(props) {
       setSelectedRow(payment_model)
       setshowEditModal(false)
    }
+
    const handleShowSlip = async (id) => {
       try {
          const response = await fetch(`/api/yahoo/slip/${id}`)
@@ -119,6 +102,28 @@ function YahooPaymentPage(props) {
          setShowSlipModal(true)
       } catch (err) {
          console.log(err)
+      }
+   }
+
+   const handleChangeNotificated = async (status, id) => {
+      try {
+         const response = await fetch(`/api/yahoo/payment?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ notificated: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.payments
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
       }
    }
    const columns = [
@@ -178,6 +183,7 @@ function YahooPaymentPage(props) {
             new Intl.NumberFormat("th-TH", {
                currency: "THB",
                style: "currency",
+               minimumFractionDigits: 0
             }).format(text),
       },
       {
@@ -188,7 +194,6 @@ function YahooPaymentPage(props) {
             new Intl.NumberFormat("ja-JP", {
                currency: "JPY",
                style: "currency",
-               minimumFractionDigits: 2,
             }).format(text),
       },
       {
@@ -200,12 +205,14 @@ function YahooPaymentPage(props) {
             const payment = payments[0]
             const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
 
-            const s =
+            const s = Math.ceil(
                (bid + (!delivery_fee ? 0 : delivery_fee)) * rate_yen +
-               (!tranfer_fee ? 0 : tranfer_fee)
+                  (!tranfer_fee ? 0 : tranfer_fee)
+            )
             return new Intl.NumberFormat("th-TH", {
                currency: "THB",
                style: "currency",
+               minimumFractionDigits: 0
             }).format(s)
          },
       },
@@ -227,14 +234,30 @@ function YahooPaymentPage(props) {
       },
       {
          title: "แจ้งชำระ",
-         dataIndex: "notificated",
+         dataIndex: "id",
          key: "notificated",
-         render: (text) =>
-            text === 1 ? (
-               <span style={{ color: "green" }}>แจ้งชำระแล้ว</span>
+         render: (id) => {
+            const payments = data.filter((ft) => ft.id === id)
+            const payment = payments[0]
+            const notificated = payment.notificated === 1
+            return notificated ? (
+               <div>
+                  <span style={{ color: "green" }}>แจ้งชำระแล้ว</span>
+                  <Switch
+                     checked={notificated}
+                     onClick={() => handleChangeNotificated(notificated, id)}
+                  />
+               </div>
             ) : (
-               <span style={{ color: "red" }}>รอแจ้งชำระ</span>
-            ),
+               <div>
+                  <span style={{ color: "red" }}>รอแจ้งชำระ</span>
+                  <Switch
+                     checked={notificated}
+                     onClick={() => handleChangeNotificated(notificated, id)}
+                  />
+               </div>
+            )
+         },
       },
       {
          title: "หมายเหตุลูกค้า",
@@ -282,13 +305,14 @@ function YahooPaymentPage(props) {
       ;(async () => {
          const response = await fetch("/api/yahoo/payment")
          const responseJson = await response.json()
+         console.log(responseJson)
          setData(
             responseJson.payments
                .sort((a, b) => sortDate(a.date, b.date))
                .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
-   })
+   }, [])
    return (
       <Fragment>
          <CardHead
@@ -379,16 +403,30 @@ function YahooPaymentPage(props) {
             </div>
          </Modal>
          <Modal
-            title="Slip"
+            // title="Slip"
             open={showSlipModal}
             onCancel={() => setShowSlipModal(false)}
             okText="ยืนยัน"
             cancelText="ยกเลิก"
+            footer={false}
+            wrapClassName="Slip-Modal"
          >
-            <img src={slip.image} alt="" width={100} />
+            <img src={slip.image} alt="" width={330} />
          </Modal>
          <style jsx global>
             {`
+               .Slip-Modal .ant-modal {
+                  width: 330px;
+                  margin: 0;
+                  top: 0;
+                  padding: 0;
+               }
+               .Slip-Modal .ant-modal-content {
+                  background-color: rgba(0, 0, 0, 0.01);
+                  padding: 0;
+                  width: fit-content;
+                  box-shadow: none;
+               }
                .UpdatePaymentModal .ant-picker {
                   width: 100%;
                   margin-bottom: 10px;
