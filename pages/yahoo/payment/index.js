@@ -24,6 +24,7 @@ import Layout from "../../../components/layout/layout"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
 import { payment_model } from "../../../model/tracking"
+import sortDateTime from "../../../utils/sortDateTime"
 
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
@@ -37,6 +38,25 @@ function YahooPaymentPage() {
    const [slip, setSlip] = useState({ id: "", image: "" })
    const [showSlipModal, setShowSlipModal] = useState(false)
 
+   const handleDeleteRow = async (id) => {
+      try {
+         const response = await fetch("/api/yahoo/payment", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ payment_id: id }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.payments
+               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("ลบรายการสำเร็จ!")
+      } catch (err) {
+         console.log(err)
+         message.error("ลบไม่สำเร็จ!")
+      }
+   }
    const handleShowEditModal = (id) => {
       const temp = data.filter((ft) => ft.id === id)[0]
       setInputDate(dayjs(temp.date, "D/M/YYYY"))
@@ -183,7 +203,7 @@ function YahooPaymentPage() {
             new Intl.NumberFormat("th-TH", {
                currency: "THB",
                style: "currency",
-               minimumFractionDigits: 0
+               minimumFractionDigits: 0,
             }).format(text),
       },
       {
@@ -212,7 +232,7 @@ function YahooPaymentPage() {
             return new Intl.NumberFormat("th-TH", {
                currency: "THB",
                style: "currency",
-               minimumFractionDigits: 0
+               minimumFractionDigits: 0,
             }).format(s)
          },
       },
@@ -287,6 +307,7 @@ function YahooPaymentPage() {
                {
                   key: "2",
                   label: "ลบ",
+                  onClick: () => handleDeleteRow(id)
                },
             ]
             return (
