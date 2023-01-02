@@ -8,6 +8,7 @@ import {
    message,
    Modal,
    Space,
+   Switch,
    Table,
 } from "antd"
 import Highlighter from "react-highlight-words"
@@ -78,6 +79,48 @@ function YahooTrackingsPage(props) {
       } catch (err) {
          console.log(err)
          message.success("เพิ่มข้อมูลผิดพลาด!")
+      }
+   }
+   const handleChangeReceived = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/yahoo?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ received: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
+   const handleChangeFinished = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/yahoo?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ finished: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
       }
    }
    const handleDeleteRow = async (id) => {
@@ -236,6 +279,7 @@ function YahooTrackingsPage(props) {
             text
          ),
    })
+
    const columns = [
       {
          title: "วันที่",
@@ -280,23 +324,77 @@ function YahooTrackingsPage(props) {
          ellipsis: false,
       },
       {
-         title: "รวม",
+         title: "จ่ายเงิน",
          dataIndex: "id",
-         key: "sum",
+         key: "received",
          render: (id) => {
-            const payments = data?.filter((ft) => ft.id === id)
-            const payment = payments[0]
-            const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
-            if (!delivery_fee || !tranfer_fee) {
-               return "-"
-            }
-            const s = (bid + delivery_fee) * rate_yen + tranfer_fee
-            return new Intl.NumberFormat("th-TH", {
-               currency: "THB",
-               style: "currency",
-            }).format(s)
+            const trackings = data.filter((ft) => ft.id === id)
+            const tracking = trackings[0]
+            const received = tracking.received === 1
+            return received ? (
+               <div>
+                  <span style={{ color: "green" }}>จ่ายเงินแล้ว</span>
+                  <Switch
+                     checked={received}
+                     onClick={() => handleChangeReceived(received, id)}
+                  />
+               </div>
+            ) : (
+               <div>
+                  <span style={{ color: "red" }}>รอจ่ายเงิน</span>
+                  <Switch
+                     checked={received}
+                     onClick={() => handleChangeReceived(received, id)}
+                  />
+               </div>
+            )
          },
       },
+      {
+         title: "comment",
+         dataIndex: "id",
+         key: "finished",
+         render: (id) => {
+            const trackings = data.filter((ft) => ft.id === id)
+            const tracking = trackings[0]
+            const finished = tracking.finished === 1
+            return finished ? (
+               <div>
+                  <span style={{ color: "green" }}>comment</span>
+                  <Switch
+                     checked={finished}
+                     onClick={() => handleChangeFinished(finished, id)}
+                  />
+               </div>
+            ) : (
+               <div>
+                  <span style={{ color: "red" }}>not comment</span>
+                  <Switch
+                     checked={finished}
+                     onClick={() => handleChangeFinished(finished, id)}
+                  />
+               </div>
+            )
+         },
+      },
+      // {
+      //    title: "รวม",
+      //    dataIndex: "id",
+      //    key: "sum",
+      //    render: (id) => {
+      //       const payments = data?.filter((ft) => ft.id === id)
+      //       const payment = payments[0]
+      //       const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
+      //       if (!delivery_fee || !tranfer_fee) {
+      //          return "-"
+      //       }
+      //       const s = (bid + delivery_fee) * rate_yen + tranfer_fee
+      //       return new Intl.NumberFormat("th-TH", {
+      //          currency: "THB",
+      //          style: "currency",
+      //       }).format(s)
+      //    },
+      // },
       {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
