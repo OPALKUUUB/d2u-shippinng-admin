@@ -29,6 +29,7 @@ import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
+import PasteImage from "../../../components/PasteImage"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -51,6 +52,47 @@ function Web123Page() {
    const [searchedColumn, setSearchedColumn] = useState("")
    const searchInput = useRef(null)
 
+   const toBase64 = (file) =>
+      new Promise((resolve, reject) => {
+         const reader = new window.FileReader()
+         reader.readAsDataURL(file)
+         reader.onload = () => resolve(reader.result)
+         reader.onerror = (error) => reject(error)
+      })
+   const handlePasteImage = async (e) => {
+      const file = e.clipboardData.files[0]
+
+      const image = await toBase64(file)
+      try {
+         const response = await fetch(`/api/tracking/images?id=${trackingId}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ image }),
+         })
+         const responseJson = await response.json()
+         const { tracking_image } = responseJson
+         const new_tracking_image = tracking_image.reduce(
+            (accumulator, currentValue, index) => [
+               ...accumulator,
+               {
+                  uid: index,
+                  name: `image${index}.png`,
+                  status: "done",
+                  url: currentValue.image,
+                  id: currentValue.id,
+               },
+            ],
+            []
+         )
+         setFileList(new_tracking_image)
+         message.success("add image success!")
+      } catch (err) {
+         console.log(err)
+         message.error("add image fail")
+      }
+   }
    const handleOkUploadImages = async () => {
       try {
          const doneImage =
@@ -937,6 +979,7 @@ function Web123Page() {
                >
                   {fileList.length < 7 && "+ Upload"}
                </Upload>
+               <PasteImage handlePasteImage={handlePasteImage}/>
             </div>
          </Modal>
          <style jsx>
