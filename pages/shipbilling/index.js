@@ -1,15 +1,37 @@
-import { Table, message, Select } from "antd"
+import {
+   Table,
+   message,
+   Select,
+   Dropdown,
+   Space,
+   Modal,
+   Input,
+   Button,
+   Switch,
+} from "antd"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useState } from "react"
 import { useRouter } from "next/router"
+import { DownOutlined } from "@ant-design/icons"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
+
+const { TextArea } = Input
 
 function ShipBilling() {
    const router = useRouter()
    const [data, setData] = useState([])
    const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
    const [items, setItems] = useState([])
+   const [showEditModal, setShowEditModal] = useState(false)
+   const [selectedRow, setSelectedRow] = useState({
+      shipbilling_id: "",
+      user_id: "",
+      payment_type: "",
+      remark: "",
+   })
+   const [address, setAddress] = useState("")
+   const [caseAddress, setCaseAddress] = useState(5)
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
       setVoyageSelect(value)
@@ -32,11 +54,141 @@ function ShipBilling() {
          console.log(err)
       }
    }
-   const handleSelectRow = async (user_id) => {
-      // console.log(voyageSelect, user_id)
-      router.push(
-         `/shipbilling/invoice?&voyage=${voyageSelect}&user_id=${user_id}`
-      )
+
+   const handleShowEditModal = (user_id) => {
+      setSelectedRow(data.filter((ft) => ft.user_id === user_id)[0])
+      setShowEditModal(true)
+   }
+   const handleOkEditModal = async () => {
+      // console.log(selectedRow)
+      let { shipbilling_id } = selectedRow
+      if (selectedRow.shipbilling_id === null) {
+         const response1 = await fetch(`/api/shipbilling`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               user_id: selectedRow.user_id,
+               voyage: voyageSelect,
+            }),
+         })
+         const responseJson1 = await response1.json()
+         shipbilling_id = responseJson1.billing.id
+      }
+      const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            address: selectedRow.address,
+            remark: selectedRow.remark,
+            payment_type: selectedRow.payment_type,
+         }),
+      })
+      const responseJson = await response.json()
+      const { billing } = responseJson
+      setData((prev) => {
+         const index = prev.findIndex(
+            (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
+         )
+         console.log(index)
+         return [
+            ...prev.slice(0, index),
+            { ...billing, username: selectedRow.username },
+            ...prev.slice(index + 1),
+         ]
+      })
+      message.success("success!")
+   }
+
+   const handleClickAddressCustomer = async () => {
+      const { user_id } = selectedRow
+      const response = await fetch(`/api/user/all?user_id=${user_id}`)
+      const responseJson = await response.json()
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      const txt = selectedRow.address + responseJson.user?.address
+      setSelectedRow((prev) => ({ ...prev, address: txt }))
+   }
+
+   const handleChangeNoti = async (status, bill) => {
+      console.log(bill)
+      // eslint-disable-next-line prefer-destructuring
+      let shipbilling_id = bill.shipbilling_id
+      if (bill.shipbilling_id === null) {
+         const response1 = await fetch(`/api/shipbilling`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               user_id: bill.user_id,
+               voyage: voyageSelect,
+            }),
+         })
+         const responseJson1 = await response1.json()
+         shipbilling_id = responseJson1.billing.id
+      }
+      const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            invoice_notificate: status ? 0 : 1,
+         }),
+      })
+      const responseJson = await response.json()
+      const { billing } = responseJson
+      setData((prev) => {
+         const index = prev.findIndex(
+            (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
+         )
+         console.log(index)
+         return [
+            ...prev.slice(0, index),
+            { ...billing, username: selectedRow.username },
+            ...prev.slice(index + 1),
+         ]
+      })
+      message.success("success!")
+   }
+   const handleChangeCheck = async (status, bill) => {
+      console.log(bill)
+      // eslint-disable-next-line prefer-destructuring
+      let shipbilling_id = bill.shipbilling_id
+      if (bill.shipbilling_id === null) {
+         const response1 = await fetch(`/api/shipbilling`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               user_id: bill.user_id,
+               voyage: voyageSelect,
+            }),
+         })
+         const responseJson1 = await response1.json()
+         shipbilling_id = responseJson1.billing.id
+      }
+      const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            check: status ? 0 : 1,
+         }),
+      })
+      const responseJson = await response.json()
+      const { billing } = responseJson
+      setData((prev) => {
+         const index = prev.findIndex(
+            (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
+         )
+         console.log(index)
+         return [
+            ...prev.slice(0, index),
+            { ...billing, username: selectedRow.username },
+            ...prev.slice(index + 1),
+         ]
+      })
+      message.success("success!")
    }
    const columns = [
       {
@@ -52,6 +204,13 @@ function ShipBilling() {
          key: "username",
       },
       {
+         title: "ที่อยู่จัดส่ง",
+         dataIndex: "address",
+         width: "120px",
+         key: "payment_type",
+         render: (text) => (text === null ? "-" : text),
+      },
+      {
          title: "payment_type",
          dataIndex: "payment_type",
          width: "120px",
@@ -60,17 +219,63 @@ function ShipBilling() {
       },
       {
          title: "invoice_notificate",
-         dataIndex: "invoice_notificate",
+         dataIndex: "user_id",
          width: "120px",
          key: "invoice_notificate",
-         render: (text) => (text === null ? "-" : text),
+         render: (user_id) => {
+            const billings = data.filter((ft) => ft.user_id === user_id)
+            const billing = billings[0]
+            const invoice_notificate = billing.invoice_notificate === 1
+            return invoice_notificate ? (
+               <div>
+                  <span style={{ color: "green" }}>จ่ายเงินแล้ว</span>
+                  <Switch
+                     checked={invoice_notificate}
+                     onClick={() =>
+                        handleChangeNoti(invoice_notificate, billing)
+                     }
+                  />
+               </div>
+            ) : (
+               <div>
+                  <span style={{ color: "red" }}>รอจ่ายเงิน</span>
+                  <Switch
+                     checked={invoice_notificate}
+                     onClick={() =>
+                        handleChangeNoti(invoice_notificate, billing)
+                     }
+                  />
+               </div>
+            )
+         },
       },
       {
          title: "check",
-         dataIndex: "check",
+         dataIndex: "user_id",
          width: "120px",
          key: "check",
-         render: (text) => (text === null ? "-" : text),
+         render: (user_id) => {
+            const billings = data.filter((ft) => ft.user_id === user_id)
+            const billing = billings[0]
+            const check = billing.check === 1
+            return check ? (
+               <div>
+                  <span style={{ color: "green" }}>check</span>
+                  <Switch
+                     checked={check}
+                     onClick={() => handleChangeCheck(check, billing)}
+                  />
+               </div>
+            ) : (
+               <div>
+                  <span style={{ color: "red" }}>not</span>
+                  <Switch
+                     checked={check}
+                     onClick={() => handleChangeCheck(check, billing)}
+                  />
+               </div>
+            )
+         },
       },
       {
          title: "remark",
@@ -81,14 +286,48 @@ function ShipBilling() {
       },
       {
          title: "จัดการ",
-         fixed: "right",
          dataIndex: "user_id",
-         width: "80px",
-         key: "user_id",
-         render: (user_id) => (
-            <button onClick={() => handleSelectRow(user_id)}>manage</button>
-         ),
+         key: "manage",
+         ellipsis: true,
+         width: "90px",
+         fixed: "right",
+         render: (user_id) => {
+            const item_manage = [
+               {
+                  key: "1",
+                  label: "แก้ไข",
+                  onClick: () => handleShowEditModal(user_id),
+               },
+               {
+                  key: "2",
+                  label: "invoice",
+                  onClick: () =>
+                     window.open(
+                        `/shipbilling/invoice?&voyage=${voyageSelect}&user_id=${user_id}`
+                     ),
+               },
+            ]
+            return (
+               <Space>
+                  <Dropdown menu={{ items: item_manage }}>
+                     <span>
+                        จัดการ <DownOutlined />
+                     </span>
+                  </Dropdown>
+               </Space>
+            )
+         },
       },
+      // {
+      //    title: "จัดการ",
+      //    fixed: "right",
+      //    dataIndex: "user_id",
+      //    width: "80px",
+      //    key: "user_id",
+      //    render: (user_id) => (
+      //       <button onClick={() => handleSelectRow(user_id)}>manage</button>
+      //    ),
+      // },
    ]
    useEffect(() => {
       ;(async () => {
@@ -157,6 +396,75 @@ function ShipBilling() {
                />
             </div>
          </div>
+         <Modal
+            open={showEditModal}
+            onCancel={() => setShowEditModal(false)}
+            onOk={handleOkEditModal}
+         >
+            <div>
+               <label>จัดส่ง: </label>
+               <Button
+                  onClick={() =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        address: "รับเอง พระราม 3",
+                     })
+                  }
+               >
+                  รับเอง พระราม 3
+               </Button>
+               <Button
+                  onClick={() =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        address: "รับเอง ร่มเกล้า",
+                     })
+                  }
+               >
+                  รับเอง ร่มเกล้า
+               </Button>
+               <Button
+                  onClick={() =>
+                     setSelectedRow({ ...selectedRow, address: "D2U ส่งให้" })
+                  }
+               >
+                  D2U ส่งให้
+               </Button>
+               <Button onClick={handleClickAddressCustomer}>
+                  ขนส่งเอกชน(ที่อยู่ ลค.)
+               </Button>
+               <TextArea
+                  rows={4}
+                  value={selectedRow?.address}
+                  onChange={(e) =>
+                     setSelectedRow({ ...selectedRow, address: e.target.value })
+                  }
+               />
+               <label>หมายเหตุ: </label>
+               <TextArea
+                  rows={4}
+                  value={selectedRow?.remark}
+                  onChange={(e) =>
+                     setSelectedRow({ ...selectedRow, remark: e.target.value })
+                  }
+               />
+               <label>payment_type: </label>
+               <select
+                  value={selectedRow.payment_type}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        payment_type: e.target.value,
+                     })
+                  }
+               >
+                  <option value={null}>selected</option>
+                  <option value="เงินสด">เงินสด</option>
+                  <option value="โอนเงิน">โอนเงิน</option>
+                  <option value="ไม่มีค่าเรือ">ไม่มีค่าเรือ</option>
+               </select>
+            </div>
+         </Modal>
          <style jsx>
             {`
                .container-table {
