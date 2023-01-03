@@ -1,4 +1,7 @@
+
 import mysql from "../../../../lib/db"
+
+
 
 async function handler(req, res) {
    if (req.method === "GET") {
@@ -13,40 +16,25 @@ async function handler(req, res) {
          message: "get shimizu tracking success!",
          tracking_image,
       })
-   }
-   // if (req.method === "PATCH") {
-   //    const { tracking_id } = req.query
-   //    const { deleteImages, addImages } = req.body
-   //    await mysql.connect()
-   //    if (deleteImages.length > 0) {
-   //       let sql = "DELETE FROM `tracking-image` WHERE id = ?"
-   //       for (let i = 1; i < deleteImages.length; i++) {
-   //          sql += " OR  id = ? "
-   //       }
-   //       await mysql.query(sql, deleteImages)
-   //    }
-   //    if (addImages.length > 0) {
-   //       let sql =
-   //          "INSERT INTO `tracking-image` (image, tracking_id) VALUES (?,?)"
-   //       for (let i = 1; i < addImages.length; i++) {
-   //          sql += " ,(?,?) "
-   //       }
-   //       await mysql.query(
-   //          sql,
-   //          addImages.reduce(
-   //             (accumulator, currentValue) => [
-   //                ...accumulator,
-   //                currentValue,
-   //                tracking_id,
-   //             ],
-   //             []
-   //          )
-   //       )
-   //    }
-   //    await mysql.end()
-   //    res.status(200).json({ massage: "update image" })
-   // }
-   if (req.method === "PATCH") {
+   } else if (req.method === "PUT") {
+      const id = parseInt(req.query.id, 10)
+      const { image } = req.body
+      await mysql.connect()
+      const result = await mysql.query(
+         "INSERT INTO `tracking-image` (image, tracking_id) VALUES (?,?)",
+         [image, id]
+      )
+      console.log(result)
+      const tracking_image = await mysql.query(
+         "SELECT id, image FROM `tracking-image` WHERE tracking_id = ?",
+         [parseInt(id, 10)]
+      )
+      await mysql.end()
+      res.status(200).json({
+         message: "add image success",
+         tracking_image,
+      })
+   } else if (req.method === "PATCH") {
       const { tracking_id } = req.query
       const { doneImage } = req.body
       await mysql.connect()
