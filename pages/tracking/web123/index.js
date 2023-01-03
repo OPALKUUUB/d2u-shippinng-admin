@@ -8,6 +8,7 @@ import {
    Button,
    DatePicker,
    Modal,
+   Switch,
    Table,
    Input,
    InputNumber,
@@ -39,6 +40,7 @@ dayjs.extend(localeData)
 function Web123Page() {
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
+   console.log("data", data)
    const [addForm, setAddForm] = useState(addForm_model)
    const [InputDate, setInputDate] = useState(null)
    const [InputVoyageDate, setInputVoyageDate] = useState(null)
@@ -51,7 +53,48 @@ function Web123Page() {
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
    const searchInput = useRef(null)
-
+   const handleChangeReceived = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ received: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
+   const handleChangeFinished = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ finished: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const toBase64 = (file) =>
       new Promise((resolve, reject) => {
          const reader = new window.FileReader()
@@ -129,7 +172,8 @@ function Web123Page() {
             reader.onload = () => resolve(reader.result)
          })
       }
-      const image = new Image()
+      // eslint-disable-next-line no-restricted-globals
+      const image = new Image(screen.width)
       image.src = src
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
@@ -462,6 +506,76 @@ function Web123Page() {
          ellipsis: false,
       },
       {
+         title: "pre-order",
+         dataIndex: "received",
+         key: "received",
+         filters: [
+            {
+               text: "pre order",
+               value: 1,
+            },
+            {
+               text: "not pre order",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.received === value,
+         render: (received, record) =>
+            received ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>pre order</span>
+                  <Switch
+                     checked={received}
+                     onClick={() => handleChangeReceived(received, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not pre order</span>
+                  <Switch
+                     checked={received}
+                     onClick={() => handleChangeReceived(received, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "done",
+         dataIndex: "finished",
+         key: "finished",
+         filters: [
+            {
+               text: "done",
+               value: 1,
+            },
+            {
+               text: "not done",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.finished === value,
+         render: (finished, record) =>
+            finished ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>done</span>
+                  <Switch
+                     checked={finished}
+                     onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not done</span>
+                  <Switch
+                     checked={finished}
+                     onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
@@ -496,28 +610,6 @@ function Web123Page() {
          dataIndex: "voyage",
          key: "voyage",
          ...getColumnSearchProps("voyage"),
-      },
-      {
-         title: "Preorder",
-         dataIndex: "received",
-         key: "received",
-         render: (text) =>
-            text ? (
-               <span className="text-green-600">preorder</span>
-            ) : (
-               <span className="text-yellow-600">not preorder</span>
-            ),
-      },
-      {
-         title: "Done",
-         dataIndex: "finished",
-         key: "finished",
-         render: (text) =>
-            text ? (
-               <span className="text-green-300">Done</span>
-            ) : (
-               <span className="text-yellow-300">Not Done</span>
-            ),
       },
       {
          title: "จัดการ",
@@ -979,7 +1071,7 @@ function Web123Page() {
                >
                   {fileList.length < 7 && "+ Upload"}
                </Upload>
-               <PasteImage handlePasteImage={handlePasteImage}/>
+               <PasteImage handlePasteImage={handlePasteImage} />
             </div>
          </Modal>
          <style jsx>

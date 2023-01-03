@@ -127,7 +127,8 @@ function ShimizuTrackingsPage() {
             reader.onload = () => resolve(reader.result)
          })
       }
-      const image = new Image()
+      // eslint-disable-next-line no-restricted-globals
+      const image = new Image(screen.width)
       image.src = src
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
@@ -871,7 +872,7 @@ function ShimizuTrackingsPage() {
                >
                   {fileList.length < 7 && "+ Upload"}
                </Upload>
-               <PasteImage handlePasteImage={handlePasteImage}/>
+               <PasteImage handlePasteImage={handlePasteImage} />
             </div>
          </Modal>
       </Fragment>
