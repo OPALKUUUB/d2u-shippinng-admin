@@ -16,15 +16,27 @@ function ShipBilling() {
       try {
          const response = await fetch(`/api/shipbilling?voyage=${value}`)
          const responseJson = await response.json()
-         // console.log(responseJson.trackings)
-         setData(responseJson.trackings)
+         console.log(responseJson.trackings)
+         setData(
+            responseJson.trackings.sort((a, b) => {
+               if (a.username < b.username) {
+                  return -1
+               }
+               if (a.username > b.username) {
+                  return 1
+               }
+               return 0
+            })
+         )
       } catch (err) {
          console.log(err)
       }
    }
-   const handleSelectRow = async (voyage, user_id) => {
-      console.log(voyage, user_id)
-      router.push(`/shipbilling/invoice?&voyage=${voyage}&user_id=${user_id}`)
+   const handleSelectRow = async (user_id) => {
+      // console.log(voyageSelect, user_id)
+      router.push(
+         `/shipbilling/invoice?&voyage=${voyageSelect}&user_id=${user_id}`
+      )
    }
    const columns = [
       {
@@ -70,25 +82,12 @@ function ShipBilling() {
       {
          title: "จัดการ",
          fixed: "right",
-         dataIndex: "id",
+         dataIndex: "user_id",
          width: "80px",
-         key: "id",
-         render: (id) => {
-            const tracking_id = id
-            const voyage = voyageSelect
-            return (
-               <button
-                  onClick={() =>
-                     handleSelectRow(
-                        voyage,
-                        data.filter((ft) => ft.id === tracking_id)[0].user_id
-                     )
-                  }
-               >
-                  manage
-               </button>
-            )
-         },
+         key: "user_id",
+         render: (user_id) => (
+            <button onClick={() => handleSelectRow(user_id)}>manage</button>
+         ),
       },
    ]
    useEffect(() => {
@@ -103,14 +102,18 @@ function ShipBilling() {
                   const date_a_f = date_a.split("/")
                   // [y,m,d]
                   const datetime_a_f = [
-                     parseInt(date_a_f[2], 10) >2500 ? parseInt(date_a_f[2], 10)-543 : parseInt(date_a_f[2], 10),
+                     parseInt(date_a_f[2], 10) > 2500
+                        ? parseInt(date_a_f[2], 10) - 543
+                        : parseInt(date_a_f[2], 10),
                      parseInt(date_a_f[1], 10),
                      parseInt(date_a_f[0], 10),
                   ]
                   const date_b_f = date_b.split("/")
                   // [y,m,d]
                   const datetime_b_f = [
-                     parseInt(date_b_f[2], 10) >2500 ? parseInt(date_b_f[2], 10)-543 : parseInt(date_b_f[2], 10),
+                     parseInt(date_b_f[2], 10) > 2500
+                        ? parseInt(date_b_f[2], 10) - 543
+                        : parseInt(date_b_f[2], 10),
                      parseInt(date_b_f[1], 10),
                      parseInt(date_b_f[0], 10),
                   ]
@@ -125,7 +128,7 @@ function ShipBilling() {
                .reduce(
                   (accumulator, currentValue) => [
                      ...accumulator,
-                     { label: currentValue.voyage , value: currentValue.voyage },
+                     { label: currentValue.voyage, value: currentValue.voyage },
                   ],
                   []
                )

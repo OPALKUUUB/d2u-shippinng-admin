@@ -25,6 +25,7 @@ import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import { useRouter } from "next/router"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
@@ -37,6 +38,7 @@ dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 function ShimizuTrackingsPage() {
+   const router = useRouter()
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
    const [addForm, setAddForm] = useState(addForm_model)
@@ -536,6 +538,7 @@ function ShimizuTrackingsPage() {
                >
                   เพิ่มรายการ
                </Button>
+               <Button className="ml-2" onClick={() => router.push("/")}>Upload CSV</Button>
             </div>
             <Table
                dataSource={data}
