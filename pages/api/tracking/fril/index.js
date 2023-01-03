@@ -59,8 +59,31 @@ async function handler(req, res) {
       )
       await mysql.end()
       res.status(201).json({ message: "insert data success!", trackings })
-   }
-   if (req.method === "PATCH") {
+   } else if (req.method === "PUT") {
+      const id = parseInt(req.query.id, 10)
+      const { received, finished } = req.body
+      await mysql.connect()
+      if (received !== undefined) {
+         await mysql.query("update trackings set received = ? where id = ?", [
+            received,
+            id,
+         ])
+      } else if (finished !== undefined) {
+         await mysql.query("update trackings set finished = ? where id = ?", [
+            finished,
+            id,
+         ])
+      }
+      const trackings = await mysql.query(
+         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
+         ["fril"]
+      )
+      await mysql.end()
+      res.status(200).json({
+         message: "update received or finished mercari tracking success!",
+         trackings,
+      })
+   } else if (req.method === "PATCH") {
       const { id } = req.query
       const {
          user_id,

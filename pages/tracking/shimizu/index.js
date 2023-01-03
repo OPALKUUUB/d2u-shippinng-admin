@@ -25,6 +25,7 @@ import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import { useRouter } from "next/router"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
@@ -37,6 +38,7 @@ dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 function ShimizuTrackingsPage() {
+   const router = useRouter()
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
    const [addForm, setAddForm] = useState(addForm_model)
@@ -127,7 +129,8 @@ function ShimizuTrackingsPage() {
             reader.onload = () => resolve(reader.result)
          })
       }
-      const image = new Image()
+      // eslint-disable-next-line no-restricted-globals
+      const image = new Image(screen.width)
       image.src = src
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
@@ -536,6 +539,7 @@ function ShimizuTrackingsPage() {
                >
                   เพิ่มรายการ
                </Button>
+               <Button className="ml-2" onClick={() => router.push("/")}>Upload CSV</Button>
             </div>
             <Table
                dataSource={data}
@@ -871,7 +875,7 @@ function ShimizuTrackingsPage() {
                >
                   {fileList.length < 7 && "+ Upload"}
                </Upload>
-               <PasteImage handlePasteImage={handlePasteImage}/>
+               <PasteImage handlePasteImage={handlePasteImage} />
             </div>
          </Modal>
       </Fragment>

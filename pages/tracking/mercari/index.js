@@ -9,6 +9,7 @@ import {
    Button,
    DatePicker,
    Modal,
+   Switch,
    Table,
    Input,
    InputNumber,
@@ -53,6 +54,48 @@ function MercariTrackingsPage() {
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
    const searchInput = useRef(null)
+   const handleChangeReceived = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/mercari?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ received: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
+   const handleChangeFinished = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/mercari?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ finished: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(
+            responseJson.trackings
+               .sort((a, b) => sortDate(a.date, b.date))
+               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
+         )
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const toBase64 = (file) =>
       new Promise((resolve, reject) => {
          const reader = new window.FileReader()
@@ -128,7 +171,8 @@ function MercariTrackingsPage() {
             reader.onload = () => resolve(reader.result)
          })
       }
-      const image = new Image()
+      // eslint-disable-next-line no-restricted-globals
+      const image = new Image(screen.width)
       image.src = src
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
@@ -434,6 +478,7 @@ function MercariTrackingsPage() {
          title: "URL",
          dataIndex: "link",
          key: "link",
+         width: 150,
          render: (text) =>
             text !== null ? (
                <Link href={text} target="_blank" rel="noopener">
@@ -443,6 +488,76 @@ function MercariTrackingsPage() {
                </Link>
             ) : (
                "-"
+            ),
+      },
+      {
+         title: "รับของ",
+         dataIndex: "received",
+         key: "received",
+         filters: [
+            {
+               text: "รับของแล้ว",
+               value: 1,
+            },
+            {
+               text: "รอรับของ",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.received === value,
+         render: (received, record) =>
+            received ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>รับของแล้ว</span>
+                  <Switch
+                     checked={received}
+                     onClick={() => handleChangeReceived(received, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>รอรับของ</span>
+                  <Switch
+                     checked={received}
+                     onClick={() => handleChangeReceived(received, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "done",
+         dataIndex: "finished",
+         key: "finished",
+         filters: [
+            {
+               text: "done",
+               value: 1,
+            },
+            {
+               text: "not done",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.finished === value,
+         render: (finished, record) =>
+            finished ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>done</span>
+                  <Switch
+                     checked={finished}
+                     onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not done</span>
+                  <Switch
+                     checked={finished}
+                     onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
             ),
       },
       {
@@ -474,18 +589,6 @@ function MercariTrackingsPage() {
          dataIndex: "voyage",
          key: "voyage",
          ...getColumnSearchProps("voyage"),
-      },
-      {
-         title: "รับของ",
-         dataIndex: "received",
-         key: "received",
-         render: (text) => (text ? "รับของเรียบร้อย" : "ยังไม่ได้รับของ"),
-      },
-      {
-         title: "Done",
-         dataIndex: "finished",
-         key: "finished",
-         render: (text) => (text ? "Done" : "Not Done"),
       },
       {
          title: "จัดการ",
