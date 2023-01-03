@@ -17,7 +17,8 @@ async function handler(req, res) {
          ship_billing.payment_type,
          ship_billing.invoice_notificate,
          ship_billing.check,
-         ship_billing.remark
+         ship_billing.remark,
+         ship_billing.address
          FROM ship_billing 
          WHERE voyage = ?`,
          [voyage]
@@ -34,6 +35,7 @@ async function handler(req, res) {
                   shipbilling_id: null,
                   user_id: c.user_id,
                   username: c.username,
+                  address: c.address,
                   created_at: date,
                   voyage,
                   payment_type: null,
@@ -107,7 +109,7 @@ async function handler(req, res) {
          message: "get data from user and voyage success",
          trackings,
          billing: billings[0],
-         user: {...users[0], point_current},
+         user: { ...users[0], point_current },
       })
    } else if (req.method === "PATCH") {
       const id = parseInt(req.query.id, 10)
@@ -116,8 +118,15 @@ async function handler(req, res) {
          req.body,
          id,
       ])
+      const billing = await mysql.query(
+         "select id as shipbilling_id, ship_billing.* from ship_billing where id = ?",
+         [id]
+      )
       await mysql.end()
-      res.status(200).json({ message: "update shipbilling success!" })
+      res.status(200).json({
+         message: "update shipbilling success!",
+         billing: billing[0],
+      })
    }
 }
 
