@@ -637,14 +637,14 @@ function FrillPage() {
          render: (text) => (text === null ? "-" : text),
       },
       {
-         title: "ราคา(฿)",
+         title: "ราคา",
          dataIndex: "price",
          key: "price",
          render: (text) =>
             text === null
                ? "-"
-               : new Intl.NumberFormat("th-TH", {
-                    currency: "THB",
+               : new Intl.NumberFormat("ja-JP", {
+                    currency: "JPY",
                     style: "currency",
                  }).format(text),
       },

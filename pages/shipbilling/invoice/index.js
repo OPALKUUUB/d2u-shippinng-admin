@@ -112,7 +112,7 @@ function InvoicePage({ user_id, voyage }) {
             }),
          })
          const responseJson = await response.json()
-         console.log(responseJson)
+         // console.log(responseJson)
          const { trackings } = await responseJson
          setData(responseJson.trackings)
          setBill(responseJson.billing)
@@ -148,7 +148,6 @@ function InvoicePage({ user_id, voyage }) {
                      { weight: 0, cod: 0 }
                   )
                const price = [sum_weight_cod].reduce((a2, c2) => {
-                  // console.log(c2)
                   if (c2.weight === 0) {
                      return a2
                   }
@@ -179,7 +178,7 @@ function InvoicePage({ user_id, voyage }) {
                      [c.channel]: {
                         price:
                            c.weight < 1
-                              ? a[c.channel].price
+                              ? a[c.channel].price 
                               : a[c.channel].price +
                                 (c.weight - 1) * 200 +
                                 c.cod * c.rate_yen,

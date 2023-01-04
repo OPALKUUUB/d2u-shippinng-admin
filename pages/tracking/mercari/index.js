@@ -657,7 +657,13 @@ function MercariTrackingsPage() {
          title: "ราคา",
          dataIndex: "price",
          key: "price",
-         render: (text) => (text === null ? "-" : text),
+         render: (text) =>
+            text === null
+               ? "-"
+               : new Intl.NumberFormat("ja-JP", {
+                    currency: "JPY",
+                    style: "currency",
+                 }).format(text),
       },
       {
          title: "รอบเรือ",
