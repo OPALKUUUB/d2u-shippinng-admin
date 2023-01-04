@@ -66,8 +66,6 @@ function MercariTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("success!")
       } catch (err) {
@@ -87,8 +85,6 @@ function MercariTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("success!")
       } catch (err) {
@@ -238,8 +234,6 @@ function MercariTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          setAddForm(addForm_model)
          setInputDate(null)
@@ -302,8 +296,6 @@ function MercariTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          setAddForm(addForm_model)
          setInputDate(null)
@@ -324,8 +316,6 @@ function MercariTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
@@ -634,8 +624,6 @@ function MercariTrackingsPage() {
          // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
    }, [])

@@ -71,8 +71,6 @@ function YahooTrackingsPage(props) {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("เพิ่มข้อมูลสำเร็จ!")
          setShowEditModal(false)
@@ -93,8 +91,6 @@ function YahooTrackingsPage(props) {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("success!")
       } catch (err) {
@@ -114,8 +110,6 @@ function YahooTrackingsPage(props) {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("success!")
       } catch (err) {
@@ -135,8 +129,6 @@ function YahooTrackingsPage(props) {
          message.success("ลบข้อมูลเรียบร้อย!")
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       } catch (err) {
          console.log(err)
@@ -469,8 +461,6 @@ function YahooTrackingsPage(props) {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
    }, [])

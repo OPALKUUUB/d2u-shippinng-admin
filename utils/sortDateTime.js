@@ -1,4 +1,12 @@
-function sortDateTime(datetime_a, datetime_b) {
+function sortDateTime(datetime_a_in, datetime_b_in) {
+   let datetime_a = datetime_a_in
+   let datetime_b = datetime_b_in
+   if (!datetime_a.includes(" ")) {
+      datetime_a += " 00:00:00"
+   }
+   if (!datetime_b.includes(" ")) {
+      datetime_b += " 00:00:00"
+   }
    const date_a = datetime_a.split(" ")[0]
    const time_a = datetime_a.split(" ")[1]
    const date_a_f = date_a.split("/")
@@ -26,7 +34,7 @@ function sortDateTime(datetime_a, datetime_b) {
    ]
    for (let i = 0; i < 6; i++) {
       if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
-         return datetime_b_f[i] -datetime_a_f[i] 
+         return datetime_b_f[i] - datetime_a_f[i]
       }
    }
    return 0
