@@ -194,8 +194,6 @@ function ShimizuTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          setAddForm(addForm_model)
          setInputDate(null)
@@ -255,8 +253,6 @@ function ShimizuTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          setAddForm(addForm_model)
          setInputDate(null)
@@ -277,8 +273,6 @@ function ShimizuTrackingsPage() {
          const responseJson = await response.json()
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
@@ -408,29 +402,7 @@ function ShimizuTrackingsPage() {
          dataIndex: "date",
          width: "120px",
          key: "date",
-         sorter: (a, b) => {
-            const datetime_a = a.date
-            const date_a_f = datetime_a.split("/")
-            // [y,m,d,h,m,s]
-            const datetime_a_f = [
-               parseInt(date_a_f[2], 10),
-               parseInt(date_a_f[1], 10),
-               parseInt(date_a_f[0], 10),
-            ]
-            const datetime_b = b.date
-            const date_b_f = datetime_b.split("/")
-            const datetime_b_f = [
-               parseInt(date_b_f[2], 10),
-               parseInt(date_b_f[1], 10),
-               parseInt(date_b_f[0], 10),
-            ]
-            for (let i = 0; i < 3; i++) {
-               if (datetime_a_f[i] - datetime_b_f[i] !== 0) {
-                  return datetime_a_f[i] - datetime_b_f[i]
-               }
-            }
-            return 0
-         },
+         sorter: (a, b) => sortDate(a.date, b.date),
          ...getColumnSearchProps("date"),
       },
       {
@@ -523,8 +495,6 @@ function ShimizuTrackingsPage() {
          // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
          setData(
             responseJson.trackings
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
    }, [])
@@ -539,7 +509,7 @@ function ShimizuTrackingsPage() {
                >
                   เพิ่มรายการ
                </Button>
-               <Button className="ml-2" onClick={() => router.push("/")}>Upload CSV</Button>
+               <Button className="ml-2" onClick={() => router.push("/tracking/shimizu/upload/csv")}>Upload CSV</Button>
             </div>
             <Table
                dataSource={data}

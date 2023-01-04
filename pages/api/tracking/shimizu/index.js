@@ -1,5 +1,6 @@
 import mysql from "../../../../lib/db"
 import genDate from "../../../../utils/genDate"
+import sortDateTime from "../../../../utils/sortDateTime"
 
 async function handler(req, res) {
    if (req.method === "GET") {
@@ -11,7 +12,9 @@ async function handler(req, res) {
       await mysql.end()
       res.status(200).json({
          message: "get shimizu tracking success!",
-         trackings,
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
       })
    }
    if (req.method === "POST") {
@@ -54,7 +57,12 @@ async function handler(req, res) {
          ["shimizu"]
       )
       await mysql.end()
-      res.status(201).json({ message: "insert data success!", trackings })
+      res.status(201).json({
+         message: "insert data success!",
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+      })
    }
    if (req.method === "PATCH") {
       const { id } = req.query
@@ -90,7 +98,12 @@ async function handler(req, res) {
          ["shimizu"]
       )
       await mysql.end()
-      res.status(200).json({ message: "update data success!", trackings })
+      res.status(200).json({
+         message: "update data success!",
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+      })
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
       await mysql.connect()
@@ -100,7 +113,12 @@ async function handler(req, res) {
          ["shimizu"]
       )
       await mysql.end()
-      res.status(200).json({ message: "delete row successful !", trackings })
+      res.status(200).json({
+         message: "delete row successful !",
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+      })
    }
 }
 
