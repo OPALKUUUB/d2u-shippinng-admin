@@ -678,8 +678,8 @@ function Web123Page() {
          render: (text) =>
             text === null
                ? "-"
-               : new Intl.NumberFormat("th-TH", {
-                    currency: "THB",
+               : new Intl.NumberFormat("ja-JP", {
+                    currency: "JPY",
                     style: "currency",
                  }).format(text),
       },
