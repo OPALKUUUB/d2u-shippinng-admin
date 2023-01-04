@@ -509,7 +509,7 @@ function ShimizuTrackingsPage() {
                >
                   เพิ่มรายการ
                </Button>
-               <Button className="ml-2" onClick={() => router.push("/")}>Upload CSV</Button>
+               <Button className="ml-2" onClick={() => router.push("/tracking/shimizu/upload/csv")}>Upload CSV</Button>
             </div>
             <Table
                dataSource={data}
