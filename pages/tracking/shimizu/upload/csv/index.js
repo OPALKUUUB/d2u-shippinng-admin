@@ -94,6 +94,10 @@ function UploadCSVShimizu() {
       .map((item, index) => ({ ...item, key: index }))
 
    const handleSubmit = async () => {
+      if (dataCorrectUsername.length === 0) {
+         message.warning("no data to upload!")
+         return
+      }
       setLoadingButton(true)
       const date = genDate()
       const bodyData = dataCorrectUsername.map((item) => ({
@@ -354,7 +358,7 @@ function UploadCSVShimizu() {
             }}
          >
             <Upload
-               accept="csv"
+               accept=".csv"
                showUploadList={false}
                onChange={(info) => {
                   if (info.file.status !== "uploading") {
