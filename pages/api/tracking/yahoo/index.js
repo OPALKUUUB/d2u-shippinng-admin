@@ -1,4 +1,5 @@
 import mysql from "../../../../lib/db"
+import sortDateTime from "../../../../utils/sortDateTime"
 
 async function handler(req, res) {
    if (req.method === "GET") {
@@ -33,7 +34,12 @@ async function handler(req, res) {
          ["yahoo"]
       )
       await mysql.end()
-      res.status(200).json({ message: "in tracking yahoo", trackings })
+      res.status(200).json({
+         message: "in tracking yahoo",
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+      })
    }
    if (req.method === "PUT") {
       const {
@@ -105,7 +111,9 @@ async function handler(req, res) {
       )
       res.status(200).json({
          message: "update yahoo tracking success!",
-         trackings,
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
       })
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
@@ -142,7 +150,12 @@ async function handler(req, res) {
       )
       await mysql.end()
       console.log(trackings)
-      res.status(200).json({ message: "delete row successful !", trackings })
+      res.status(200).json({
+         message: "delete row successful !",
+         trackings: trackings
+            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
+            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+      })
    }
 }
 
