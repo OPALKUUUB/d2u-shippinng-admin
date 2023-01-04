@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef, Fragment } from "react"
-import { UploadOutlined, SearchOutlined, EditOutlined } from "@ant-design/icons"
+import {
+   UploadOutlined,
+   SearchOutlined,
+   FileAddOutlined,
+   LoadingOutlined,
+} from "@ant-design/icons"
 import {
    Button,
-   DatePicker,
    Modal,
    Table,
    Input,
-   InputNumber,
    Select,
    Space,
-   Dropdown,
    Upload,
    message,
 } from "antd"
@@ -18,13 +20,56 @@ import { getSession } from "next-auth/react"
 import Papa from "papaparse"
 import Layout from "../../../../../components/layout/layout"
 import sortDate from "../../../../../utils/sortDate"
+import genDate from "../../../../../utils/genDate"
 
 function UploadCSVShimizu() {
    const [data, setData] = useState([])
    const [users, setUsers] = useState([])
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
+   const [showEditDataModal, setShowEditDataModal] = useState(false)
+   const [selectedRow, setSelectedRow] = useState({
+      id: "",
+      date: "",
+      username: "",
+      track_no: "",
+      box_no: "",
+      weight: 0,
+      voyage: "",
+      remark: "",
+   })
+   const [userSelect, setUserSelect] = useState(null)
    const searchInput = useRef(null)
+   const [loadingButton, setLoadingButton] = useState(false)
+
+   const handleOkEditModal = () => {
+      // console.log(userSelect, selectedRow)
+      setData((prev) => {
+         const dataIndex = prev.findIndex((fi) => fi.id === selectedRow.id)
+         return [
+            ...prev.slice(0, dataIndex),
+            { ...selectedRow, username: userSelect },
+            ...prev.slice(dataIndex + 1),
+         ]
+      })
+      message.success("การแก้ไขสำเร็จ!")
+      setSelectedRow({
+         id: "",
+         date: "",
+         username: "",
+         track_no: "",
+         box_no: "",
+         weight: 0,
+         voyage: "",
+         remark: "",
+      })
+      setShowEditDataModal(false)
+   }
+   const handleEditData = (id) => {
+      setSelectedRow(data.find((f) => f.id === id))
+      setShowEditDataModal(true)
+   }
+
    useEffect(() => {
       ;(async () => {
          const response = await fetch("/api/user/all")
@@ -34,14 +79,50 @@ function UploadCSVShimizu() {
          )
       })()
    }, [])
-   const dataCorrectUsername = data.filter(
-      (ele) =>
-         users.find((user) => user.username === ele.username) !== undefined
-   )
-   const dataNotCorrectUsername = data.filter(
-      (ele) =>
-         users.find((user) => user.username === ele.username) === undefined
-   )
+   const dataCorrectUsername = data
+      .filter(
+         (ele) =>
+            users.find((user) => user.username === ele.username) !== undefined
+      )
+      .map((item, index) => ({ ...item, key: index }))
+
+   const dataNotCorrectUsername = data
+      .filter(
+         (ele) =>
+            users.find((user) => user.username === ele.username) === undefined
+      )
+      .map((item, index) => ({ ...item, key: index }))
+
+   const handleSubmit = async () => {
+      setLoadingButton(true)
+      const date = genDate()
+      const bodyData = dataCorrectUsername.map((item) => ({
+         date: item.date,
+         user_id: users.find((fi) => fi.username === item.username).id,
+         track_no: item.track_no,
+         box_no: item.box_no,
+         weight: item.weight || 0,
+         voyage: item.voyage,
+         remark_admin: item.remark,
+         channel: "shimizu",
+         created_at: date,
+         updated_at: date,
+      }))
+      try {
+         const response = await fetch("/api/tracking/shimizu/upload/csv", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ trackings: bodyData }),
+         })
+         const responseJson = await response.json()
+         message.success(responseJson.message)
+         setData([])
+         setLoadingButton(false)
+      } catch (error) {
+         console.log(error)
+         message.error(error.message)
+      }
+   }
    const handleSearch = (selectedKeys, confirm, dataIndex) => {
       confirm()
       setSearchText(selectedKeys[0])
@@ -157,7 +238,7 @@ function UploadCSVShimizu() {
             text
          ),
    })
-   const columns = [
+   const columns_correct = [
       {
          title: "วันที่",
          dataIndex: "date",
@@ -196,10 +277,70 @@ function UploadCSVShimizu() {
          ...getColumnSearchProps("voyage"),
       },
       {
-         title: "หมายเหตุ",
+         title: "หมายเหตุแอดมิน",
          dataIndex: "remark",
          key: "remark",
          render: (text) => (text === null || text === "" ? "-" : text),
+      },
+   ]
+   const columns_not_correct = [
+      {
+         title: "วันที่",
+         dataIndex: "date",
+         key: "date",
+         sorter: (a, b) => sortDate(a.date, b.date),
+         ...getColumnSearchProps("date"),
+      },
+      {
+         title: "ชื่อลูกค้าใหม่",
+         dataIndex: "username",
+         key: "username",
+         ...getColumnSearchProps("username"),
+      },
+      {
+         title: "ชื่อลูกค้าที่ไม่มีข้อมูล",
+         dataIndex: "username",
+         key: "username",
+         ...getColumnSearchProps("username"),
+      },
+      {
+         title: "เลขแทรกกิงค์",
+         dataIndex: "track_no",
+         key: "track_no",
+         ...getColumnSearchProps("track_no"),
+      },
+      {
+         title: "เลขกล่อง",
+         dataIndex: "box_no",
+         key: "box_no",
+         ...getColumnSearchProps("box_no"),
+      },
+      {
+         title: "น้ำหนัก",
+         dataIndex: "weight",
+         key: "weight",
+         render: (text) => (text === null || text === "" ? "-" : text),
+      },
+      {
+         title: "รอบเรือ",
+         dataIndex: "voyage",
+         key: "voyage",
+         ...getColumnSearchProps("voyage"),
+      },
+      {
+         title: "หมายเหตุแอดมิน",
+         dataIndex: "remark",
+         key: "remark",
+         render: (text) => (text === null || text === "" ? "-" : text),
+      },
+      {
+         title: "แก้ไข",
+         dataIndex: "id",
+         key: "edit",
+         fixed: "right",
+         render: (id) => (
+            <Button onClick={() => handleEditData(id)}>Edit</Button>
+         ),
       },
    ]
    return (
@@ -234,7 +375,12 @@ function UploadCSVShimizu() {
                         header: true,
                         skipEmptyLines: true,
                         complete(results) {
-                           setData(results.data)
+                           setData(
+                              results.data.map((item, index) => ({
+                                 ...item,
+                                 id: index,
+                              }))
+                           )
                         },
                      })
                   }
@@ -254,10 +400,91 @@ function UploadCSVShimizu() {
             </Upload>
          </div>
          <div className="m-[10px] p-[10px] bg-white">
-            <Table dataSource={dataCorrectUsername} columns={columns} />
+            <h3>ข้อมูลที่ไม่พบในฐานข้อมูล</h3>
+            <Table
+               dataSource={dataNotCorrectUsername}
+               columns={columns_not_correct}
+               scroll={{
+                  x: 1500,
+                  y: 200,
+               }}
+            />
+            <Modal
+               open={showEditDataModal}
+               onCancel={() => setShowEditDataModal(false)}
+               onOk={handleOkEditModal}
+            >
+               <div>
+                  ชื่อลูกค้าที่ไม่มีข้อมูล:{" "}
+                  {selectedRow?.username ?? "loading..."}
+               </div>
+               <div>
+                  <label>ชื่อลูกค้าใหม่: </label>
+                  <Select
+                     optionFilterProp="children"
+                     filterOption={(input, option) =>
+                        (option?.label ?? "")
+                           .toLowerCase()
+                           .includes(input.toLowerCase())
+                     }
+                     filterSort={(optionA, optionB) =>
+                        (optionA?.label ?? "")
+                           .toLowerCase()
+                           .localeCompare((optionB?.label ?? "").toLowerCase())
+                     }
+                     showSearch
+                     style={{ width: 200 }}
+                     placeholder="เลือกลูกค้า"
+                     value={userSelect}
+                     onChange={(value) => setUserSelect(value)}
+                     options={users?.reduce((a, c) => {
+                        const { username } = c
+                        return [
+                           ...a,
+                           {
+                              value: username,
+                              label: username,
+                           },
+                        ]
+                     }, [])}
+                  />
+               </div>
+               <p className="text-[red]">
+                  *
+                  เมื่อทำการยืนยันการแก้ไขแล้วข้อมูลจะถูกย้ายลงไปตารางที่เตรียม
+                  Import ข้อมูลโดยทันที
+               </p>
+            </Modal>
          </div>
          <div className="m-[10px] p-[10px] bg-white">
-            <Table dataSource={dataNotCorrectUsername} columns={columns} />
+            <h3>ข้อมูลเตรียมอัพโหลด</h3>
+            <Table
+               dataSource={dataCorrectUsername}
+               columns={columns_correct}
+               scroll={{
+                  x: 1500,
+                  y: 200,
+               }}
+            />
+            <div className="w-full h-[50px]">
+               {!loadingButton && (
+                  <Button
+                     className="mt-3 float-right transition-all duration-100"
+                     onClick={handleSubmit}
+                     icon={<FileAddOutlined />}
+                  >
+                     ยืนยันการอัพโหลดข้อมูล
+                  </Button>
+               )}
+               {loadingButton && (
+                  <Button
+                     className="mt-3 float-right transition-all duration-100"
+                     icon={<LoadingOutlined />}
+                  >
+                     กำลังอัพโหลดข้อมูล
+                  </Button>
+               )}
+            </div>
          </div>
       </Fragment>
    )
