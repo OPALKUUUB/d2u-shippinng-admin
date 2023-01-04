@@ -63,9 +63,7 @@ function Web123Page() {
             body: JSON.stringify({ received: status ? 0 : 1 }),
          })
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          message.success("success!")
       } catch (err) {
          console.log(err)
@@ -82,9 +80,7 @@ function Web123Page() {
             body: JSON.stringify({ finished: status ? 0 : 1 }),
          })
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          message.success("success!")
       } catch (err) {
          console.log(err)
@@ -236,9 +232,7 @@ function Web123Page() {
             }
          )
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
@@ -299,9 +293,7 @@ function Web123Page() {
             body: JSON.stringify(body),
          })
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
@@ -319,9 +311,7 @@ function Web123Page() {
             method: "DELETE",
          })
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
          console.log(err)
@@ -451,6 +441,101 @@ function Web123Page() {
          ) : (
             text
          ),
+   })
+   const handleSearchDate = (selectedKeys, confirm) => {
+      confirm()
+   }
+   const handleResetDate = (clearFilters) => {
+      clearFilters()
+   }
+   const getColumnDateProps = () => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div className="p-[8px]" onKeyDown={(e) => e.stopPropagation()}>
+            <Space direction="vertical">
+               <Space>
+                  <DatePicker
+                     defaultValue={null}
+                     value={selectedKeys[0]}
+                     format="D/M/YYYY"
+                     onChange={(value) => {
+                        if (value === null) {
+                           setSelectedKeys([])
+                        } else {
+                           setSelectedKeys([value])
+                        }
+                     }}
+                     style={{ width: 300 }}
+                  />
+               </Space>
+               <Space>
+                  <Button
+                     type="primary"
+                     onClick={() => handleSearchDate(selectedKeys, confirm)}
+                     icon={<SearchOutlined />}
+                     size="small"
+                     style={{
+                        width: 90,
+                     }}
+                  >
+                     Search
+                  </Button>
+                  <Button
+                     onClick={() =>
+                        clearFilters && handleResetDate(clearFilters)
+                     }
+                     size="small"
+                     style={{
+                        width: 90,
+                     }}
+                  >
+                     Reset
+                  </Button>
+                  <Button
+                     type="link"
+                     size="small"
+                     onClick={() => {
+                        confirm({
+                           closeDropdown: false,
+                        })
+                     }}
+                  >
+                     Filter
+                  </Button>
+                  <Button
+                     type="link"
+                     size="small"
+                     onClick={() => {
+                        close()
+                     }}
+                  >
+                     close
+                  </Button>
+               </Space>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1890ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) => {
+         if (record.voyage === null) {
+            return false
+         }
+         return record.voyage === genDate(value).split(" ")[0]
+      },
+      render: (text) =>
+         // eslint-disable-next-line no-nested-ternary
+         text === "" || text === null ? "-" : text,
    })
    const columns = [
       {
@@ -593,8 +678,8 @@ function Web123Page() {
          render: (text) =>
             text === null
                ? "-"
-               : new Intl.NumberFormat("th-TH", {
-                    currency: "THB",
+               : new Intl.NumberFormat("ja-JP", {
+                    currency: "JPY",
                     style: "currency",
                  }).format(text),
       },
@@ -602,7 +687,13 @@ function Web123Page() {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
-         ...getColumnSearchProps("voyage"),
+         ...getColumnDateProps(),
+      },
+      {
+         title: "หมายเหตุ",
+         dataIndex: "remark_admin",
+         key: "remark_admin",
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
          title: "จัดการ",
@@ -646,9 +737,7 @@ function Web123Page() {
          const responseJson = await response.json()
          // console.log(responseJson)
          // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
       })()
    }, [])
    return (
