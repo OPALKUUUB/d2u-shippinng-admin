@@ -1,17 +1,24 @@
 import genDate from "../utils/genDate"
 
 export const addForm_model = {
-   date: genDate(),
+   id: "",
+   username: "",
    user_id: "",
-   box_no: "",
-   track_no: "",
-   weight: null,
+   rate_yen: "",
+   date: genDate(),
    link: "",
-   price: null,
+   price: "",
+   weight: "",
+   track_no: "",
+   box_no: "",
    voyage: "",
+   channel: "",
    remark_user: "",
    remark_admin: "",
-   channel: "frill",
+   received: "",
+   finished: "",
+   created_at: "",
+   updated_at: "",
 }
 export const trackingForm_model = {
    id: "",

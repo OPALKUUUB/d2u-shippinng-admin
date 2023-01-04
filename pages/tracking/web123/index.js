@@ -493,10 +493,13 @@ function Web123Page() {
          key: "link",
          width: "125px",
          render: (text) => {
-            const link_code =
-               text === null || text === ""
-                  ? "-"
-                  : text.split("https://")[1].split("/")[0]
+            let link_code = text
+            if (text === null || text === "") {
+               link_code = "-"
+            } else if (text.includes("https://")) {
+               // eslint-disable-next-line prefer-destructuring
+               link_code = text.split("https://")[1].split("/")[0]
+            }
             return (
                <a href={text} target="_blank" rel="noreferrer">
                   {link_code}
