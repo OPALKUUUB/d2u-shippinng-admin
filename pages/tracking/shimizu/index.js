@@ -192,9 +192,7 @@ function ShimizuTrackingsPage() {
             }
          )
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
@@ -251,9 +249,7 @@ function ShimizuTrackingsPage() {
             body: JSON.stringify(body),
          })
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          setAddForm(addForm_model)
          setInputDate(null)
          setInputVoyageDate(null)
@@ -271,9 +267,7 @@ function ShimizuTrackingsPage() {
             method: "DELETE",
          })
          const responseJson = await response.json()
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
          message.success("ลบข้อมูลเรียบร้อย!")
       } catch (err) {
          console.log(err)
@@ -439,18 +433,18 @@ function ShimizuTrackingsPage() {
          key: "weight",
          render: (text) => (text === null ? "-" : text),
       },
-      {
-         title: "ราคา",
-         dataIndex: "price",
-         key: "price",
-         render: (text) =>
-            text === null
-               ? "-"
-               : new Intl.NumberFormat("ja-JP", {
-                    currency: "JPY",
-                    style: "currency",
-                 }).format(text),
-      },
+      // {
+      //    title: "ราคา",
+      //    dataIndex: "price",
+      //    key: "price",
+      //    render: (text) =>
+      //       text === null
+      //          ? "-"
+      //          : new Intl.NumberFormat("ja-JP", {
+      //               currency: "JPY",
+      //               style: "currency",
+      //            }).format(text),
+      // },
       {
          title: "รอบเรือ",
          dataIndex: "voyage",
@@ -499,9 +493,7 @@ function ShimizuTrackingsPage() {
          const responseJson = await response.json()
          // console.log(responseJson)
          // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
-         setData(
-            responseJson.trackings
-         )
+         setData(responseJson.trackings)
       })()
    }, [])
    return (
@@ -515,7 +507,12 @@ function ShimizuTrackingsPage() {
                >
                   เพิ่มรายการ
                </Button>
-               <Button className="ml-2" onClick={() => router.push("/tracking/shimizu/upload/csv")}>Upload CSV</Button>
+               <Button
+                  className="ml-2"
+                  onClick={() => router.push("/tracking/shimizu/upload/csv")}
+               >
+                  Upload CSV
+               </Button>
             </div>
             <Table
                dataSource={data}
