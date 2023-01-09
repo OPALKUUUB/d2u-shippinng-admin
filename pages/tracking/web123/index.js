@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable indent */
 import {
    AppstoreAddOutlined,
@@ -37,10 +38,61 @@ dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
+const TrackingImage = ({
+   id,
+   handleShowImages,
+   trackingId,
+   tricker,
+   setTricker,
+}) => {
+   const [images, setImages] = useState(null)
+   useEffect(() => {
+      setImages(null)
+      ;(async () => {
+         try {
+            const response = await fetch(`/api/tracking/images?id=${id}`)
+            const responseJson = await response.json()
+            setImages(responseJson.tracking_image)
+         } catch (err) {
+            console.log(err)
+         }
+      })()
+   }, [id])
+   useEffect(() => {
+      if (tricker && id === trackingId) {
+         ;(async () => {
+            try {
+               const response = await fetch(`/api/tracking/images?id=${id}`)
+               const responseJson = await response.json()
+               setImages(responseJson.tracking_image)
+               setTricker(false)
+            } catch (err) {
+               console.log(err)
+            }
+         })()
+      }
+   }, [tricker])
+   return (
+      <div>
+         {images === null ? (
+            <p>Loading...</p>
+         ) : images.length === 0 ? (
+            <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
+         ) : (
+            <img
+               src={images[0].image}
+               alt="tracking_image"
+               width={100}
+               onClick={() => handleShowImages(id)}
+               style={{ cursor: "pointer" }}
+            />
+         )}
+      </div>
+   )
+}
 function Web123Page() {
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
-   console.log("data", data)
    const [addForm, setAddForm] = useState(addForm_model)
    const [InputDate, setInputDate] = useState(null)
    const [InputVoyageDate, setInputVoyageDate] = useState(null)
@@ -52,6 +104,7 @@ function Web123Page() {
    const [trackingId, setTrackingId] = useState("")
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
+   const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
    const handleChangeReceived = async (status, id) => {
       try {
@@ -144,6 +197,7 @@ function Web123Page() {
             body: JSON.stringify({ doneImage }),
          })
          message.success("เพิ่มรูปภาพสำเร็จ!")
+         setTricker(true)
          setShowImagesModal(false)
       } catch (err) {
          message.error("เพิ่มรูปภาพผิดพลาด!")
@@ -181,16 +235,21 @@ function Web123Page() {
          const responseJson = await response.json()
          const { tracking_image } = responseJson
          const new_tracking_image = tracking_image.reduce(
-            (accumulator, currentValue, index) => [
-               ...accumulator,
-               {
-                  uid: index,
-                  name: `image${index}.png`,
-                  status: "done",
-                  url: currentValue.image,
-                  id: currentValue.id,
-               },
-            ],
+            (accumulator, currentValue, index) => {
+               if (currentValue.image !== null) {
+                  return [
+                     ...accumulator,
+                     {
+                        uid: index,
+                        name: `image${index}.png`,
+                        status: "done",
+                        url: currentValue.image,
+                        id: currentValue.id,
+                     },
+                  ]
+               }
+               return accumulator
+            },
             []
          )
          setTrackingId(id)
@@ -552,7 +611,13 @@ function Web123Page() {
          width: "120px",
          key: "id",
          render: (id) => (
-            <Button onClick={() => handleShowImages(id)}>ดูรูปภาพ</Button>
+            <TrackingImage
+               id={id}
+               handleShowImages={handleShowImages}
+               trackingId={trackingId}
+               tricker={tricker}
+               setTricker={setTricker}
+            />
          ),
       },
       {

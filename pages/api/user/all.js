@@ -3,7 +3,7 @@ import mysql from "../../../lib/db"
 async function handler(req, res) {
    if (req.method === "GET") {
       await mysql.connect()
-      console.log(req.query.user_id)
+      // console.log(req.query.user_id)
       if (req.query.user_id !== undefined) {
          const user_id = parseInt(req.query.user_id, 10)
          const users = await mysql.query("select * from users where id = ?", [
