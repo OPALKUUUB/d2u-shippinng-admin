@@ -77,7 +77,7 @@ function InvoicePage({ user_id, voyage }) {
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ cost_delivery: costDelivery }),
       })
-      const responseJson = await response.json()
+      await response.json()
       message.success("success!")
    }
    const handleSaveDiscount = async () => {
@@ -86,7 +86,7 @@ function InvoicePage({ user_id, voyage }) {
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ discount }),
       })
-      const responseJson = await response.json()
+      await response.json()
       message.success("success!")
    }
    const handleCheckDiscount = async (checked) => {
@@ -95,10 +95,11 @@ function InvoicePage({ user_id, voyage }) {
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ check: checked ? 1 : 0 }),
       })
-      const responseJson = await response.json()
+      await response.json()
       message.success("success!")
       setCheckDiscount(checked)
    }
+
    useEffect(() => {
       ;(async () => {
          const response = await fetch(`/api/shipbilling`, {
@@ -112,9 +113,9 @@ function InvoicePage({ user_id, voyage }) {
             }),
          })
          const responseJson = await response.json()
-         // console.log(responseJson)
+         console.log(responseJson)
          const { trackings } = await responseJson
-         setData(responseJson.trackings)
+         setData([...responseJson.trackings])
          setBill(responseJson.billing)
          setDiscount(responseJson.billing?.discount)
          setCostdDelivery(
@@ -122,7 +123,7 @@ function InvoicePage({ user_id, voyage }) {
                ? 0
                : responseJson.billing?.cost_delivery
          )
-         console.log(responseJson.billing?.cost_delivery)
+         // console.log(responseJson.billing?.cost_delivery)
          setUser(responseJson.user)
          const baseRate1 = CalBaseRate(
             responseJson.user?.point_last,
@@ -178,7 +179,7 @@ function InvoicePage({ user_id, voyage }) {
                      [c.channel]: {
                         price:
                            c.weight < 1
-                              ? a[c.channel].price 
+                              ? a[c.channel].price
                               : a[c.channel].price +
                                 (c.weight - 1) * 200 +
                                 c.cod * c.rate_yen,

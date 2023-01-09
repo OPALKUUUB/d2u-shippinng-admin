@@ -47,6 +47,7 @@ const TrackingImage = ({
 }) => {
    const [images, setImages] = useState(null)
    useEffect(() => {
+      setImages(null)
       ;(async () => {
          try {
             const response = await fetch(`/api/tracking/images?id=${id}`)
@@ -56,7 +57,7 @@ const TrackingImage = ({
             console.log(err)
          }
       })()
-   }, [])
+   }, [id])
    useEffect(() => {
       if (tricker && id === trackingId) {
          ;(async () => {

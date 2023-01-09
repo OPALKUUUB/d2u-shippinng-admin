@@ -10,20 +10,40 @@ async function handler(req, res) {
             FROM trackings
             WHERE
             user_id = ?
+            AND channel NOT LIKE 'yahoo'
          `,
          [user_id]
       )
-      const trackings = trackings_user.filter(
+      const trancking_user_yahoo = await mysql.query(
+         `
+            SELECT trackings.*, ${"`yahoo-auction-payment`"}.bid
+            FROM trackings
+            JOIN
+            ${"`yahoo-auction-payment`"}
+            ON ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
+            user_id  = ?
+            AND channel LIKE 'yahoo'
+         `,
+         [user_id]
+      )
+      const trackings = [...trackings_user, ...trancking_user_yahoo].filter(
          (ft) =>
             parseInt(ft.created_at.split(" ")[0].split("/")[2], 10) === 2023
       )
       const point_current = trackings.reduce((a, c) => {
-         console.log(c)
          const price = c.price === null ? 0 : c.price
          const weight = c.weight === null ? 0 : c.weight
-         const rate_yen = c.rate_yen === null ? 0.29 : c.rate_yen
-         const point = Math.ceil(price / rate_yen / 2000) + weight
-         return a + point
+         if (c.channel === "shimizu") {
+            return a + weight
+         }
+         if (c.channel === "mercari" || c.channel === "fril") {
+            return a + Math.ceil(price / 1000) + weight >= 1 ? weight - 1 : 0
+         }
+         if (c.channel === "yahoo") {
+            console.log("in")
+            return a + Math.ceil(c.bid / 2000) + weight
+         }
+         return a + Math.ceil(price / 2000) + weight
       }, 0)
       await mysql.end()
       res.status(200).json({
