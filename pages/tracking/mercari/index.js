@@ -28,7 +28,6 @@ import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 import Link from "next/link"
-import { Image } from "next/image"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
@@ -212,6 +211,7 @@ function MercariTrackingsPage() {
    }
    const onPreview = async (file) => {
       let src = file.url
+      console.log("src", src)
       if (!src) {
          src = await new Promise((resolve) => {
             const reader = new FileReader()
@@ -219,8 +219,7 @@ function MercariTrackingsPage() {
             reader.onload = () => resolve(reader.result)
          })
       }
-      // eslint-disable-next-line no-restricted-globals
-      const image = new Image(screen.width)
+      const image = new Image(500)
       image.src = src
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
