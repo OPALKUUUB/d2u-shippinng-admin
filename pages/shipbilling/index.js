@@ -192,12 +192,6 @@ function ShipBilling() {
    }
    const columns = [
       {
-         title: "วันที่",
-         dataIndex: "created_at",
-         width: "120px",
-         key: "created_at",
-      },
-      {
          title: "username",
          dataIndex: "username",
          width: "120px",
