@@ -34,6 +34,7 @@ function CalBaseRateByWeight(weight) {
    return 200
 }
 function InvoicePage({ user_id, voyage }) {
+   console.log(voyage)
    const router = useRouter()
    const [data, setData] = useState([])
    const [bill, setBill] = useState({})

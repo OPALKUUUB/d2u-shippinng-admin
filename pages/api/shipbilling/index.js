@@ -100,8 +100,9 @@ async function handler(req, res) {
             WHERE
             user_id = ?
             AND channel NOT LIKE 'yahoo'
+            and voyage like ?
          `,
-         [user_id]
+         [user_id, voyage]
       )
       const trancking_user_yahoo = await mysql.query(
          `
@@ -112,9 +113,9 @@ async function handler(req, res) {
             ON ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
             where
             trackings.user_id  = ? 
-            AND trackings.channel LIKE ?;
+            AND trackings.channel LIKE ? and trackings.voyage like ?;
          `,
-         [user_id,'yahoo']
+         [user_id,'yahoo', voyage]
       )
       const trackings = [...trackings_user, ...trancking_user_yahoo].filter(
          (ft) =>
