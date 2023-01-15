@@ -21,8 +21,9 @@ async function handler(req, res) {
             JOIN
             ${"`yahoo-auction-payment`"}
             ON ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
-            user_id  = ?
-            AND channel LIKE 'yahoo'
+            where
+            trackings.user_id  = ?
+            AND trackings.channel LIKE 'yahoo'
          `,
          [user_id]
       )
@@ -40,7 +41,6 @@ async function handler(req, res) {
             return a + Math.ceil(price / 1000) + weight >= 1 ? weight - 1 : 0
          }
          if (c.channel === "yahoo") {
-            console.log("in")
             return a + Math.ceil(c.bid / 2000) + weight
          }
          return a + Math.ceil(price / 2000) + weight
