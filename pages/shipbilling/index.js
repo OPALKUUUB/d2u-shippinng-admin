@@ -10,9 +10,10 @@ import {
    Switch,
 } from "antd"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useEffect, useState } from "react"
+import React, { Fragment, useEffect, useState, useRef } from "react"
 import { useRouter } from "next/router"
-import { DownOutlined } from "@ant-design/icons"
+import { DownOutlined, SearchOutlined } from "@ant-design/icons"
+import Highlighter from "react-highlight-words"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
 
@@ -32,6 +33,9 @@ function ShipBilling() {
    })
    const [address, setAddress] = useState("")
    const [caseAddress, setCaseAddress] = useState(5)
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
       setVoyageSelect(value)
@@ -190,12 +194,137 @@ function ShipBilling() {
       })
       message.success("success!")
    }
+   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+      confirm()
+      setSearchText(selectedKeys[0])
+      setSearchedColumn(dataIndex)
+   }
+   const handleReset = (clearFilters) => {
+      clearFilters()
+      setSearchText("")
+   }
+   const getColumnSearchProps = (dataIndex) => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1890ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) => {
+         if (record[dataIndex] === null) {
+            return false
+         }
+         return record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+      },
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+      render: (text) =>
+         // eslint-disable-next-line no-nested-ternary
+         searchedColumn === dataIndex ? (
+            <Highlighter
+               highlightStyle={{
+                  backgroundColor: "#ffc069",
+                  padding: 0,
+               }}
+               searchWords={[searchText]}
+               autoEscape
+               textToHighlight={text ? text.toString() : ""}
+            />
+         ) : text === "" || text === null ? (
+            "-"
+         ) : (
+            text
+         ),
+   })
+   console.log("data", data)
    const columns = [
       {
          title: "username",
          dataIndex: "username",
          width: "120px",
          key: "username",
+         ...getColumnSearchProps("username"),
       },
       {
          title: "ที่อยู่จัดส่ง",
@@ -209,6 +338,21 @@ function ShipBilling() {
          dataIndex: "payment_type",
          width: "120px",
          key: "payment_type",
+         filters: [
+            {
+               text: "เงินสด",
+               value: "เงินสด",
+            },
+            {
+               text: "โอนเงิน",
+               value: "โอนเงิน",
+            },
+            {
+               text: "ไม่มีค่าเรือ",
+               value: "ไม่มีค่าเรือ",
+            },
+         ],
+         onFilter: (value, record) => record.payment_type?.indexOf(value) === 0,
          render: (text) => (text === null ? "-" : text),
       },
       {
@@ -216,6 +360,17 @@ function ShipBilling() {
          dataIndex: "user_id",
          width: "120px",
          key: "invoice_notificate",
+         filters: [
+            {
+               text: "จ่ายเงินแล้ว",
+               value: 1,
+            },
+            {
+               text: "รอจ่ายเงิน",
+               value: 0 || null,
+            },
+         ],
+         onFilter: (value, record) => record.invoice_notificate === value,
          render: (user_id) => {
             const billings = data.filter((ft) => ft.user_id === user_id)
             const billing = billings[0]
@@ -248,6 +403,17 @@ function ShipBilling() {
          dataIndex: "user_id",
          width: "120px",
          key: "check",
+         filters: [
+            {
+               text: "check",
+               value: 1,
+            },
+            {
+               text: "not",
+               value: 0 || null,
+            },
+         ],
+         onFilter: (value, record) => record.check === value,
          render: (user_id) => {
             const billings = data.filter((ft) => ft.user_id === user_id)
             const billing = billings[0]
@@ -263,6 +429,45 @@ function ShipBilling() {
             ) : (
                <div>
                   <span style={{ color: "red" }}>not</span>
+                  <Switch
+                     checked={check}
+                     onClick={() => handleChangeCheck(check, billing)}
+                  />
+               </div>
+            )
+         },
+      },
+      {
+         title: "done",
+         dataIndex: "user_id",
+         width: "120px",
+         key: "check_2",
+         filters: [
+            {
+               text: "done",
+               value: 1,
+            },
+            {
+               text: "not done",
+               value: 0 || null,
+            },
+         ],
+         onFilter: (value, record) => record.check_2 === value,
+         render: (user_id) => {
+            const billings = data.filter((ft) => ft.user_id === user_id)
+            const billing = billings[0]
+            const check = billing.check_2 === 1
+            return check ? (
+               <div>
+                  <span style={{ color: "green" }}>done</span>
+                  <Switch
+                     checked={check}
+                     onClick={() => handleChangeCheck(check, billing)}
+                  />
+               </div>
+            ) : (
+               <div>
+                  <span style={{ color: "red" }}>not done</span>
                   <Switch
                      checked={check}
                      onClick={() => handleChangeCheck(check, billing)}
