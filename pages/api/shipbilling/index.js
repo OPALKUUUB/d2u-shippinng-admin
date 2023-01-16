@@ -119,10 +119,7 @@ async function handler(req, res) {
          `,
          [user_id, "yahoo", voyage]
       )
-      const trackings = [...trackings_user, ...trancking_user_yahoo].filter(
-         (ft) =>
-            parseInt(ft.created_at.split(" ")[0].split("/")[2], 10) === 2023
-      )
+      const trackings = [...trackings_user, ...trancking_user_yahoo]
       const point_current = trackings.reduce((a, c) => {
          const price = c.price === null ? 0 : c.price
          const weight = c.weight === null ? 0 : c.weight
