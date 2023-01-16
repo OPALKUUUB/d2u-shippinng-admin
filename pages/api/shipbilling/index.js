@@ -51,6 +51,7 @@ async function handler(req, res) {
          ship_billing.payment_type,
          ship_billing.invoice_notificate,
          ship_billing.check,
+         ship_billing.check_2
          ship_billing.remark,
          ship_billing.address
          FROM ship_billing 
@@ -75,6 +76,7 @@ async function handler(req, res) {
                   payment_type: null,
                   invoice_notificate: null,
                   check: null,
+                  check_2: null,
                   remark: null,
                },
             ]
