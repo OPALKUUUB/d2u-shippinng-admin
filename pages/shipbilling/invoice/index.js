@@ -213,8 +213,14 @@ function InvoicePage({ user_id, voyage }) {
          )
    )
    // setSumTable(sum_channel)
-
+   console.log("data", data)
    const columns = [
+      {
+         title: "วันที่",
+         dataIndex: "date",
+         width: "120px",
+         key: "date",
+      },
       {
          title: "ช่องทาง",
          dataIndex: "channel",
@@ -238,6 +244,13 @@ function InvoicePage({ user_id, voyage }) {
          dataIndex: "cod",
          width: "120px",
          key: "cod",
+      },
+      {
+         title: "หมายเหตุแอดมิน",
+         dataIndex: "remark_admin",
+         width: "120px",
+         key: "remark_admin",
+         render: (text) => (text === "" || null ? "-" : text),
       },
       {
          title: "แก้ไข COD",
