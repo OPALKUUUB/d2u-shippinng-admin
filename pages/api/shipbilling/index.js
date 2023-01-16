@@ -51,6 +51,7 @@ async function handler(req, res) {
          ship_billing.payment_type,
          ship_billing.invoice_notificate,
          ship_billing.check,
+         ship_billing.check_2,
          ship_billing.remark,
          ship_billing.address
          FROM ship_billing 
@@ -75,6 +76,7 @@ async function handler(req, res) {
                   payment_type: null,
                   invoice_notificate: null,
                   check: null,
+                  check_2: null,
                   remark: null,
                },
             ]
@@ -115,7 +117,7 @@ async function handler(req, res) {
             trackings.user_id  = ? 
             AND trackings.channel LIKE ? and trackings.voyage like ?;
          `,
-         [user_id,'yahoo', voyage]
+         [user_id, "yahoo", voyage]
       )
       const trackings = [...trackings_user, ...trancking_user_yahoo].filter(
          (ft) =>
@@ -165,22 +167,15 @@ async function handler(req, res) {
       // console.log(billings)
       await mysql.end()
       const user = { ...users[0], point_current }
-      const baseRate1 = CalBaseRate(
-         user?.point_last,
-         user
-      )
-      const baseRate2 = CalBaseRate(
-         user?.point_last,
-         user
-      )
-      const baseRate =
-         baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
+      const baseRate1 = CalBaseRate(user?.point_last, user)
+      const baseRate2 = CalBaseRate(user?.point_last, user)
+      const baseRate = baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
       res.status(200).json({
          message: "get data from user and voyage success",
          trackings,
          billing: billings[0],
          user,
-         baseRate
+         baseRate,
       })
    } else if (req.method === "PATCH") {
       const id = parseInt(req.query.id, 10)
