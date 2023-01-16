@@ -42,13 +42,13 @@ function ShipBilling() {
       try {
          const response = await fetch(`/api/shipbilling?voyage=${value}`)
          const responseJson = await response.json()
-         console.log(responseJson.trackings)
+         console.log("trackings", responseJson.trackings)
          setData(
             responseJson.trackings.sort((a, b) => {
-               if (a.username < b.username) {
+               if (a.username.toLowerCase() < b.username.toLowerCase()) {
                   return -1
                }
-               if (a.username > b.username) {
+               if (a.username.toLowerCase() > b.username.toLowerCase()) {
                   return 1
                }
                return 0
@@ -573,6 +573,7 @@ function ShipBilling() {
          )
       })()
    }, [])
+   console.log("items", items)
    return (
       <Fragment>
          <CardHead name="Ship Billing" />
