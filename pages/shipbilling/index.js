@@ -194,6 +194,46 @@ function ShipBilling() {
       })
       message.success("success!")
    }
+   const handleChangeCheck2 = async (status, bill) => {
+      console.log(bill)
+      // eslint-disable-next-line prefer-destructuring
+      let shipbilling_id = bill.shipbilling_id
+      if (bill.shipbilling_id === null) {
+         const response1 = await fetch(`/api/shipbilling`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               user_id: bill.user_id,
+               voyage: voyageSelect,
+            }),
+         })
+         const responseJson1 = await response1.json()
+         shipbilling_id = responseJson1.billing.id
+      }
+      const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            check_2: status ? 0 : 1,
+         }),
+      })
+      const responseJson = await response.json()
+      const { billing } = responseJson
+      setData((prev) => {
+         const index = prev.findIndex(
+            (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
+         )
+         console.log(index)
+         return [
+            ...prev.slice(0, index),
+            { ...billing, username: selectedRow.username },
+            ...prev.slice(index + 1),
+         ]
+      })
+      message.success("success!")
+   }
    const handleSearch = (selectedKeys, confirm, dataIndex) => {
       confirm()
       setSearchText(selectedKeys[0])
@@ -462,7 +502,7 @@ function ShipBilling() {
                   <span style={{ color: "green" }}>done</span>
                   <Switch
                      checked={check}
-                     onClick={() => handleChangeCheck(check, billing)}
+                     onClick={() => handleChangeCheck2(check, billing)}
                   />
                </div>
             ) : (
@@ -470,7 +510,7 @@ function ShipBilling() {
                   <span style={{ color: "red" }}>not done</span>
                   <Switch
                      checked={check}
-                     onClick={() => handleChangeCheck(check, billing)}
+                     onClick={() => handleChangeCheck2(check, billing)}
                   />
                </div>
             )
