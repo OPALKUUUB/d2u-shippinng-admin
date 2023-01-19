@@ -40,7 +40,7 @@ async function handler(req, res) {
       const { voyage } = req.query
       await mysql.connect()
       const trackings_by_voyage = await mysql.query(
-         "SELECT trackings.user_id, users.username, trackings.voyage FROM trackings JOIN users ON users.id = trackings.user_id WHERE trackings.voyage = ? GROUP BY trackings.user_id",
+         "SELECT count(trackings.user_id) as count, trackings.user_id, users.username, trackings.voyage FROM trackings JOIN users ON users.id = trackings.user_id WHERE trackings.voyage = ? GROUP BY trackings.user_id",
          [voyage]
       )
       const ship_billing = await mysql.query(
@@ -67,6 +67,7 @@ async function handler(req, res) {
             return [
                ...a,
                {
+                  count: c.count,
                   shipbilling_id: null,
                   user_id: c.user_id,
                   username: c.username,
@@ -85,7 +86,7 @@ async function handler(req, res) {
       }, [])
       await mysql.end()
       res.status(200).json({
-         message: "get disneyland product success!",
+         message: "get product success!",
          trackings,
       })
    } else if (req.method === "POST") {

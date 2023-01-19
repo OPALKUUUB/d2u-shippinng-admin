@@ -8,6 +8,7 @@ import {
    Input,
    Button,
    Switch,
+   Collapse,
 } from "antd"
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useState, useRef } from "react"
@@ -31,28 +32,32 @@ function ShipBilling() {
       payment_type: "",
       remark: "",
    })
-   const [address, setAddress] = useState("")
-   const [caseAddress, setCaseAddress] = useState(5)
+   const [selectedRowKeys, setSelectedRowKeys] = useState([])
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
    const searchInput = useRef(null)
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
       setVoyageSelect(value)
+      if(router.query.voyage !== value) {
+         router.push({query: {voyage: value}})
+      }
       try {
          const response = await fetch(`/api/shipbilling?voyage=${value}`)
          const responseJson = await response.json()
-         console.log("trackings", responseJson.trackings)
+         // console.log("trackings", responseJson.trackings)
          setData(
-            responseJson.trackings.sort((a, b) => {
-               if (a.username.toLowerCase() < b.username.toLowerCase()) {
-                  return -1
-               }
-               if (a.username.toLowerCase() > b.username.toLowerCase()) {
-                  return 1
-               }
-               return 0
-            })
+            responseJson.trackings
+               .sort((a, b) => {
+                  if (a.username.toLowerCase() < b.username.toLowerCase()) {
+                     return -1
+                  }
+                  if (a.username.toLowerCase() > b.username.toLowerCase()) {
+                     return 1
+                  }
+                  return 0
+               })
+               .map((item, index) => ({ ...item, key: index }))
          )
       } catch (err) {
          console.log(err)
@@ -357,7 +362,6 @@ function ShipBilling() {
             text
          ),
    })
-   console.log("data", data)
    const columns = [
       {
          title: "username",
@@ -557,16 +561,6 @@ function ShipBilling() {
             )
          },
       },
-      // {
-      //    title: "จัดการ",
-      //    fixed: "right",
-      //    dataIndex: "user_id",
-      //    width: "80px",
-      //    key: "user_id",
-      //    render: (user_id) => (
-      //       <button onClick={() => handleSelectRow(user_id)}>manage</button>
-      //    ),
-      // },
    ]
    useEffect(() => {
       ;(async () => {
@@ -612,21 +606,40 @@ function ShipBilling() {
                )
          )
       })()
+      ;(async () => {
+         if (router.query.voyage) {
+            await handleChangeSelect(router.query.voyage)
+         }
+      })()
    }, [])
-   console.log("items", items)
+   const onSelectChange = (newSelectedRowKeys) => {
+      console.log("selectedRowKeys changed: ", newSelectedRowKeys)
+      setSelectedRowKeys(newSelectedRowKeys)
+   }
+   const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+   }
    return (
       <Fragment>
          <CardHead name="Ship Billing" />
          <div className="container-table">
             <Select
+               className="mb-3"
                size="middle"
                defaultValue={voyageSelect}
+               value={voyageSelect}
                onChange={handleChangeSelect}
                style={{ width: 200 }}
                options={items}
             />
+            <SummaryShipBilling
+               selectedRowKeys={selectedRowKeys}
+               dataSource={data}
+            />
             <div style={{ width: "100%" }}>
                <Table
+                  rowSelection={rowSelection}
                   dataSource={data}
                   columns={columns}
                   scroll={{
@@ -718,9 +731,51 @@ function ShipBilling() {
    )
 }
 
+function SummaryShipBilling(props) {
+   console.log(props)
+   const datas = props.selectedRowKeys?.reduce((a, c) => {
+      const temp = props?.dataSource.find((acc, index, arr) => acc.key === c)
+      return temp === undefined ? [...a] : [...a, temp]
+   }, [])
+   console.log("datas: ", datas)
+   return (
+      <Collapse accordion>
+         <Collapse.Panel>
+            <table>
+               <thead>
+                  <tr>
+                     <th>รอบเรือ (xx/xx/xxxx)</th>
+                  </tr>
+                  <tr>
+                     <th>ชื่อลูกค้า</th>
+                     <th>จำนวน</th>
+                     <th>เลขกล่อง</th>
+                     <th>ที่อยู่จัดส่ง</th>
+                     <th>หมายเหตุ</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  {datas.map((data, index) => (
+                     <tr key={index}>
+                        <td>{data?.username}</td>
+                        <td>{data?.box_no}</td>
+                        <td>{data?.count}</td>
+                        <td>{data?.address}</td>
+                        <td>{data?.remark}</td>
+                     </tr>
+                  ))}
+               </tbody>
+            </table>
+         </Collapse.Panel>
+      </Collapse>
+   )
+}
+
 ShipBilling.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
 }
+
+
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
@@ -738,7 +793,6 @@ export async function getServerSideProps(context) {
    }
    return {
       props: {
-         // voyages,
          session,
       },
    }
