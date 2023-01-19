@@ -636,6 +636,7 @@ function ShipBilling() {
             <SummaryShipBilling
                selectedRowKeys={selectedRowKeys}
                dataSource={data}
+               voyage={voyageSelect}
             />
             <div style={{ width: "100%" }}>
                <Table
@@ -732,36 +733,36 @@ function ShipBilling() {
 }
 
 function SummaryShipBilling(props) {
-   console.log(props)
+   // console.log(props)
    const datas = props.selectedRowKeys?.reduce((a, c) => {
       const temp = props?.dataSource.find((acc, index, arr) => acc.key === c)
       return temp === undefined ? [...a] : [...a, temp]
    }, [])
    console.log("datas: ", datas)
    return (
-      <Collapse accordion>
-         <Collapse.Panel>
-            <table>
+      <Collapse accordion className="mb-3">
+         <Collapse.Panel header="ดูสรุปข้อมูล">
+            <table className="border-collapse w-full text-center">
                <thead>
                   <tr>
-                     <th>รอบเรือ (xx/xx/xxxx)</th>
+                     <th colSpan={5} className="border-solid border-[1.8px] border-slate-300 py-2 text-[1.1rem] bg-slate-300">รอบเรือ ({props.voyage})</th>
                   </tr>
                   <tr>
-                     <th>ชื่อลูกค้า</th>
-                     <th>จำนวน</th>
-                     <th>เลขกล่อง</th>
-                     <th>ที่อยู่จัดส่ง</th>
-                     <th>หมายเหตุ</th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[12.5%] p-2">ชื่อลูกค้า</th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[12.5%] p-2">จำนวน</th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">เลขกล่อง</th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">ที่อยู่จัดส่ง</th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">หมายเหตุ</th>
                   </tr>
                </thead>
                <tbody>
                   {datas.map((data, index) => (
                      <tr key={index}>
-                        <td>{data?.username}</td>
-                        <td>{data?.box_no}</td>
-                        <td>{data?.count}</td>
-                        <td>{data?.address}</td>
-                        <td>{data?.remark}</td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.username}</td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.count}</td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.box_no ?? "-"}</td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.address ?? "-"}</td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.remark ?? "-"}</td>
                      </tr>
                   ))}
                </tbody>
@@ -779,10 +780,6 @@ ShipBilling.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   // const api = `/api/shipbilling/voyage`
-   // const response = await fetch(api)
-   // const responseJson = await response.json()
-   // const { voyages } = await responseJson
    if (!session) {
       return {
          redirect: {
