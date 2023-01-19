@@ -164,8 +164,12 @@ function InvoicePage({ user_id, voyage }) {
                }),
                { weight: 0, cod: 0 }
             )
+         if (data.filter((ft) => ft.channel === c).length === 0) {
+            return a
+         }
          const price = [sum_weight_cod].reduce((a2, c2) => {
-            const baseRateByWeight = CalBaseRateByWeight(c.weight)
+            const baseRateByWeight = CalBaseRateByWeight(c2.weight)
+            console.log(baseRateByWeight)
             if (checkShimizu && c2.weight < 0.5) {
                return 100 + c2.cod
             }
@@ -212,7 +216,6 @@ function InvoicePage({ user_id, voyage }) {
             }
          )
    )
-   // setSumTable(sum_channel)
    console.log("data", data)
    const columns = [
       {
@@ -429,6 +432,7 @@ function InvoicePage({ user_id, voyage }) {
                               </tr>
                            )
                         }
+                        
                         return (
                            <tr key={item.id} className="">
                               <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
@@ -447,7 +451,7 @@ function InvoicePage({ user_id, voyage }) {
                                  {item.weight}
                               </td>
                               <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 -
+                                 {}
                               </td>
                               <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                  {new Intl.NumberFormat("th-TH", {
@@ -507,12 +511,15 @@ function InvoicePage({ user_id, voyage }) {
                            currency: "THB",
                            style: "currency",
                         }).format(
-                           sum_channel.mercari.price +
-                              sum_channel.fril.price +
-                              sum_channel.shimizu.price +
-                              sum_channel.yahoo.price +
-                              sum_channel.mart.price +
-                              sum_channel.web123.price
+                           parseInt(
+                              sum_channel.mercari.price +
+                                 sum_channel.fril.price +
+                                 sum_channel.shimizu.price +
+                                 sum_channel.yahoo.price +
+                                 sum_channel.mart.price +
+                                 sum_channel.web123.price,
+                              10
+                           )
                         )}
                      </td>
                   </tr>
