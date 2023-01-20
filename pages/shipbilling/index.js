@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import {
    Table,
    message,
@@ -23,6 +24,7 @@ const { TextArea } = Input
 function ShipBilling() {
    const router = useRouter()
    const [data, setData] = useState([])
+   const [dataTemp, setDataTemp] = useState([])
    const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
    const [items, setItems] = useState([])
    const [showEditModal, setShowEditModal] = useState(false)
@@ -39,13 +41,13 @@ function ShipBilling() {
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
       setVoyageSelect(value)
-      if(router.query.voyage !== value) {
-         router.push({query: {voyage: value}})
+      if (router.query.voyage !== value) {
+         router.push({ query: { voyage: value } })
       }
       try {
          const response = await fetch(`/api/shipbilling?voyage=${value}`)
          const responseJson = await response.json()
-         // console.log("trackings", responseJson.trackings)
+         setDataTemp(responseJson.trackings)
          setData(
             responseJson.trackings
                .sort((a, b) => {
@@ -57,7 +59,15 @@ function ShipBilling() {
                   }
                   return 0
                })
-               .map((item, index) => ({ ...item, key: index }))
+               .reduce((a, c, idx) => {
+                  const group_user = a.find(
+                     (acc, index, arr) => acc.username === c.username
+                  )
+                  if (group_user !== undefined) {
+                     return a
+                  }
+                  return [...a, { ...c, key: idx }]
+               }, [])
          )
       } catch (err) {
          console.log(err)
@@ -636,6 +646,7 @@ function ShipBilling() {
             <SummaryShipBilling
                selectedRowKeys={selectedRowKeys}
                dataSource={data}
+               dataTemp={dataTemp}
                voyage={voyageSelect}
             />
             <div style={{ width: "100%" }}>
@@ -736,7 +747,31 @@ function SummaryShipBilling(props) {
    // console.log(props)
    const datas = props.selectedRowKeys?.reduce((a, c) => {
       const temp = props?.dataSource.find((acc, index, arr) => acc.key === c)
-      return temp === undefined ? [...a] : [...a, temp]
+      if (temp === undefined) {
+         return a
+      }
+      const arrTemp = props?.dataTemp.filter(
+         (fl) => temp.username === fl.username
+      )
+      let check_boxNo = []
+      let arrTemp_groupBoxNo = []
+      console.log("start....")
+      for (let i = 0; i < arrTemp.length; i++) {
+         console.log("round: ", i)
+         let { box_no } = arrTemp[i]
+         if (
+            check_boxNo.find((acc, index, arr) => arrTemp[i].box_no === acc) !==
+            undefined
+         ) {
+            console.log("continue")
+            // eslint-disable-next-line no-continue
+            continue
+         }
+         let count = arrTemp.filter((fl) => fl.box_no === box_no).length
+         arrTemp_groupBoxNo.push({ ...arrTemp[i], count })
+         check_boxNo.push(arrTemp[i].box_no)
+      }
+      return [...a, ...arrTemp_groupBoxNo]
    }, [])
    console.log("datas: ", datas)
    return (
@@ -745,24 +780,49 @@ function SummaryShipBilling(props) {
             <table className="border-collapse w-full text-center">
                <thead>
                   <tr>
-                     <th colSpan={5} className="border-solid border-[1.8px] border-slate-300 py-2 text-[1.1rem] bg-slate-300">รอบเรือ ({props.voyage})</th>
+                     <th
+                        colSpan={5}
+                        className="border-solid border-[1.8px] border-slate-300 py-2 text-[1.1rem] bg-slate-300"
+                     >
+                        รอบเรือ ({props.voyage})
+                     </th>
                   </tr>
                   <tr>
-                     <th className="border-solid border-[1.8px] border-slate-300 w-[12.5%] p-2">ชื่อลูกค้า</th>
-                     <th className="border-solid border-[1.8px] border-slate-300 w-[12.5%] p-2">จำนวน</th>
-                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">เลขกล่อง</th>
-                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">ที่อยู่จัดส่ง</th>
-                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">หมายเหตุ</th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[12.5%] p-2">
+                        ชื่อลูกค้า
+                     </th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[12.5%] p-2">
+                        จำนวน
+                     </th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">
+                        เลขกล่อง
+                     </th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">
+                        ที่อยู่จัดส่ง
+                     </th>
+                     <th className="border-solid border-[1.8px] border-slate-300 w-[25%] p-2">
+                        หมายเหตุ
+                     </th>
                   </tr>
                </thead>
                <tbody>
                   {datas.map((data, index) => (
                      <tr key={index}>
-                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.username}</td>
-                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.count}</td>
-                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.box_no ?? "-"}</td>
-                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.address ?? "-"}</td>
-                        <td className="border-solid border-[1.8px] border-slate-300 p-2">{data?.remark ?? "-"}</td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">
+                           {data?.username}
+                        </td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">
+                           {data?.count}
+                        </td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">
+                           {data?.box_no ?? "-"}
+                        </td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">
+                           {data?.address ?? "-"}
+                        </td>
+                        <td className="border-solid border-[1.8px] border-slate-300 p-2">
+                           {data?.remark ?? "-"}
+                        </td>
                      </tr>
                   ))}
                </tbody>
@@ -775,8 +835,6 @@ function SummaryShipBilling(props) {
 ShipBilling.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
 }
-
-
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
