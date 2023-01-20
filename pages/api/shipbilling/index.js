@@ -40,9 +40,23 @@ async function handler(req, res) {
       const { voyage } = req.query
       await mysql.connect()
       const trackings_by_voyage = await mysql.query(
-         "SELECT count(trackings.user_id) as count, trackings.user_id, users.username, trackings.voyage FROM trackings JOIN users ON users.id = trackings.user_id WHERE trackings.voyage = ? GROUP BY trackings.user_id",
+         `
+         SELECT 
+            trackings.user_id, 
+            users.username,
+            trackings.voyage,
+            trackings.box_no
+         FROM 
+            trackings
+         JOIN 
+            users 
+         ON 
+            users.id = trackings.user_id 
+         WHERE 
+            trackings.voyage = ?;`,
          [voyage]
       )
+      // console.log( trackings_by_voyage.length)
       const ship_billing = await mysql.query(
          `SELECT
          ship_billing.id as shipbilling_id,
@@ -72,6 +86,7 @@ async function handler(req, res) {
                   user_id: c.user_id,
                   username: c.username,
                   address: c.address,
+                  box_no: c.box_no,
                   created_at: date,
                   voyage,
                   payment_type: null,
