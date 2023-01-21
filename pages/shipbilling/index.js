@@ -119,7 +119,7 @@ function ShipBilling() {
          const index = prev.findIndex(
             (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
          )
-         console.log(index)
+         // console.log(index)
          return [
             ...prev.slice(0, index),
             { ...billing, username: selectedRow.username },
@@ -139,7 +139,7 @@ function ShipBilling() {
    }
 
    const handleChangeNoti = async (status, bill) => {
-      console.log(bill)
+      // console.log(bill)
       // eslint-disable-next-line prefer-destructuring
       let shipbilling_id = bill.shipbilling_id
       if (bill.shipbilling_id === null) {
@@ -169,7 +169,7 @@ function ShipBilling() {
          const index = prev.findIndex(
             (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
          )
-         console.log(index)
+         // console.log(index)
          return [
             ...prev.slice(0, index),
             { ...billing, username: selectedRow.username },
@@ -179,7 +179,7 @@ function ShipBilling() {
       message.success("success!")
    }
    const handleChangeCheck = async (status, bill) => {
-      console.log(bill)
+      // console.log(bill)
       // eslint-disable-next-line prefer-destructuring
       let shipbilling_id = bill.shipbilling_id
       if (bill.shipbilling_id === null) {
@@ -632,7 +632,7 @@ function ShipBilling() {
       })()
    }, [])
    const onSelectChange = (newSelectedRowKeys) => {
-      console.log("selectedRowKeys changed: ", newSelectedRowKeys)
+      // console.log("selectedRowKeys changed: ", newSelectedRowKeys)
       setSelectedRowKeys(newSelectedRowKeys)
    }
    const rowSelection = {
@@ -764,15 +764,12 @@ function SummaryShipBilling(props) {
       )
       let check_boxNo = []
       let arrTemp_groupBoxNo = []
-      console.log("start....")
       for (let i = 0; i < arrTemp.length; i++) {
-         console.log("round: ", i)
          let { box_no } = arrTemp[i]
          if (
             check_boxNo.find((acc, index, arr) => arrTemp[i].box_no === acc) !==
             undefined
          ) {
-            console.log("continue")
             // eslint-disable-next-line no-continue
             continue
          }
@@ -837,7 +834,7 @@ function SummaryShipBilling(props) {
             </table>
          </Collapse.Panel>
          <Collapse.Panel header="ดูสรุปข้อมูล(PDF)">
-            <SummaryPdf  datas={datas} voyage={props.voyage} />
+            <SummaryPdf datas={datas} voyage={props.voyage} />
          </Collapse.Panel>
       </Collapse>
    )
@@ -874,7 +871,7 @@ const styles = StyleSheet.create({
       display: "flex",
       flexDirection: "row",
       alignItems: "center",
-      borderTopWidth: borderWidth,
+      borderTopWidth: borderWidth + 0.5,
       borderTopColor: borderColor,
       borderBottomWidth: borderWidth,
       borderBottomColor: borderColor,
@@ -913,18 +910,47 @@ function SummaryPdf({ datas, voyage }) {
          src: "/assets/fonts/THSarabun Bold.ttf",
       })
    }, [])
+   const users = datas.reduce((a, c) => {
+      if (a.find((acc, index, arr) => acc === c.username) === undefined) {
+         return [...a, c.username]
+      }
+      return a
+   }, [])
+   const rows = users.reduce((a, c) => {
+      const row = datas.filter((fl) => fl.username === c)
+      if (row.length === 0) {
+         return a
+      }
+      const temp = {
+         ...row[0],
+         box_no: row.reduce((a1, c1, index) => {
+            if (index === 0) {
+               return c1.box_no
+            }
+            if (`${a1}/${c1.box_no}`.length >= 10) {
+               if (a1.split("\n").length > 0) {
+                  const last_split = a1.split("\n")[a1.split("\n").length - 1]
+                  if (`${last_split}/${c1.box_no}`.length >= 10) {
+                     return `${a1}/${c1.box_no}\n`
+                  }
+               }
+               return `${a1}/${c1.box_no}`
+            }
+
+            return `${a1}/${c1.box_no}`
+         }, ""),
+      }
+      return [...a, temp]
+   }, [])
+
    return (
       <div>
          <PDFViewer className="w-full h-[300px]">
             <Document title={`รายงานรายการขนส่งประจำรอบเรือ ${voyage}`}>
-               <Page  size="A4" style={styles.page} >
+               <Page size="A4" style={styles.page}>
                   <View style={styles.headerPage}>
-                     <Text>
-                        บริษัท ดีทูยู ชิปปิ้ง จำกัด
-                     </Text>
-                     <Text>
-                        ข้อมูลประจำรอบเรือ {voyage}
-                     </Text>
+                     <Text>บริษัท ดีทูยู ชิปปิ้ง จำกัด</Text>
+                     <Text>ข้อมูลประจำรอบเรือ {voyage}</Text>
                   </View>
                   <View style={styles.headerTable}>
                      <Text
@@ -933,7 +959,7 @@ function SummaryPdf({ datas, voyage }) {
                            borderRightColor: borderColor,
                            borderRightWidth: borderWidth,
                            borderLeftColor: borderColor,
-                           borderLeftWidth: borderWidth,
+                           borderLeftWidth: borderWidth + 0.5,
                            padding: "5px",
                         }}
                      >
@@ -965,7 +991,7 @@ function SummaryPdf({ datas, voyage }) {
                      </Text>
                      <Text
                         style={{
-                           width: "10%",
+                           width: "12%",
                            borderRightColor: borderColor,
                            borderRightWidth: borderWidth,
                            borderLeftColor: borderColor,
@@ -989,9 +1015,9 @@ function SummaryPdf({ datas, voyage }) {
                      </Text>
                      <Text
                         style={{
-                           width: "30%",
+                           width: "28%",
                            borderRightColor: borderColor,
-                           borderRightWidth: borderWidth,
+                           borderRightWidth: borderWidth + 0.5,
                            borderLeftColor: borderColor,
                            borderLeftWidth: borderWidth,
                            padding: "5px",
@@ -1000,7 +1026,7 @@ function SummaryPdf({ datas, voyage }) {
                         หมายเหตุ
                      </Text>
                   </View>
-                  {datas.map((data, index) => (
+                  {rows.map((data, index) => (
                      <View
                         key={`summaryVoyagePDF${index}`}
                         style={styles.bodyTable}
@@ -1013,7 +1039,7 @@ function SummaryPdf({ datas, voyage }) {
                               borderRightColor: borderColor,
                               borderRightWidth: borderWidth,
                               borderLeftColor: borderColor,
-                              borderLeftWidth: borderWidth,
+                              borderLeftWidth: borderWidth + 0.5,
                               padding: "5px",
                            }}
                         >
@@ -1049,7 +1075,7 @@ function SummaryPdf({ datas, voyage }) {
                         </Text>
                         <Text
                            style={{
-                              width: "10%",
+                              width: "12%",
                               height: "100%",
                               textAlign: "center",
                               borderRightColor: borderColor,
@@ -1059,7 +1085,7 @@ function SummaryPdf({ datas, voyage }) {
                               padding: "5px",
                            }}
                         >
-                           {data.box_no}
+                           {data?.box_no}
                         </Text>
                         <Text
                            style={{
@@ -1077,11 +1103,11 @@ function SummaryPdf({ datas, voyage }) {
                         </Text>
                         <Text
                            style={{
-                              width: "30%",
+                              width: "28%",
                               height: "100%",
                               textAlign: "center",
                               borderRightColor: borderColor,
-                              borderRightWidth: borderWidth,
+                              borderRightWidth: borderWidth + 0.5,
                               borderLeftColor: borderColor,
                               borderLeftWidth: borderWidth,
                               padding: "5px",
