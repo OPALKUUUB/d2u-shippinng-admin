@@ -923,6 +923,7 @@ function SummaryPdf({ datas, voyage }) {
       }
       const temp = {
          ...row[0],
+         count: row.length,
          box_no: row.reduce((a1, c1, index) => {
             if (index === 0) {
                return c1.box_no
