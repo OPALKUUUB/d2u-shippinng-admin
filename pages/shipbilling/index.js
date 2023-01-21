@@ -16,6 +16,15 @@ import React, { Fragment, useEffect, useState, useRef } from "react"
 import { useRouter } from "next/router"
 import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import Highlighter from "react-highlight-words"
+import {
+   Page,
+   Text,
+   View,
+   Document,
+   StyleSheet,
+   PDFViewer,
+   Font,
+} from "@react-pdf/renderer"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
 
@@ -773,7 +782,6 @@ function SummaryShipBilling(props) {
       }
       return [...a, ...arrTemp_groupBoxNo]
    }, [])
-   console.log("datas: ", datas)
    return (
       <Collapse accordion className="mb-3">
          <Collapse.Panel header="ดูสรุปข้อมูล">
@@ -828,7 +836,265 @@ function SummaryShipBilling(props) {
                </tbody>
             </table>
          </Collapse.Panel>
+         <Collapse.Panel header="ดูสรุปข้อมูล(PDF)">
+            <SummaryPdf  datas={datas} voyage={props.voyage} />
+         </Collapse.Panel>
       </Collapse>
+   )
+}
+
+const borderWidth = 0.5
+const borderColor = "black"
+const styles = StyleSheet.create({
+   page: {
+      backgroundColor: "white",
+      color: "black",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      paddingTop: "10px",
+      paddingBottom: "20px",
+      paddingLeft: "20px",
+      paddingRight: "20px",
+      fontFamily: "THSarabun",
+   },
+   headerPage: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "start",
+      position: "relative",
+   },
+   headerTable: {
+      width: "100%",
+      marginTop: 15,
+      fontSize: "14px",
+      fontFamily: "THSarabunBold",
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      borderTopWidth: borderWidth,
+      borderTopColor: borderColor,
+      borderBottomWidth: borderWidth,
+      borderBottomColor: borderColor,
+      textAlign: "center",
+      backgroundColor: "#cccccc",
+   },
+   bodyTable: {
+      fontSize: "12px",
+      width: "100%",
+      display: "flex",
+      flexDirection: "row",
+      fontFamily: "THSarabunBold",
+      alignItems: "center",
+      borderBottomWidth: borderWidth,
+      borderBottomColor: borderColor,
+   },
+   footerTable: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "row",
+      backgroundColor: "#cccccc",
+      alignItems: "center",
+      borderBottomWidth: borderWidth,
+      borderBottomColor: borderColor,
+   },
+})
+
+function SummaryPdf({ datas, voyage }) {
+   useEffect(() => {
+      Font.register({
+         family: "THSarabun",
+         src: "/assets/fonts/THSarabun.ttf",
+      })
+      Font.register({
+         family: "THSarabunBold",
+         src: "/assets/fonts/THSarabun Bold.ttf",
+      })
+   }, [])
+   return (
+      <div>
+         <PDFViewer className="w-full h-[300px]">
+            <Document title={`รายงานรายการขนส่งประจำรอบเรือ ${voyage}`}>
+               <Page  size="A4" style={styles.page} >
+                  <View style={styles.headerPage}>
+                     <Text>
+                        บริษัท ดีทูยู ชิปปิ้ง จำกัด
+                     </Text>
+                     <Text>
+                        ข้อมูลประจำรอบเรือ {voyage}
+                     </Text>
+                  </View>
+                  <View style={styles.headerTable}>
+                     <Text
+                        style={{
+                           width: "7%",
+                           borderRightColor: borderColor,
+                           borderRightWidth: borderWidth,
+                           borderLeftColor: borderColor,
+                           borderLeftWidth: borderWidth,
+                           padding: "5px",
+                        }}
+                     >
+                        ลำดับ
+                     </Text>
+                     <Text
+                        style={{
+                           width: "18%",
+                           borderRightColor: borderColor,
+                           borderRightWidth: borderWidth,
+                           borderLeftColor: borderColor,
+                           borderLeftWidth: borderWidth,
+                           padding: "5px",
+                        }}
+                     >
+                        ชื่อลูกค้า
+                     </Text>
+                     <Text
+                        style={{
+                           width: "10%",
+                           borderRightColor: borderColor,
+                           borderRightWidth: borderWidth,
+                           borderLeftColor: borderColor,
+                           borderLeftWidth: borderWidth,
+                           padding: "5px",
+                        }}
+                     >
+                        จำนวน
+                     </Text>
+                     <Text
+                        style={{
+                           width: "10%",
+                           borderRightColor: borderColor,
+                           borderRightWidth: borderWidth,
+                           borderLeftColor: borderColor,
+                           borderLeftWidth: borderWidth,
+                           padding: "5px",
+                        }}
+                     >
+                        เลขกล่อง
+                     </Text>
+                     <Text
+                        style={{
+                           width: "25%",
+                           borderRightColor: borderColor,
+                           borderRightWidth: borderWidth,
+                           borderLeftColor: borderColor,
+                           borderLeftWidth: borderWidth,
+                           padding: "5px",
+                        }}
+                     >
+                        ที่อยู่จัดส่ง
+                     </Text>
+                     <Text
+                        style={{
+                           width: "30%",
+                           borderRightColor: borderColor,
+                           borderRightWidth: borderWidth,
+                           borderLeftColor: borderColor,
+                           borderLeftWidth: borderWidth,
+                           padding: "5px",
+                        }}
+                     >
+                        หมายเหตุ
+                     </Text>
+                  </View>
+                  {datas.map((data, index) => (
+                     <View
+                        key={`summaryVoyagePDF${index}`}
+                        style={styles.bodyTable}
+                     >
+                        <Text
+                           style={{
+                              width: "7%",
+                              height: "100%",
+                              textAlign: "center",
+                              borderRightColor: borderColor,
+                              borderRightWidth: borderWidth,
+                              borderLeftColor: borderColor,
+                              borderLeftWidth: borderWidth,
+                              padding: "5px",
+                           }}
+                        >
+                           {index + 1}
+                        </Text>
+                        <Text
+                           style={{
+                              width: "18%",
+                              height: "100%",
+                              textAlign: "center",
+                              borderRightColor: borderColor,
+                              borderRightWidth: borderWidth,
+                              borderLeftColor: borderColor,
+                              borderLeftWidth: borderWidth,
+                              padding: "5px",
+                           }}
+                        >
+                           {data.username}
+                        </Text>
+                        <Text
+                           style={{
+                              width: "10%",
+                              height: "100%",
+                              textAlign: "center",
+                              borderRightColor: borderColor,
+                              borderRightWidth: borderWidth,
+                              borderLeftColor: borderColor,
+                              borderLeftWidth: borderWidth,
+                              padding: "5px",
+                           }}
+                        >
+                           {data.count}
+                        </Text>
+                        <Text
+                           style={{
+                              width: "10%",
+                              height: "100%",
+                              textAlign: "center",
+                              borderRightColor: borderColor,
+                              borderRightWidth: borderWidth,
+                              borderLeftColor: borderColor,
+                              borderLeftWidth: borderWidth,
+                              padding: "5px",
+                           }}
+                        >
+                           {data.box_no}
+                        </Text>
+                        <Text
+                           style={{
+                              width: "25%",
+                              height: "100%",
+                              textAlign: "center",
+                              borderRightColor: borderColor,
+                              borderRightWidth: borderWidth,
+                              borderLeftColor: borderColor,
+                              borderLeftWidth: borderWidth,
+                              padding: "5px",
+                           }}
+                        >
+                           {data.address ?? "-"}
+                        </Text>
+                        <Text
+                           style={{
+                              width: "30%",
+                              height: "100%",
+                              textAlign: "center",
+                              borderRightColor: borderColor,
+                              borderRightWidth: borderWidth,
+                              borderLeftColor: borderColor,
+                              borderLeftWidth: borderWidth,
+                              padding: "5px",
+                           }}
+                        >
+                           {data.remark ?? "-"}
+                        </Text>
+                     </View>
+                  ))}
+               </Page>
+            </Document>
+         </PDFViewer>
+      </div>
    )
 }
 
