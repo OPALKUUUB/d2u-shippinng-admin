@@ -1,8 +1,8 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable indent */
 /* eslint-disable no-else-return */
 /* eslint-disable prefer-destructuring */
-import { message, Modal, Table } from "antd"
-import { useRouter } from "next/router"
+import { Dropdown, message, Modal, Select, Space, Table } from "antd"
 import React, { useEffect, useRef, useState } from "react"
 
 function CalBaseRate(point, user) {
@@ -34,8 +34,7 @@ function CalBaseRateByWeight(weight) {
    return 200
 }
 function InvoicePage({ user_id, voyage }) {
-   console.log(voyage)
-   const router = useRouter()
+   const [pointCurrent, setPointCurrent] = useState("loading...")
    const [data, setData] = useState([])
    const [bill, setBill] = useState({})
    const [discount, setDiscount] = useState(0)
@@ -45,6 +44,7 @@ function InvoicePage({ user_id, voyage }) {
    const [scoreBaseRate, setScoreBaseRate] = useState({ rate: 0, min: false })
    const [selectRow, setSelectRow] = useState()
    const [openModal, setOpenModal] = useState(false)
+   const [deduct, setDeduct] = useState(false)
    const codRef = useRef()
    let seq = 0
    // const [sumTable, setSumTable] = useState({
@@ -95,11 +95,26 @@ function InvoicePage({ user_id, voyage }) {
       const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ check: checked ? 1 : 0 }),
+         body: JSON.stringify({ check_50: checked ? 1 : 0 }),
       })
       await response.json()
       message.success("success!")
       setCheckDiscount(checked)
+   }
+   const handleUpdateRate = async () => {
+      console.log(scoreBaseRate.rate)
+      const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            rate: scoreBaseRate.rate === "" ? null : scoreBaseRate.rate,
+         }),
+      })
+      await response.json()
+      message.success("success!")
+      if (scoreBaseRate.rate === "") {
+         window.location.reload(false)
+      }
    }
 
    useEffect(() => {
@@ -130,18 +145,38 @@ function InvoicePage({ user_id, voyage }) {
                : responseJson.billing?.cost_delivery
          )
          setUser(responseJson.user)
-         const baseRate1 = CalBaseRate(
-            responseJson.user?.point_last,
-            responseJson.user
-         )
-         const baseRate2 = CalBaseRate(
-            responseJson.user?.point_last,
-            responseJson.user
-         )
-         const baseRate =
-            baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
-         setScoreBaseRate(baseRate)
-         setCheckDiscount(responseJson.billing?.check === 1)
+
+         if (responseJson.billing.rate === null) {
+            const baseRate1 = CalBaseRate(
+               responseJson.user?.point_last,
+               responseJson.user
+            )
+            const baseRate2 = CalBaseRate(
+               responseJson.user?.point_last,
+               responseJson.user
+            )
+            const baseRate =
+               baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
+            setScoreBaseRate(baseRate)
+         } else {
+            setScoreBaseRate({ rate: responseJson.billing.rate, min: false })
+         }
+         setCheckDiscount(responseJson.billing?.check_50 === 1)
+      })()
+      ;(async () => {
+         try {
+            const response = await fetch("/api/point", {
+               method: "POST",
+               headers: {
+                  "Content-Type": "application/json",
+               },
+               body: JSON.stringify({ user_id }),
+            })
+            const responseJson = await response.json()
+            setPointCurrent(responseJson.point)
+         } catch (err) {
+            console.log(err)
+         }
       })()
    }, [])
    let checkShimizu = false
@@ -155,6 +190,7 @@ function InvoicePage({ user_id, voyage }) {
    }
    const sum_channel = ["yahoo", "shimizu", "mart", "123"].reduce(
       (a, c) => {
+         console.log("in")
          const sum_weight_cod = data
             .filter((ft) => ft.channel === c)
             .reduce(
@@ -196,14 +232,14 @@ function InvoicePage({ user_id, voyage }) {
                      c.weight < 1
                         ? a[c.channel].price
                         : a[c.channel].price +
-                          (c.weight - 1) * 200 +
+                          (c.weight - (deduct ? 0 : 1)) * 200 +
                           c.cod * c.rate_yen,
                   weight:
                      c.weight < 1
                         ? a[c.channel].weight
                         : a[c.channel].weight +
                           (c.weight === undefined ? 0 : c.weight) -
-                          1,
+                          (deduct ? 0 : 1),
                },
             }),
             {
@@ -216,7 +252,7 @@ function InvoicePage({ user_id, voyage }) {
             }
          )
    )
-   console.log("data", data)
+   console.log("deduct: ",deduct)
    const columns = [
       {
          title: "วันที่",
@@ -291,7 +327,7 @@ function InvoicePage({ user_id, voyage }) {
                {user?.point_last}
                <br />
                <span>คะเเนนล่าสุด: </span>
-               {user?.point_current}
+               {pointCurrent}
                <br />
                <span>ฐานค่าส่ง: </span>
                {scoreBaseRate.rate} บาท
@@ -305,6 +341,7 @@ function InvoicePage({ user_id, voyage }) {
                      }))
                   }
                />
+               <button onClick={handleUpdateRate}>ยืนยัน</button>
                <br />
                <span>ค่าส่ง: </span>
                <input
@@ -352,6 +389,19 @@ function InvoicePage({ user_id, voyage }) {
             </Modal>
          </div>
          <div className="Invoice-body pb-6">
+            <div>
+               <Space className="mb-4">
+                  <Select
+                  style={{width: "150px"}}
+                     value={deduct}
+                     onChange={(value) => setDeduct(value)}
+                     options={[
+                        { label: "หัก 1 kg.", value: false },
+                        { label: "ไม่หัก 1 kg.", value: true },
+                     ]}
+                  />
+               </Space>
+            </div>
             <table className="text-center">
                <thead className="text-center ">
                   <tr>
@@ -389,8 +439,34 @@ function InvoicePage({ user_id, voyage }) {
                </thead>
                <tbody>
                   {data
-                     .sort((a, b) => a.channel < b.channel)
-                     .map((item, index) => {
+                     .sort((a, b) => {
+                        const priority_a =
+                           a.channel === "mercari"
+                              ? 1
+                              : a.channel === "fril"
+                              ? 2
+                              : a.channel === "shimizu"
+                              ? 3
+                              : a.channel === "yahoo"
+                              ? 4
+                              : a.channel === "123"
+                              ? 5
+                              : 6
+                        const priority_b =
+                           b.channel === "mercari"
+                              ? 1
+                              : b.channel === "fril"
+                              ? 2
+                              : b.channel === "shimizu"
+                              ? 3
+                              : b.channel === "yahoo"
+                              ? 4
+                              : b.channel === "123"
+                              ? 5
+                              : 6
+                        return priority_a - priority_b
+                     })
+                     .map((item, index, arr) => {
                         seq += 1
                         if (
                            item.channel === "mercari" ||
@@ -420,7 +496,7 @@ function InvoicePage({ user_id, voyage }) {
                                     }).format(
                                        item.weight < 1
                                           ? 0
-                                          : (item.weight - 1) * 200
+                                          : (item.weight - (deduct ? 0 : 1)) * 200
                                     )}
                                  </td>
                                  <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
@@ -432,34 +508,75 @@ function InvoicePage({ user_id, voyage }) {
                               </tr>
                            )
                         }
-                        
+                        let showSum = false
+                        const channel = item.channel
+                        if (
+                           ["shimizu", "123", "yahoo"].find(
+                              (fi) => fi === item.channel
+                           ) !== undefined
+                        ) {
+                           if (index + 1 < arr.length) {
+                              if (item.channel !== arr[index + 1].channel) {
+                                 showSum = true
+                              }
+                           }
+                           if (index + 1 === arr.length) {
+                              showSum = true
+                           }
+                        }
+                        console.log(sum_channel)
                         return (
-                           <tr key={item.id} className="">
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {seq}
-                              </td>
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {item.channel}
-                              </td>
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {item.track_no}
-                              </td>
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {item.box_no}
-                              </td>
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {item.weight}
-                              </td>
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {}
-                              </td>
-                              <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                 {new Intl.NumberFormat("th-TH", {
-                                    currency: "THB",
-                                    style: "currency",
-                                 }).format(item.cod * item.rate_yen)}
-                              </td>
-                           </tr>
+                           <>
+                              <tr key={item.id} className="">
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {seq}
+                                 </td>
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {item.channel}
+                                 </td>
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {item.track_no}
+                                 </td>
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {item.box_no}
+                                 </td>
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {item.weight}
+                                 </td>
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    -
+                                 </td>
+                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {new Intl.NumberFormat("th-TH", {
+                                       currency: "THB",
+                                       style: "currency",
+                                    }).format(item.cod * item.rate_yen)}
+                                 </td>
+                              </tr>
+                              {showSum && (
+                                 <tr>
+                                    <th
+                                       colSpan={5}
+                                       className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                                    >
+                                       รวมราคา(
+                                       {channel === "123" ? "web123" : channel})
+                                    </th>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(
+                                          sum_channel[
+                                             channel === "123"
+                                                ? "web123"
+                                                : channel
+                                          ]?.price
+                                       )}
+                                    </td>
+                                 </tr>
+                              )}
+                           </>
                         )
                      })}
                </tbody>
@@ -482,7 +599,7 @@ function InvoicePage({ user_id, voyage }) {
                                  currency: "THB",
                                  style: "currency",
                               }).format(
-                                 Math.floor(
+                                 Math.ceil(
                                     (sum_channel.mercari.price +
                                        sum_channel.fril.price +
                                        sum_channel.shimizu.price +
@@ -511,14 +628,16 @@ function InvoicePage({ user_id, voyage }) {
                            currency: "THB",
                            style: "currency",
                         }).format(
-                           parseInt(
-                              sum_channel.mercari.price +
-                                 sum_channel.fril.price +
-                                 sum_channel.shimizu.price +
-                                 sum_channel.yahoo.price +
-                                 sum_channel.mart.price +
-                                 sum_channel.web123.price,
-                              10
+                           Math.ceil(
+                              parseFloat(
+                                 sum_channel.mercari.price +
+                                    sum_channel.fril.price +
+                                    sum_channel.shimizu.price +
+                                    sum_channel.yahoo.price +
+                                    sum_channel.mart.price +
+                                    sum_channel.web123.price,
+                                 10
+                              )
                            )
                         )}
                      </td>
@@ -538,7 +657,7 @@ function InvoicePage({ user_id, voyage }) {
                         {new Intl.NumberFormat("th-TH", {
                            currency: "THB",
                            style: "currency",
-                        }).format(costDelivery)}
+                        }).format(parseFloat(costDelivery, 10))}
                      </td>
                   </tr>
 
@@ -558,7 +677,7 @@ function InvoicePage({ user_id, voyage }) {
                            {new Intl.NumberFormat("th-TH", {
                               currency: "THB",
                               style: "currency",
-                           }).format(discount)}
+                           }).format(parseFloat(discount, 10))}
                         </td>
                      </tr>
                   )}
@@ -581,27 +700,36 @@ function InvoicePage({ user_id, voyage }) {
                            currency: "THB",
                            style: "currency",
                         }).format(
-                           parseInt(
-                              sum_channel.mercari.price +
-                                 sum_channel.fril.price +
-                                 sum_channel.shimizu.price +
-                                 sum_channel.yahoo.price +
-                                 sum_channel.mart.price +
-                                 sum_channel.web123.price +
-                                 parseInt(costDelivery, 10) -
-                                 parseInt(discount, 10) -
-                                 (checkDiscount
-                                    ? Math.floor(
-                                         (sum_channel.mercari.price +
-                                            sum_channel.fril.price +
-                                            sum_channel.shimizu.price +
-                                            sum_channel.yahoo.price +
-                                            sum_channel.mart.price +
-                                            sum_channel.web123.price) *
-                                            5
-                                      ) / 100
-                                    : 0),
-                              10
+                           Math.ceil(
+                              parseFloat(
+                                 Math.ceil(
+                                    parseFloat(
+                                       sum_channel.mercari.price +
+                                          sum_channel.fril.price +
+                                          sum_channel.shimizu.price +
+                                          sum_channel.yahoo.price +
+                                          sum_channel.mart.price +
+                                          sum_channel.web123.price
+                                    )
+                                 ) +
+                                    parseFloat(costDelivery, 10) -
+                                    parseFloat(discount, 10) -
+                                    (checkDiscount
+                                       ? Math.ceil(
+                                            Math.ceil(
+                                               parseFloat(
+                                                  sum_channel.mercari.price +
+                                                     sum_channel.fril.price +
+                                                     sum_channel.shimizu.price +
+                                                     sum_channel.yahoo.price +
+                                                     sum_channel.mart.price +
+                                                     sum_channel.web123.price
+                                               )
+                                            ) * 5
+                                         ) / 100
+                                       : 0),
+                                 10
+                              )
                            )
                         )}
                      </td>
