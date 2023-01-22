@@ -67,7 +67,8 @@ async function handler(req, res) {
          ship_billing.check,
          ship_billing.check_2,
          ship_billing.remark,
-         ship_billing.address
+         ship_billing.address,
+         ship_billing.rate
          FROM ship_billing 
          WHERE voyage = ?`,
          [voyage]
@@ -87,6 +88,7 @@ async function handler(req, res) {
                   username: c.username,
                   address: c.address,
                   box_no: c.box_no,
+                  rate: null,
                   created_at: date,
                   voyage,
                   payment_type: null,
@@ -198,7 +200,7 @@ async function handler(req, res) {
          id,
       ])
       const billing = await mysql.query(
-         "select id as shipbilling_id, ship_billing.* from ship_billing where id = ?",
+         "select ship_billing.id as shipbilling_id, ship_billing.*, users.username from ship_billing join users on users.id = ship_billing.user_id where ship_billing.id = ?",
          [id]
       )
       await mysql.end()

@@ -172,7 +172,7 @@ function ShipBilling() {
          // console.log(index)
          return [
             ...prev.slice(0, index),
-            { ...billing, username: selectedRow.username },
+            { ...billing  },
             ...prev.slice(index + 1),
          ]
       })
@@ -212,7 +212,7 @@ function ShipBilling() {
          console.log(index)
          return [
             ...prev.slice(0, index),
-            { ...billing, username: selectedRow.username },
+            { ...billing },
             ...prev.slice(index + 1),
          ]
       })
@@ -252,7 +252,7 @@ function ShipBilling() {
          console.log(index)
          return [
             ...prev.slice(0, index),
-            { ...billing, username: selectedRow.username },
+            { ...billing },
             ...prev.slice(index + 1),
          ]
       })
