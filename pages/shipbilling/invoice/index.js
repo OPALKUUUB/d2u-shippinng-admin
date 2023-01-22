@@ -230,7 +230,7 @@ function InvoicePage({ user_id, voyage }) {
                [c.channel]: {
                   price:
                      c.weight < 1
-                        ? a[c.channel].price
+                        ? a[c.channel].price+  (c.cod * c.rate_yen)
                         : a[c.channel].price +
                           (c.weight - (deduct ? 0 : 1)) * 200 +
                           c.cod * c.rate_yen,
