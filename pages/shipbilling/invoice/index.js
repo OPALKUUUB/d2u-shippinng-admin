@@ -230,7 +230,7 @@ function InvoicePage({ user_id, voyage }) {
                [c.channel]: {
                   price:
                      c.weight < 1
-                        ? a[c.channel].price
+                        ? a[c.channel].price + c.cod * c.rate_yen
                         : a[c.channel].price +
                           (c.weight - (deduct ? 0 : 1)) * 200 +
                           c.cod * c.rate_yen,
@@ -252,7 +252,7 @@ function InvoicePage({ user_id, voyage }) {
             }
          )
    )
-   console.log("deduct: ",deduct)
+   console.log("deduct: ", deduct)
    const columns = [
       {
          title: "วันที่",
@@ -392,7 +392,7 @@ function InvoicePage({ user_id, voyage }) {
             <div>
                <Space className="mb-4">
                   <Select
-                  style={{width: "150px"}}
+                     style={{ width: "150px" }}
                      value={deduct}
                      onChange={(value) => setDeduct(value)}
                      options={[
@@ -496,7 +496,8 @@ function InvoicePage({ user_id, voyage }) {
                                     }).format(
                                        item.weight < 1
                                           ? 0
-                                          : (item.weight - (deduct ? 0 : 1)) * 200
+                                          : (item.weight - (deduct ? 0 : 1)) *
+                                               200
                                     )}
                                  </td>
                                  <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
@@ -524,7 +525,6 @@ function InvoicePage({ user_id, voyage }) {
                               showSum = true
                            }
                         }
-                        console.log(sum_channel)
                         return (
                            <>
                               <tr key={item.id} className="">
@@ -567,11 +567,15 @@ function InvoicePage({ user_id, voyage }) {
                                           currency: "THB",
                                           style: "currency",
                                        }).format(
-                                          sum_channel[
-                                             channel === "123"
-                                                ? "web123"
-                                                : channel
-                                          ]?.price
+                                          Math.ceil(
+                                             parseFloat(
+                                                sum_channel[
+                                                   channel === "123"
+                                                      ? "web123"
+                                                      : channel
+                                                ]?.price
+                                             )
+                                          )
                                        )}
                                     </td>
                                  </tr>
