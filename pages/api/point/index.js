@@ -52,7 +52,7 @@ async function handler(req, res) {
       await mysql.end()
       res.status(200).json({
          message: "get point",
-         point: point_current,
+         point: Math.ceil(point_current),
       })
    }
 }
