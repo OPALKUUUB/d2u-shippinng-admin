@@ -14,20 +14,24 @@ async function handler(req, res) {
          `,
          [user_id]
       )
-      const trancking_user_yahoo = await mysql.query(
+      const trackings_user_yahoo = await mysql.query(
          `
-            SELECT trackings.*, ${"`yahoo-auction-payment`"}.bid
-            FROM trackings
-            JOIN
+         SELECT 
+            trackings.*, 
+            ${"`yahoo-auction-payment`"}.bid
+         FROM
+            trackings
+         JOIN
             ${"`yahoo-auction-payment`"}
-            ON ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
-            where
-            trackings.user_id  = ?
-            AND trackings.channel LIKE 'yahoo'
+         ON
+            ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
+         WHERE
+            trackings.user_id = ?
+            AND trackings.channel = 'yahoo'
          `,
          [user_id]
       )
-      const trackings = [...trackings_user, ...trancking_user_yahoo].filter(
+      const trackings = [...trackings_user, ...trackings_user_yahoo].filter(
          (ft) =>
             parseInt(ft.created_at.split(" ")[0].split("/")[2], 10) === 2023
       )
@@ -38,7 +42,7 @@ async function handler(req, res) {
             return a + weight
          }
          if (c.channel === "mercari" || c.channel === "fril") {
-            return a + Math.ceil(price / 1000) + weight >= 1 ? weight - 1 : 0
+            return a + Math.ceil(price / 1000) + (weight >= 1 ? weight - 1 : 0)
          }
          if (c.channel === "yahoo") {
             return a + Math.ceil(c.bid / 2000) + weight
