@@ -44,34 +44,38 @@ const TrackingImage = ({
    trackingId,
    tricker,
    setTricker,
+   trackingImages,
 }) => {
    const [images, setImages] = useState(null)
    useEffect(() => {
-      setImages(null)
-      ;(async () => {
-         try {
-            const response = await fetch(`/api/tracking/images?id=${id}`)
-            const responseJson = await response.json()
-            setImages(responseJson.tracking_image)
-         } catch (err) {
-            console.log(err)
-         }
-      })()
+      setImages(trackingImages)
    }, [id])
-   useEffect(() => {
-      if (tricker && id === trackingId) {
-         ;(async () => {
-            try {
-               const response = await fetch(`/api/tracking/images?id=${id}`)
-               const responseJson = await response.json()
-               setImages(responseJson.tracking_image)
-               setTricker(false)
-            } catch (err) {
-               console.log(err)
-            }
-         })()
-      }
-   }, [tricker])
+   // useEffect(() => {
+   //    setImages(null)
+   //    ;(async () => {
+   //       try {
+   //          const response = await fetch(`/api/tracking/images?id=${id}`)
+   //          const responseJson = await response.json()
+   //          setImages(responseJson.tracking_image)
+   //       } catch (err) {
+   //          console.log(err)
+   //       }
+   //    })()
+   // }, [id])
+   // useEffect(() => {
+   //    if (tricker && id === trackingId) {
+   //       ;(async () => {
+   //          try {
+   //             const response = await fetch(`/api/tracking/images?id=${id}`)
+   //             const responseJson = await response.json()
+   //             setImages(responseJson.tracking_image)
+   //             setTricker(false)
+   //          } catch (err) {
+   //             console.log(err)
+   //          }
+   //       })()
+   //    }
+   // }, [tricker])
    return (
       <div>
          {images === null ? (
@@ -80,7 +84,7 @@ const TrackingImage = ({
             <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
          ) : (
             <img
-               src={images[0].image}
+               src={images[0]?.image}
                alt="tracking_image"
                width={100}
                onClick={() => handleShowImages(id)}
@@ -596,13 +600,14 @@ function FrillPage() {
          dataIndex: "id",
          width: "120px",
          key: "id",
-         render: (id) => (
+         render: (id, item) => (
             <TrackingImage
                id={id}
                handleShowImages={handleShowImages}
                trackingId={trackingId}
                tricker={tricker}
                setTricker={setTricker}
+               trackingImages={item.images}
             />
          ),
       },
