@@ -33,6 +33,7 @@ import { addForm_model, trackingForm_model } from "../../../model/tracking"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
+import EditImageModal from "../../../components/EditImageModal/EditImageModal"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -118,8 +119,9 @@ function ShimizuTrackingsPage() {
       })
    const handlePasteImage = async (e) => {
       const file = e.clipboardData.files[0]
-
+      console.log(file)
       const image = await toBase64(file)
+
       try {
          const response = await fetch(`/api/tracking/images?id=${trackingId}`, {
             method: "PUT",
@@ -135,7 +137,7 @@ function ShimizuTrackingsPage() {
                ...accumulator,
                {
                   uid: index,
-                  name: `image${index}.png`,
+                  name: `image${index}.jpg`,
                   status: "done",
                   url: currentValue.image,
                   id: currentValue.id,
@@ -151,15 +153,19 @@ function ShimizuTrackingsPage() {
       }
    }
    const handleOkUploadImages = async () => {
+      const uniqueId = Date.now().toString(36)
       try {
          const doneImage =
-            fileList.map((file, index) => ({
-               id: index,
-               name: file.name,
-               status: file.status,
-               uid: file.uid,
-               url: file.url ? file.url : file.thumbUrl,
-            })) || []
+            fileList.map((file, index) => {
+               console.log(file.originFileObj)
+               return {
+                  id: index,
+                  name: `shimizu_${uniqueId}_${index}.png`,
+                  status: file.status,
+                  uid: file.uid,
+                  url: file.url ? file.url : file.thumbUrl,
+               }
+            }) || []
          await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -174,6 +180,7 @@ function ShimizuTrackingsPage() {
       }
    }
    const onChange = ({ fileList: newFileList }) => {
+      console.log(newFileList)
       setFileList(newFileList)
    }
    const onPreview = async (file) => {
@@ -186,7 +193,7 @@ function ShimizuTrackingsPage() {
          })
       }
       // eslint-disable-next-line no-restricted-globals
-      const image = new Image(300)
+      const image = new Image(400)
       image.src = src
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
@@ -462,21 +469,22 @@ function ShimizuTrackingsPage() {
       },
       {
          title: "รูปภาพ",
-         dataIndex: "id",
+         dataIndex: "images",
          width: "120px",
-         key: "id",
-         render: (id) => (
-            <TrackingImage
-               id={id}
-               handleShowImages={handleShowImages}
-               trackingId={trackingId}
-               tricker={tricker}
-               setTricker={setTricker}
+         key: "images",
+         render: (images, item) => (
+            <EditImageModal
+            item={item}
+            images={images}
             />
+            // <TrackingImage
+            //    id={id}
+            //    handleShowImages={handleShowImages}
+            //    trackingId={trackingId}
+            //    tricker={tricker}
+            //    setTricker={setTricker}
+            // />
          ),
-         // render: (id) => (
-         //    <Button onClick={() => handleShowImages(id)}>ดูรูปภาพ</Button>
-         // ),
       },
       {
          title: "ชื่อลูกค้า",
@@ -503,18 +511,6 @@ function ShimizuTrackingsPage() {
          key: "weight",
          render: (text) => (text === null ? "-" : text),
       },
-      // {
-      //    title: "ราคา",
-      //    dataIndex: "price",
-      //    key: "price",
-      //    render: (text) =>
-      //       text === null
-      //          ? "-"
-      //          : new Intl.NumberFormat("ja-JP", {
-      //               currency: "JPY",
-      //               style: "currency",
-      //            }).format(text),
-      // },
       {
          title: "รอบเรือ",
          dataIndex: "voyage",
@@ -561,8 +557,7 @@ function ShimizuTrackingsPage() {
       ;(async () => {
          const response = await fetch("/api/tracking/shimizu")
          const responseJson = await response.json()
-         // console.log(responseJson)
-         // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
+         console.log(responseJson.trackings)
          setData(responseJson.trackings)
       })()
    }, [])

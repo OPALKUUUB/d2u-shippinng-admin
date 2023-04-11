@@ -151,7 +151,7 @@ function MercariTrackingsPage() {
       })
    const handlePasteImage = async (e) => {
       const file = e.clipboardData.files[0]
-
+      
       const image = await toBase64(file)
       try {
          const response = await fetch(`/api/tracking/images?id=${trackingId}`, {

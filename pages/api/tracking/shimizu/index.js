@@ -1,20 +1,70 @@
 import mysql from "../../../../lib/db"
 import genDate from "../../../../utils/genDate"
-import sortDateTime from "../../../../utils/sortDateTime"
+
+async function getShimizu() {
+   await mysql.connect()
+   const trackings = await mysql.query(`
+      SELECT
+         trackings.id,
+         trackings.date,
+         trackings.track_no,
+         trackings.box_no,
+         trackings.weight,
+         trackings.voyage,
+         trackings.price,
+         trackings.rate_yen,
+         trackings.remark_admin,
+         trackings.remark_user,
+         trackings.created_at,
+         trackings.updated_at,
+         trackings.channel,
+         users.username,
+         GROUP_CONCAT(\`tracking-image\`.image) AS images
+      FROM 
+         trackings
+      JOIN 
+         users 
+      ON 
+         users.id = trackings.user_id
+      LEFT JOIN 
+         \`tracking-image\`
+      ON 
+         \`tracking-image\`.tracking_id = trackings.id
+      GROUP BY
+         trackings.id
+      HAVING
+         trackings.channel = 'shimizu'
+      ORDER BY 
+         DATE_FORMAT(trackings.created_at, '%d/%m/%y %h:%i:%s') DESC;
+   `)
+   const trackingObjects = trackings.map((tracking, index) => ({
+      username: tracking.username,
+      created_at: tracking.created_at,
+      key: index,
+      id: tracking.id,
+      date: tracking.date,
+      track_no: tracking.track_no,
+      box_no: tracking.box_no,
+      weight: tracking.weight,
+      voyage: tracking.voyage,
+      price: tracking.price,
+      rate_yen: tracking.price,
+      remark_admin: tracking.remark_admin,
+      remark_user: tracking.remark_user,
+      updated_at: tracking.updated_at,
+      channel: tracking.channel,
+      images: tracking.images ? tracking.images.split(",") : [],
+   }))
+   await mysql.end()
+   return trackingObjects
+}
 
 async function handler(req, res) {
    if (req.method === "GET") {
-      await mysql.connect()
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
-      )
-      await mysql.end()
+      const trackings = await getShimizu()
       res.status(200).json({
          message: "get shimizu tracking success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings
       })
    }
    if (req.method === "POST") {
@@ -28,7 +78,6 @@ async function handler(req, res) {
          voyage,
          remark_user,
          remark_admin,
-         channel,
       } = req.body
       const date_created = genDate()
       await mysql.connect()
@@ -49,19 +98,14 @@ async function handler(req, res) {
             remark_admin,
             "shimizu",
             date_created,
-            date_created,
+            date_created
          ]
       )
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
-      )
+      const trackings = await getShimizu()
       await mysql.end()
       res.status(201).json({
          message: "insert data success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings
       })
    }
    if (req.method === "PATCH") {
@@ -93,31 +137,21 @@ async function handler(req, res) {
             id,
          ]
       )
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
-      )
+      const trackings = await getShimizu()
       await mysql.end()
       res.status(200).json({
          message: "update data success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings
       })
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
       await mysql.connect()
       await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["shimizu"]
-      )
+      const trackings = await getShimizu()
       await mysql.end()
       res.status(200).json({
          message: "delete row successful !",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings
       })
    }
 }
