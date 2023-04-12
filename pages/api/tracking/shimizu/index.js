@@ -18,6 +18,7 @@ async function getShimizu() {
          trackings.created_at,
          trackings.updated_at,
          trackings.channel,
+         users.id as user_id,
          users.username,
          GROUP_CONCAT(\`tracking-image\`.image) AS images
       FROM 
@@ -35,13 +36,14 @@ async function getShimizu() {
       HAVING
          trackings.channel = 'shimizu'
       ORDER BY 
-         DATE_FORMAT(trackings.created_at, '%d/%m/%y %h:%i:%s') DESC;
+         STR_TO_DATE(trackings.created_at, '%d/%m/%Y %H:%i:%s') DESC;
    `)
    const trackingObjects = trackings.map((tracking, index) => ({
       username: tracking.username,
       created_at: tracking.created_at,
       key: index,
       id: tracking.id,
+      user_id: tracking.user_id,
       date: tracking.date,
       track_no: tracking.track_no,
       box_no: tracking.box_no,
@@ -80,6 +82,7 @@ async function handler(req, res) {
          remark_admin,
       } = req.body
       const date_created = genDate()
+      console.log(date_created)
       await mysql.connect()
       const preference = await mysql.query("SELECT rate_yen FROM preference")
       const { rate_yen } = preference[0]
