@@ -1,6 +1,5 @@
 import { Button, Modal, Upload } from "antd"
 import React, { useEffect, useState } from "react"
-import axios from "axios"
 import PasteImage from "../PasteImage"
 
 const EditImageModal = ({ images, tracking }) => {
@@ -68,21 +67,37 @@ const EditImageModal = ({ images, tracking }) => {
       }
    }
 
+   // eslint-disable-next-line consistent-return
    const handleOk = async () => {
-      const formData = new FormData()
-      fileList.forEach((file) => {
-         formData.append("images", file.originFileObj)
-      })
+      const temp_images = await Promise.all(
+         fileList
+            .filter((fi) => fi?.status === "done")
+            .map(async (cur) => {
+               const file = cur
+               const src = await new Promise((resolve) => {
+                  const reader = new FileReader()
+                  reader.readAsDataURL(file.originFileObj)
+                  reader.onload = () => resolve(reader.result)
+               })
+               const image = new Image()
+               image.src = src
+               // console.log(image.src)
+               return image.src
+            })
+      )
+      // console.log(temp_images)
       try {
-         const response = await axios.post(
-            "/api/tracking/shimizu/upload/image",
-            formData,
-            { "Content-Type": "multipart/form-data" }
-         )
-         const responseJson = response.data
+         const response = await fetch("/api/tracking/shimizu/upload/image", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ images: temp_images }),
+         })
+         const responseJson = await response.json()
          console.log(responseJson)
       } catch (err) {
-         console.log(err)
+         console.log(`Error: ${err}`)
       }
    }
 
@@ -125,9 +140,11 @@ const EditImageModal = ({ images, tracking }) => {
                   onChange={onChange}
                   onPreview={onPreview}
                >
-                  {fileList.length < 7 && "+ Upload"}
+                  {fileList.length < 3 && "+ Upload"}
                </Upload>
-               <PasteImage handlePasteImage={handlePasteImage} />
+               {fileList.length < 3 && (
+                  <PasteImage handlePasteImage={handlePasteImage} />
+               )}
             </div>
          </Modal>
       </div>

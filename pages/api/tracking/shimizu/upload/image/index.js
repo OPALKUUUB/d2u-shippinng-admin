@@ -1,10 +1,4 @@
-import { IncomingForm } from "formidable"
 import cloudinary from "cloudinary"
-import fs from "fs"
-
-export const config = {
-   api: { bodyParser: false },
-}
 
 cloudinary.config({
    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -13,14 +7,23 @@ cloudinary.config({
 })
 
 async function handler(req, res) {
-   if (req.method === "POST") {
-      const form = new IncomingForm({
-         uploadDir: "./public/uploads/",
-         multiples: true,
-         keepExtensions: true,
-      })
-      form.parse(req)
-      res.json({message: "uploaded successfully"})
+   console.log(req.method)
+   if(req.method === "POST") {
+      console.log(req.body)
+      // write query to save to db
+      res.status(200).json({
+         message: "test api successful!!"
+      }) 
+      return null
+   }
+   return null
+}
+
+export const config = {
+   api: {
+      bodyParser: {
+         sizeLimit: '4mb' // Set desired value here
+      }
    }
 }
 

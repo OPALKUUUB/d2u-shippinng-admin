@@ -16,7 +16,6 @@ import {
    Select,
    Space,
    Dropdown,
-   Upload,
    message,
 } from "antd"
 import Highlighter from "react-highlight-words"
@@ -32,7 +31,6 @@ import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
-import PasteImage from "../../../components/PasteImage"
 import EditImageModal from "../../../components/EditImageModal/EditImageModal"
 
 const { TextArea } = Input
@@ -40,58 +38,6 @@ dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
-const TrackingImage = ({
-   id,
-   handleShowImages,
-   trackingId,
-   tricker,
-   setTricker,
-}) => {
-   const [images, setImages] = useState(null)
-   useEffect(() => {
-      setImages(null)
-      ;(async () => {
-         try {
-            const response = await fetch(`/api/tracking/images?id=${id}`)
-            const responseJson = await response.json()
-            setImages(responseJson.tracking_image)
-         } catch (err) {
-            console.log(err)
-         }
-      })()
-   }, [id])
-   useEffect(() => {
-      if (tricker && id === trackingId) {
-         ;(async () => {
-            try {
-               const response = await fetch(`/api/tracking/images?id=${id}`)
-               const responseJson = await response.json()
-               setImages(responseJson.tracking_image)
-               setTricker(false)
-            } catch (err) {
-               console.log(err)
-            }
-         })()
-      }
-   }, [tricker])
-   return (
-      <div>
-         {images === null ? (
-            <p>Loading...</p>
-         ) : images.length === 0 ? (
-            <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
-         ) : (
-            <img
-               src={images[0].image}
-               alt="tracking_image"
-               width={100}
-               onClick={() => handleShowImages(id)}
-               style={{ cursor: "pointer" }}
-            />
-         )}
-      </div>
-   )
-}
 function ShimizuTrackingsPage() {
    const router = useRouter()
    const [users, setUsers] = useState([])
@@ -102,139 +48,14 @@ function ShimizuTrackingsPage() {
    const [showAddModal, setShowAddModal] = useState(false)
    const [selectedRow, setSelectedRow] = useState(trackingForm_model)
    const [showEditModal, setshowEditModal] = useState(false)
-   const [showImagesModal, setShowImagesModal] = useState(false)
-   const [fileList, setFileList] = useState([])
-   const [trackingId, setTrackingId] = useState("")
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
-   const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
 
-   const toBase64 = (file) =>
-      new Promise((resolve, reject) => {
-         const reader = new window.FileReader()
-         reader.readAsDataURL(file)
-         reader.onload = () => resolve(reader.result)
-         reader.onerror = (error) => reject(error)
-      })
-   const handlePasteImage = async (e) => {
-      const file = e.clipboardData.files[0]
-      console.log(file)
-      const image = await toBase64(file)
-
-      try {
-         const response = await fetch(`/api/tracking/images?id=${trackingId}`, {
-            method: "PUT",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ image }),
-         })
-         const responseJson = await response.json()
-         const { tracking_image } = responseJson
-         const new_tracking_image = tracking_image.reduce(
-            (accumulator, currentValue, index) => [
-               ...accumulator,
-               {
-                  uid: index,
-                  name: `image${index}.jpg`,
-                  status: "done",
-                  url: currentValue.image,
-                  id: currentValue.id,
-               },
-            ],
-            []
-         )
-         setFileList(new_tracking_image)
-         message.success("add image success!")
-      } catch (err) {
-         console.log(err)
-         message.error("add image fail")
-      }
-   }
-   const handleOkUploadImages = async () => {
-      const uniqueId = Date.now().toString(36)
-      try {
-         const doneImage =
-            fileList.map((file, index) => {
-               console.log(file.originFileObj)
-               return {
-                  id: index,
-                  name: `shimizu_${uniqueId}_${index}.png`,
-                  status: file.status,
-                  uid: file.uid,
-                  url: file.url ? file.url : file.thumbUrl,
-               }
-            }) || []
-         await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ doneImage }),
-         })
-         message.success("เพิ่มรูปภาพสำเร็จ!")
-         setTricker(true)
-         setShowImagesModal(false)
-      } catch (err) {
-         console.log(err)
-         message.error("เพิ่มรูปภาพผิดพลาด!")
-      }
-   }
-   const onChange = ({ fileList: newFileList }) => {
-      console.log(newFileList)
-      setFileList(newFileList)
-   }
-   const onPreview = async (file) => {
-      let src = file.url
-      if (!src) {
-         src = await new Promise((resolve) => {
-            const reader = new FileReader()
-            reader.readAsDataURL(file.originFileObj)
-            reader.onload = () => resolve(reader.result)
-         })
-      }
-      // eslint-disable-next-line no-restricted-globals
-      const image = new Image(400)
-      image.src = src
-      const imgWindow = window.open(src)
-      imgWindow?.document.write(image.outerHTML)
-   }
-   const handleCancelImagesModal = () => {
-      setShowImagesModal(false)
-   }
-   const handleShowImages = async (id) => {
-      // set images by fetch id tracking
-      try {
-         const response = await fetch(`/api/tracking/images?id=${id}`)
-         const responseJson = await response.json()
-         const { tracking_image } = responseJson
-         const new_tracking_image = tracking_image.reduce(
-            (accumulator, currentValue, index) => {
-               if (currentValue.image !== null) {
-                  return [
-                     ...accumulator,
-                     {
-                        uid: index,
-                        name: `image${index}.png`,
-                        status: "done",
-                        url: currentValue.image,
-                        id: currentValue.id,
-                     },
-                  ]
-               }
-               return accumulator
-            },
-            []
-         )
-         setTrackingId(id)
-         setFileList(new_tracking_image)
-      } catch (err) {
-         console.log(err)
-      }
-      setShowImagesModal(true)
-   }
    const handleCancelEditModal = () => {
       setshowEditModal(false)
    }
+
    const handleOkEditModal = async () => {
       console.log(selectedRow.date)
       const body = {
@@ -271,6 +92,7 @@ function ShimizuTrackingsPage() {
          message.error("แก้ไขข้อมูลผิดพลาด!")
       }
    }
+
    const handleShowEditModal = (id) => {
       const temp = data.filter((ft) => ft.id === id)
       const tracking = temp[0]
@@ -458,6 +280,7 @@ function ShimizuTrackingsPage() {
             text
          ),
    })
+
    const columns = [
       {
          title: "วันที่",
@@ -477,13 +300,6 @@ function ShimizuTrackingsPage() {
             item={item}
             images={images}
             />
-            // <TrackingImage
-            //    id={id}
-            //    handleShowImages={handleShowImages}
-            //    trackingId={trackingId}
-            //    tricker={tricker}
-            //    setTricker={setTricker}
-            // />
          ),
       },
       {
@@ -548,6 +364,7 @@ function ShimizuTrackingsPage() {
          },
       },
    ]
+
    useEffect(() => {
       ;(async () => {
          const response = await fetch("/api/user")
@@ -561,6 +378,7 @@ function ShimizuTrackingsPage() {
          setData(responseJson.trackings)
       })()
    }, [])
+   
    return (
       <Fragment>
          <CardHead name="Shimizu Trackings Page" />
@@ -897,24 +715,6 @@ function ShimizuTrackingsPage() {
                   }
                />
             </Space>
-         </Modal>
-         <Modal
-            title="เพิ่มรูปภาพ"
-            open={showImagesModal}
-            onCancel={handleCancelImagesModal}
-            onOk={handleOkUploadImages}
-         >
-            <div>
-               <Upload
-                  listType="picture-card"
-                  fileList={fileList}
-                  onChange={onChange}
-                  onPreview={onPreview}
-               >
-                  {fileList.length < 7 && "+ Upload"}
-               </Upload>
-               <PasteImage handlePasteImage={handlePasteImage} />
-            </div>
          </Modal>
       </Fragment>
    )
