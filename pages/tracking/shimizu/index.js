@@ -17,6 +17,7 @@ import {
    Space,
    Dropdown,
    message,
+   Spin,
 } from "antd"
 import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
@@ -50,6 +51,8 @@ function ShimizuTrackingsPage() {
    const [showEditModal, setshowEditModal] = useState(false)
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
+   const [loading, setLoading] = useState(false)
+   const [trigger, setTrigger] = useState(false)
    const searchInput = useRef(null)
 
    const handleCancelEditModal = () => {
@@ -57,7 +60,6 @@ function ShimizuTrackingsPage() {
    }
 
    const handleOkEditModal = async () => {
-      console.log(selectedRow.date)
       const body = {
          date: selectedRow.date,
          user_id: selectedRow.user_id,
@@ -297,8 +299,9 @@ function ShimizuTrackingsPage() {
          key: "images",
          render: (images, item) => (
             <EditImageModal
-            item={item}
-            images={images}
+               tracking={item}
+               images={images}
+               setTrigger={setTrigger}
             />
          ),
       },
@@ -371,16 +374,28 @@ function ShimizuTrackingsPage() {
          const responseJson = await response.json()
          setUsers(responseJson.users)
       })()
+   }, [])
+   useEffect(() => {
       ;(async () => {
+         console.log("get shimizu")
+         setLoading(true)
          const response = await fetch("/api/tracking/shimizu")
          const responseJson = await response.json()
-         console.log(responseJson.trackings)
+         // console.log(responseJson.trackings)
          setData(responseJson.trackings)
+         setLoading(false)
       })()
-   }, [])
-   
+   }, [trigger])
+
    return (
       <Fragment>
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
+            </div>
+         )}
          <CardHead name="Shimizu Trackings Page" />
          <div className="m-[10px] p-[10px] bg-white">
             <div style={{ marginBottom: "10px" }}>

@@ -1,9 +1,10 @@
-import { Button, Modal, Upload } from "antd"
+import { Button, Modal, Upload, message } from "antd"
 import React, { useEffect, useState } from "react"
 import PasteImage from "../PasteImage"
 
-const EditImageModal = ({ images, tracking }) => {
+const EditImageModal = ({ images, tracking, setTrigger }) => {
    const [open, setOpen] = useState(false)
+   const [confirmLoading, setConfirmLoading] = useState(false)
    const [thumbUrl, setThumbUrl] = useState(
       images.length > 0 ? images[0] : null
    )
@@ -69,6 +70,7 @@ const EditImageModal = ({ images, tracking }) => {
 
    // eslint-disable-next-line consistent-return
    const handleOk = async () => {
+      setConfirmLoading(true)
       const temp_images = await Promise.all(
          fileList
             .filter((fi) => fi?.status === "done")
@@ -81,27 +83,37 @@ const EditImageModal = ({ images, tracking }) => {
                })
                const image = new Image()
                image.src = src
-               // console.log(image.src)
                return image.src
             })
       )
-      // console.log(temp_images)
       try {
-         const response = await fetch("/api/tracking/shimizu/upload/image", {
+         const deletedImages = images.filter(
+            (image) => !fileList.some((fi) => fi.url === image)
+         )
+         await fetch("/api/tracking/shimizu/upload/image", {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ images: temp_images }),
+            body: JSON.stringify({
+               images: temp_images,
+               delete_images: deletedImages,
+               tracking_id: tracking.id,
+            }),
          })
-         const responseJson = await response.json()
-         console.log(responseJson)
+         setTrigger((prev) => !prev)
       } catch (err) {
          console.log(`Error: ${err}`)
+      } finally {
+         message.success("upload successful!")
+         console.log("upload image finished")
+         setConfirmLoading(false)
+         setOpen(false)
       }
    }
 
    useEffect(() => {
+      // console.log(tracking)
       setThumbUrl(images.length > 0 ? images[0] : null)
       setFileList(
          images.map((img, idx) => ({
@@ -113,18 +125,20 @@ const EditImageModal = ({ images, tracking }) => {
    }, [images, tracking])
 
    return (
-      <div className="w-[100px] h-[100px] overflow-hidden">
-         {thumbUrl && (
-            <img
-               className="w-full cursor-pointer"
-               src={thumbUrl}
-               alt=""
-               onClick={handleOpenModal}
-            />
-         )}
+      <>
          {!thumbUrl && (
             <div>
-               <Button onClick={handleOpenModal}>Add Image</Button>
+               <Button onClick={handleOpenModal}>เพิ่มรูปภาพ</Button>
+            </div>
+         )}
+         {thumbUrl && (
+            <div className="w-[100px] h-[100px] overflow-hidden">
+               <img
+                  className="w-full cursor-pointer"
+                  src={thumbUrl}
+                  alt=""
+                  onClick={handleOpenModal}
+               />
             </div>
          )}
          <Modal
@@ -132,6 +146,7 @@ const EditImageModal = ({ images, tracking }) => {
             title="เพิ่มรูปภาพ"
             open={open}
             onCancel={handleCloseModal}
+            confirmLoading={confirmLoading}
          >
             <div>
                <Upload
@@ -147,7 +162,7 @@ const EditImageModal = ({ images, tracking }) => {
                )}
             </div>
          </Modal>
-      </div>
+      </>
    )
 }
 
