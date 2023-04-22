@@ -20,11 +20,10 @@ async function handler(req, res) {
       const id = parseInt(req.query.id, 10)
       const { image } = req.body
       await mysql.connect()
-      const result = await mysql.query(
+      await mysql.query(
          "INSERT INTO `tracking-image` (image, tracking_id) VALUES (?,?)",
          [image, id]
       )
-      console.log(result)
       const tracking_image = await mysql.query(
          "SELECT id, image FROM `tracking-image` WHERE tracking_id = ?",
          [parseInt(id, 10)]
