@@ -27,6 +27,7 @@ import {
 } from "@react-pdf/renderer"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
+import EditImageModal from "../../components/Modal/EditImageModal"
 
 const { TextArea } = Input
 
@@ -41,11 +42,14 @@ function ShipBilling() {
       shipbilling_id: "",
       user_id: "",
       payment_type: "",
+      slip_image: "",
       remark: "",
    })
    const [selectedRowKeys, setSelectedRowKeys] = useState([])
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
+   const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
+
    const searchInput = useRef(null)
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
@@ -82,51 +86,59 @@ function ShipBilling() {
          console.log(err)
       }
    }
-
-   const handleShowEditModal = (user_id) => {
-      setSelectedRow(data.filter((ft) => ft.user_id === user_id)[0])
-      setShowEditModal(true)
-   }
    const handleOkEditModal = async () => {
-      // console.log(selectedRow)
       let { shipbilling_id } = selectedRow
-      if (selectedRow.shipbilling_id === null) {
-         const response1 = await fetch(`/api/shipbilling`, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
+      try {
+         if (selectedRow.shipbilling_id === null) {
+            const response1 = await fetch(`/api/shipbilling`, {
+               method: "POST",
+               headers: {
+                  "Content-Type": "application/json",
+               },
+               body: JSON.stringify({
+                  user_id: selectedRow.user_id,
+                  voyage: voyageSelect,
+               }),
+            })
+            const responseJson1 = await response1.json()
+            shipbilling_id = responseJson1.billing.id
+         }
+         const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-               user_id: selectedRow.user_id,
-               voyage: voyageSelect,
+               address: selectedRow.address,
+               remark: selectedRow.remark,
+               payment_type: selectedRow.payment_type,
             }),
          })
-         const responseJson1 = await response1.json()
-         shipbilling_id = responseJson1.billing.id
+         const responseJson = await response.json()
+         const { billing } = responseJson
+         setData((prev) => {
+            const index = prev.findIndex(
+               (f) =>
+                  f.user_id === billing.user_id && f.voyage === billing.voyage
+            )
+            // console.log(index)
+            return [
+               ...prev.slice(0, index),
+               { ...billing, username: selectedRow.username },
+               ...prev.slice(index + 1),
+            ]
+         })
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+      } finally {
+         setSelectedRow({
+            shipbilling_id: "",
+            user_id: "",
+            payment_type: "",
+            slip_image: "",
+            remark: "",
+         })
+         setShowEditModal(false)
       }
-      const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
-         method: "PATCH",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            address: selectedRow.address,
-            remark: selectedRow.remark,
-            payment_type: selectedRow.payment_type,
-         }),
-      })
-      const responseJson = await response.json()
-      const { billing } = responseJson
-      setData((prev) => {
-         const index = prev.findIndex(
-            (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
-         )
-         // console.log(index)
-         return [
-            ...prev.slice(0, index),
-            { ...billing, username: selectedRow.username },
-            ...prev.slice(index + 1),
-         ]
-      })
-      message.success("success!")
    }
 
    const handleClickAddressCustomer = async () => {
@@ -136,6 +148,10 @@ function ShipBilling() {
       // eslint-disable-next-line no-unsafe-optional-chaining
       const txt = selectedRow.address + responseJson.user?.address
       setSelectedRow((prev) => ({ ...prev, address: txt }))
+   }
+
+   const handleClickLeaveItToMe = async () => {
+      setSelectedRow((prev) => ({ ...prev, address: "ฝากไว้ก่อน" }))
    }
 
    const handleChangeNoti = async (status, bill) => {
@@ -172,7 +188,7 @@ function ShipBilling() {
          // console.log(index)
          return [
             ...prev.slice(0, index),
-            { ...billing  },
+            { ...billing },
             ...prev.slice(index + 1),
          ]
       })
@@ -540,6 +556,38 @@ function ShipBilling() {
          },
       },
       {
+         title: "slip",
+         dataIndex: "slip_image",
+         width: "120px",
+         key: "slip_image",
+         render: (image, item) => {
+            if (image) {
+               return (
+                  <img
+                     src={image}
+                     alt=""
+                     className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+                     onClick={() => {
+                        setSelectedRow(item)
+                        setOpenEditSlipModal(true)
+                     }}
+                  />
+               )
+            }
+            return (
+               <Button
+                  type="primary"
+                  onClick={() => {
+                     setSelectedRow(item)
+                     setOpenEditSlipModal(true)
+                  }}
+               >
+                  Add Image
+               </Button>
+            )
+         },
+      },
+      {
          title: "remark",
          dataIndex: "remark",
          width: "120px",
@@ -553,12 +601,15 @@ function ShipBilling() {
          ellipsis: true,
          width: "90px",
          fixed: "right",
-         render: (user_id) => {
+         render: (user_id, item) => {
             const item_manage = [
                {
                   key: "1",
                   label: "แก้ไข",
-                  onClick: () => handleShowEditModal(user_id),
+                  onClick: () => {
+                     setSelectedRow(item)
+                     setShowEditModal(true)
+                  },
                },
                {
                   key: "2",
@@ -587,14 +638,13 @@ function ShipBilling() {
          const responseJson = await response.json()
          console.log(responseJson)
          setItems(
-            responseJson.voyages
-               .reduce(
-                  (accumulator, currentValue) => [
-                     ...accumulator,
-                     { label: currentValue.voyage, value: currentValue.voyage },
-                  ],
-                  []
-               )
+            responseJson.voyages.reduce(
+               (accumulator, currentValue) => [
+                  ...accumulator,
+                  { label: currentValue.voyage, value: currentValue.voyage },
+               ],
+               []
+            )
          )
       })()
       ;(async () => {
@@ -642,6 +692,13 @@ function ShipBilling() {
                />
             </div>
          </div>
+         <EditImageModal
+            open={openEditSlipModal}
+            onCancel={() => setOpenEditSlipModal(false)}
+            item={selectedRow}
+            onOk={() => console.log("in")}
+            setData={setData}
+         />
          <Modal
             open={showEditModal}
             onCancel={() => setShowEditModal(false)}
@@ -679,6 +736,7 @@ function ShipBilling() {
                <Button onClick={handleClickAddressCustomer}>
                   ขนส่งเอกชน(ที่อยู่ ลค.)
                </Button>
+               <Button onClick={handleClickLeaveItToMe}>ฝากไว้ก่อน</Button>
                <TextArea
                   rows={4}
                   value={selectedRow?.address}
@@ -704,9 +762,11 @@ function ShipBilling() {
                      })
                   }
                >
-                  <option value={null}>selected</option>
+                  <option defaultValue>selected</option>
                   <option value="เงินสด">เงินสด</option>
+                  <option value="แม่มณี">แม่มณี</option>
                   <option value="โอนเงิน">โอนเงิน</option>
+                  <option value="บัญชีบริษัท">บัญชีบริษัท</option>
                   <option value="ไม่มีค่าเรือ">ไม่มีค่าเรือ</option>
                </select>
             </div>
