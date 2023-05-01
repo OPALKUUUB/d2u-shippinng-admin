@@ -68,7 +68,8 @@ async function handler(req, res) {
          ship_billing.check_2,
          ship_billing.remark,
          ship_billing.address,
-         ship_billing.rate
+         ship_billing.rate,
+         ship_billing.slip_image
          FROM ship_billing 
          WHERE voyage = ?`,
          [voyage]
@@ -96,6 +97,7 @@ async function handler(req, res) {
                   check: null,
                   check_2: null,
                   remark: null,
+                  slip_image: c.slip_image
                },
             ]
          }
