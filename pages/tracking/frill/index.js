@@ -32,50 +32,18 @@ import { addForm_model, trackingForm_model } from "../../../model/tracking"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
+import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
-const TrackingImage = ({
-   id,
-   handleShowImages,
-   trackingId,
-   tricker,
-   setTricker,
-   trackingImages,
-}) => {
+const TrackingImage = ({ id, handleShowImages, trackingImages }) => {
    const [images, setImages] = useState(null)
    useEffect(() => {
       setImages(trackingImages)
    }, [id])
-   // useEffect(() => {
-   //    setImages(null)
-   //    ;(async () => {
-   //       try {
-   //          const response = await fetch(`/api/tracking/images?id=${id}`)
-   //          const responseJson = await response.json()
-   //          setImages(responseJson.tracking_image)
-   //       } catch (err) {
-   //          console.log(err)
-   //       }
-   //    })()
-   // }, [id])
-   // useEffect(() => {
-   //    if (tricker && id === trackingId) {
-   //       ;(async () => {
-   //          try {
-   //             const response = await fetch(`/api/tracking/images?id=${id}`)
-   //             const responseJson = await response.json()
-   //             setImages(responseJson.tracking_image)
-   //             setTricker(false)
-   //          } catch (err) {
-   //             console.log(err)
-   //          }
-   //       })()
-   //    }
-   // }, [tricker])
    return (
       <div>
          {images === null ? (
@@ -109,6 +77,7 @@ function FrillPage() {
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
    const [tricker, setTricker] = useState(false)
+   const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
    const searchInput = useRef(null)
    const handleChangeReceived = async (status, id) => {
       try {
@@ -689,6 +658,37 @@ function FrillPage() {
             ),
       },
       {
+         title: "slip",
+         dataIndex: "tracking_slip_image",
+         width: "120px",
+         key: "tracking_slip_image",
+         render: (image, item) => {
+            if (image) {
+               return (
+                  <img
+                     src={image}
+                     alt=""
+                     className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+                     onClick={() => {
+                        setSelectedRow(item)
+                        setOpenEditSlipModal(true)
+                     }}
+                  />
+               )
+            }
+            return (
+               <Button
+                  onClick={() => {
+                     setSelectedRow(item)
+                     setOpenEditSlipModal(true)
+                  }}
+               >
+                  Add Slip
+               </Button>
+            )
+         },
+      },
+      {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
@@ -1147,6 +1147,12 @@ function FrillPage() {
                />
             </Space>
          </Modal>
+         <EditTrackingSlipImageModal
+            open={openEditSlipModal}
+            onCancel={() => setOpenEditSlipModal(false)}
+            setData={setData}
+            item={selectedRow}
+         />
          <Modal
             title="เพิ่มรูปภาพ"
             open={showImagesModal}
