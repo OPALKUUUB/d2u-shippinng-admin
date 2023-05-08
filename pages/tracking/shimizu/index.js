@@ -451,7 +451,6 @@ function ShimizuTrackingsPage() {
          setLoading(true)
          const response = await fetch("/api/tracking/shimizu")
          const responseJson = await response.json()
-         // console.log(responseJson.trackings)
          setData(responseJson.trackings)
          setLoading(false)
       })()

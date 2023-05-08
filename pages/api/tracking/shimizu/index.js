@@ -18,6 +18,8 @@ async function getShimizu() {
          trackings.created_at,
          trackings.updated_at,
          trackings.channel,
+         trackings.tracking_slip_image,
+         trackings.paid_channel,
          users.id as user_id,
          users.username,
          GROUP_CONCAT(\`tracking-image\`.image) AS images
@@ -55,6 +57,8 @@ async function getShimizu() {
       remark_user: tracking.remark_user,
       updated_at: tracking.updated_at,
       channel: tracking.channel,
+      tracking_slip_image: tracking.tracking_slip_image,
+      paid_channel: tracking.paid_channel,
       images: tracking.images ? tracking.images.split(",") : [],
    }))
    await mysql.end()
@@ -66,7 +70,7 @@ async function handler(req, res) {
       const trackings = await getShimizu()
       res.status(200).json({
          message: "get shimizu tracking success!",
-         trackings
+         trackings,
       })
    }
    if (req.method === "POST") {
@@ -101,14 +105,14 @@ async function handler(req, res) {
             remark_admin,
             "shimizu",
             date_created,
-            date_created
+            date_created,
          ]
       )
       const trackings = await getShimizu()
       await mysql.end()
       res.status(201).json({
          message: "insert data success!",
-         trackings
+         trackings,
       })
    }
    if (req.method === "PATCH") {
@@ -144,7 +148,7 @@ async function handler(req, res) {
       await mysql.end()
       res.status(200).json({
          message: "update data success!",
-         trackings
+         trackings,
       })
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
@@ -154,9 +158,15 @@ async function handler(req, res) {
       await mysql.end()
       res.status(200).json({
          message: "delete row successful !",
-         trackings
+         trackings,
       })
    }
 }
-
+export const config = {
+   api: {
+      bodyParser: {
+         responseLimit: false,
+      },
+   },
+}
 export default handler
