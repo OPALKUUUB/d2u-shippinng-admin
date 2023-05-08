@@ -23,6 +23,9 @@ import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
+import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
+import axios from "axios"
+import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 
 const { TextArea } = Input
 
@@ -41,6 +44,7 @@ function YahooTrackingsPage(props) {
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
    const searchInput = useRef(null)
+   const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
    const handleOkEditModal = async () => {
       const {
          id,
@@ -272,6 +276,31 @@ function YahooTrackingsPage(props) {
          ),
    })
 
+   async function handleSelectPaidChannel(id, paidChannel) {
+      // console.log(id, paidChannel)
+      try {
+         const response = await axios.put(`/api/paid-channel/${id}`, {
+            tracking_id: id,
+            paid_channel: paidChannel,
+         })
+         const responseData = response.data
+         console.log(responseData)
+         setData((prev) => {
+            const index = prev.findIndex((fi) => fi.id === id)
+            return [
+               ...prev.slice(0, index),
+               {
+                  ...prev[index],
+                  paid_channel: responseData.paid_channel,
+               },
+               ...prev.slice(index + 1),
+            ]
+         })
+      } catch (err) {
+         console.log(err)
+      }
+   }
+
    const columns = [
       {
          title: "วันที่",
@@ -368,25 +397,50 @@ function YahooTrackingsPage(props) {
                </div>
             )
          },
+      },{
+         title: "slip",
+         dataIndex: "tracking_slip_image",
+         width: "120px",
+         key: "tracking_slip_image",
+         render: (image, item) => {
+            if (image) {
+               return (
+                  <img
+                     src={image}
+                     alt=""
+                     className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+                     onClick={() => {
+                        setSelectedRow(item)
+                        setOpenEditSlipModal(true)
+                     }}
+                  />
+               )
+            }
+            return (
+               <Button
+                  onClick={() => {
+                     setSelectedRow(item)
+                     setOpenEditSlipModal(true)
+                  }}
+               >
+                  Add Slip
+               </Button>
+            )
+         },
       },
-      // {
-      //    title: "รวม",
-      //    dataIndex: "id",
-      //    key: "sum",
-      //    render: (id) => {
-      //       const payments = data?.filter((ft) => ft.id === id)
-      //       const payment = payments[0]
-      //       const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
-      //       if (!delivery_fee || !tranfer_fee) {
-      //          return "-"
-      //       }
-      //       const s = (bid + delivery_fee) * rate_yen + tranfer_fee
-      //       return new Intl.NumberFormat("th-TH", {
-      //          currency: "THB",
-      //          style: "currency",
-      //       }).format(s)
-      //    },
-      // },
+      {
+         title: "ช่องทางจ่ายออก",
+         dataIndex: "paid_channel",
+         key: "paid_channel",
+         render: (paid_channel, item) => (
+            <SelectPaidChannel
+               // eslint-disable-next-line react/jsx-no-bind
+               onOk={handleSelectPaidChannel}
+               defaultValue={paid_channel}
+               id={item.id}
+            />
+         ),
+      },
       {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
@@ -584,6 +638,12 @@ function YahooTrackingsPage(props) {
                />
             </div>
          </Modal>
+         <EditTrackingSlipImageModal
+            open={openEditSlipModal}
+            onCancel={() => setOpenEditSlipModal(false)}
+            setData={setData}
+            item={selectedRow}
+         />
          <style jsx>
             {`
                .container-table {
