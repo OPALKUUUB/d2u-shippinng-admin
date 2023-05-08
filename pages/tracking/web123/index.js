@@ -32,6 +32,7 @@ import { addForm_model, trackingForm_model } from "../../../model/tracking"
 import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
+import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -106,6 +107,7 @@ function Web123Page() {
    const [searchedColumn, setSearchedColumn] = useState("")
    const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
+   const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
    const handleChangeReceived = async (status, id) => {
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
@@ -718,6 +720,37 @@ function Web123Page() {
             ),
       },
       {
+         title: "slip",
+         dataIndex: "tracking_slip_image",
+         width: "120px",
+         key: "tracking_slip_image",
+         render: (image, item) => {
+            if (image) {
+               return (
+                  <img
+                     src={image}
+                     alt=""
+                     className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+                     onClick={() => {
+                        setSelectedRow(item)
+                        setOpenEditSlipModal(true)
+                     }}
+                  />
+               )
+            }
+            return (
+               <Button
+                  onClick={() => {
+                     setSelectedRow(item)
+                     setOpenEditSlipModal(true)
+                  }}
+               >
+                  Add Slip
+               </Button>
+            )
+         },
+      },
+      {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
@@ -1200,6 +1233,12 @@ function Web123Page() {
                />
             </Space>
          </Modal>
+         <EditTrackingSlipImageModal
+            open={openEditSlipModal}
+            onCancel={() => setOpenEditSlipModal(false)}
+            setData={setData}
+            item={selectedRow}
+         />
          <Modal
             title="เพิ่มรูปภาพ"
             open={showImagesModal}
