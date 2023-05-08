@@ -1,4 +1,5 @@
 import { Fragment } from "react"
+import { getSession } from "next-auth/react"
 import SignInForm from "../../../components/SignInForm"
 
 function SignInPage() {
@@ -52,4 +53,19 @@ function SignInPage() {
    )
 }
 
+export async function getServerSideProps(context) {
+   const session = await getSession({ req: context.req })
+
+   if (session) {
+      return {
+         redirect: {
+            destination: "/",
+            permanent: false,
+         },
+      }
+   }
+   return {
+      props: { session },
+   }
+}
 export default SignInPage

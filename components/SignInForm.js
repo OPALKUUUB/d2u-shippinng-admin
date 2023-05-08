@@ -1,39 +1,62 @@
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/router"
-import { Fragment, useRef } from "react"
+import { Fragment, useRef, useState } from "react"
+import { Spin, message } from "antd"
 import ProfileIcon from "./icon/ProfileIcon"
 import UnlockIcon from "./icon/UnlockIcon"
 
 function SignInForm() {
+   const [loading, setLoading] = useState(false)
    const router = useRouter()
    const usernameRef = useRef()
    const passwordRef = useRef()
 
    const handleSignIn = async (e) => {
       e.preventDefault()
+      setLoading(true)
       try {
          const response = await signIn("credentials", {
             redirect: false,
             username: usernameRef.current.value,
             password: passwordRef.current.value,
          })
-         console.log(response)
-         router.replace("/")
+         if (response.ok) {
+            message.success("Login Success!")
+            message.success(`Welcome Back Admin ${usernameRef.current.value}`)
+            router.replace("/")
+         }else {
+            throw new Error(response)
+         }
       } catch (err) {
          console.log(err)
+         message.error("Your username or password is incorrect!")
+      } finally {
+         console.log("Success!")
+         setLoading(false)
       }
    }
 
    return (
       <Fragment>
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
+            </div>
+         )}
          <form onSubmit={handleSignIn}>
             <div className="input-container">
                <div className="input-icon">
-                  <span className="icon"><ProfileIcon fill="black" width="20" height="20"/></span>
+                  <span className="icon">
+                     <ProfileIcon fill="black" width="20" height="20" />
+                  </span>
                   <input name="username" type="text" ref={usernameRef} />
                </div>
                <div className="input-icon">
-                  <span className="icon"><UnlockIcon width="20" height="20"/></span>
+                  <span className="icon">
+                     <UnlockIcon width="20" height="20" />
+                  </span>
                   <input name="password" type="password" ref={passwordRef} />
                </div>
             </div>
