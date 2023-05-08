@@ -26,6 +26,7 @@ import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import axios from "axios"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
@@ -33,6 +34,7 @@ import genDate from "../../../utils/genDate"
 import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
 import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
+import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -597,6 +599,30 @@ function Web123Page() {
          // eslint-disable-next-line no-nested-ternary
          text === "" || text === null ? "-" : text,
    })
+   async function handleSelectPaidChannel(id, paidChannel) {
+      // console.log(id, paidChannel)
+      try {
+         const response = await axios.put(`/api/paid-channel/${id}`, {
+            tracking_id: id,
+            paid_channel: paidChannel,
+         })
+         const responseData = response.data
+         console.log(responseData)
+         setData((prev) => {
+            const index = prev.findIndex((fi) => fi.id === id)
+            return [
+               ...prev.slice(0, index),
+               {
+                  ...prev[index],
+                  paid_channel: responseData.paid_channel,
+               },
+               ...prev.slice(index + 1),
+            ]
+         })
+      } catch (err) {
+         console.log(err)
+      }
+   }
    const columns = [
       {
          title: "วันที่",
@@ -749,6 +775,19 @@ function Web123Page() {
                </Button>
             )
          },
+      },
+      {
+         title: "ช่องทางจ่ายออก",
+         dataIndex: "paid_channel",
+         key: "paid_channel",
+         render: (paid_channel, item) => (
+            <SelectPaidChannel
+               // eslint-disable-next-line react/jsx-no-bind
+               onOk={handleSelectPaidChannel}
+               defaultValue={paid_channel}
+               id={item.id}
+            />
+         ),
       },
       {
          title: "เลขแทรกกิงค์",
