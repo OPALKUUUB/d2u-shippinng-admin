@@ -409,7 +409,29 @@ function ShipBilling() {
          title: "ที่อยู่จัดส่ง",
          dataIndex: "address",
          width: "120px",
-         key: "payment_type",
+         key: "address",
+         filters: [
+            {
+               text: "รับเอง พระราม 3",
+               value: "รับเอง พระราม 3",
+            },
+            {
+               text: "รับเอง ร่มเกล้า",
+               value: "รับเอง ร่มเกล้า",
+            },
+            {
+               text: "D2U ส่งให้",
+               value: "D2U ส่งให้",
+            },
+            {
+               text: "ฝากไว้ก่อน",
+               value: "ฝากไว้ก่อน",
+            },
+         ],
+         onFilter: (value, record) =>
+            record.address === null || record.address === undefined
+               ? false
+               : record.address.indexOf(value) === 0,
          render: (text) => (text === null ? "-" : text),
       },
       {
@@ -753,8 +775,10 @@ function ShipBilling() {
                   }
                />
                <label>payment_type: </label>
+               {selectedRow?.payment_type || "null"}
                <select
-                  value={selectedRow.payment_type}
+                  defaultValue={selectedRow?.payment_type}
+                  value={selectedRow?.payment_type || ""}
                   onChange={(e) =>
                      setSelectedRow({
                         ...selectedRow,
@@ -762,7 +786,7 @@ function ShipBilling() {
                      })
                   }
                >
-                  <option defaultValue>selected</option>
+                  <option defaultValue={null}>selected</option>
                   <option value="เงินสด">เงินสด</option>
                   <option value="แม่มณี">แม่มณี</option>
                   <option value="โอนเงิน">โอนเงิน</option>

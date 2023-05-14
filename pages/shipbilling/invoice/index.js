@@ -2,7 +2,7 @@
 /* eslint-disable indent */
 /* eslint-disable no-else-return */
 /* eslint-disable prefer-destructuring */
-import { Dropdown, message, Modal, Select, Space, Table } from "antd"
+import { message, Modal, Select, Space, Table } from "antd"
 import React, { useEffect, useRef, useState } from "react"
 
 function CalRate(rate_w, rate_s, deduct) {
@@ -54,20 +54,19 @@ function InvoicePage({ user_id, voyage }) {
    const [selectRow, setSelectRow] = useState()
    const [openModal, setOpenModal] = useState(false)
    const [deduct, setDeduct] = useState(false)
-   const codRef = useRef()
    let seq = 0
 
    const handleSaveCod = async () => {
       await fetch(`/api/tracking?id=${selectRow?.id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ cod: codRef.current.value }),
+         body: JSON.stringify({ cod: selectRow?.cod || 0 }),
       })
       message.success("success!")
       setData((prev) => {
          const temp = prev.reduce((a, c) => {
             if (c.id === selectRow.id) {
-               return [...a, { ...c, cod: codRef.current.value }]
+               return [...a, { ...c, cod: selectRow?.cod || 0 }]
             }
             return [...a, c]
          }, [])
@@ -185,7 +184,7 @@ function InvoicePage({ user_id, voyage }) {
          setCheckDiscount(responseJson.billing?.check_50 === 1)
       })()
    }, [])
-   
+
    const sum_channel = ["yahoo", "shimizu", "mart", "123"].reduce(
       (a, c) => {
          const sum_weight_cod = data
@@ -202,12 +201,19 @@ function InvoicePage({ user_id, voyage }) {
          }
          const price = [sum_weight_cod].reduce((a2, c2) => {
             const baseRateByWeight = CalBaseRateByWeight(c2.weight)
-            
-            const rate_use = baseRateByWeight  < scoreBaseRate.rate ? baseRateByWeight : scoreBaseRate.rate 
+
+            let rate_use =
+               baseRateByWeight < scoreBaseRate.rate
+                  ? baseRateByWeight
+                  : scoreBaseRate.rate
+            if (deduct === 150) {
+               rate_use = 150
+            }
             if (c === "shimizu" && scoreBaseRate.min && c2.weight < 0.5) {
                return 100 + c2.cod
             }
-            return Math.ceil(c2.weight * rate_use + c2.cod)
+            const weight = Math.floor(c2.weight * 100) / 100
+            return Math.ceil(weight * rate_use + c2.cod)
          }, 0)
          return {
             ...a,
@@ -247,7 +253,6 @@ function InvoicePage({ user_id, voyage }) {
             }
          )
    )
-
    const columns = [
       {
          title: "วันที่",
@@ -381,7 +386,12 @@ function InvoicePage({ user_id, voyage }) {
                onCancel={() => setOpenModal(false)}
                onOk={handleSaveCod}
             >
-               <input ref={codRef} />
+               <input
+                  value={selectRow?.cod}
+                  onChange={(e) =>
+                     setSelectRow((prev) => ({ ...prev, cod: e.target.value }))
+                  }
+               />
             </Modal>
          </div>
          <div className="Invoice-body pb-6">
@@ -470,7 +480,7 @@ function InvoicePage({ user_id, voyage }) {
                            item.channel === "fril"
                         ) {
                            return (
-                              <tr key={`TrInvoice-${item.id}-${index}`} >
+                              <tr key={`TrInvoice-${item.id}-${index}`}>
                                  <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                     {seq}
                                  </td>
@@ -490,7 +500,9 @@ function InvoicePage({ user_id, voyage }) {
                                     {new Intl.NumberFormat("th-TH", {
                                        currency: "THB",
                                        style: "currency",
-                                    }).format(Math.floor(CalMerFril(item.weight)))}
+                                    }).format(
+                                       Math.floor(CalMerFril(item.weight))
+                                    )}
                                  </td>
                                  <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                     {new Intl.NumberFormat("th-TH", {
@@ -519,7 +531,10 @@ function InvoicePage({ user_id, voyage }) {
                         }
                         return (
                            <>
-                              <tr key={`TrInvoice-${item.id}-${index}`} className="">
+                              <tr
+                                 key={`TrInvoice-${item.id}-${index}`}
+                                 className=""
+                              >
                                  <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                     {seq}
                                  </td>
