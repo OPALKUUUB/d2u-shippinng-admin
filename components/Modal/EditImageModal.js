@@ -1,8 +1,10 @@
+/* eslint-disable no-useless-return */
 import { Button, Modal, Space, Upload } from "antd"
 
 import { UploadOutlined } from "@ant-design/icons"
 import React, { useEffect, useState } from "react"
 import axios from "axios"
+import PasteImage from "../PasteImage"
 // images, open, onCancel, onOk
 function EditImageModal(props) {
    const data = props.item
@@ -48,6 +50,31 @@ function EditImageModal(props) {
          props.onCancel()
       }
    }
+   const handlePasteImage = async (e) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+      const blob = Array.from(items)
+         .filter((item) => item.type.indexOf("image") !== -1)
+         .map((item) => item.getAsFile())[0]
+      if (blob) {
+         const reader = new FileReader()
+         reader.readAsDataURL(blob)
+         reader.onload = () => {
+            const newFileList = [
+               {
+                  uid: `paste-${Date.now()}`,
+                  name: blob.name,
+                  type: blob.type,
+                  size: blob.size,
+                  originFileObj: blob,
+                  url: reader.result,
+               },
+               ...fileList,
+            ]
+            setFileList(newFileList.slice(0, 1))
+         }
+      }
+   }
    useEffect(() => {
       if (
          data.slip_image === "" ||
@@ -88,6 +115,7 @@ function EditImageModal(props) {
             >
                <Button icon={<UploadOutlined />}>Upload Slip</Button>
             </Upload>
+            <PasteImage handlePasteImage={handlePasteImage} />
          </Space>
       </Modal>
    )
