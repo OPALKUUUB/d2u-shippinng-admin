@@ -641,6 +641,14 @@ function ShipBilling() {
                         `/shipbilling/invoice?&voyage=${voyageSelect}&user_id=${user_id}`
                      ),
                },
+               {
+                  key: "23",
+                  label: "Qmode",
+                  onClick: () =>
+                     window.open(
+                        `/shipbilling/qmode?&voyage=${voyageSelect}&user_id=${user_id}`
+                     ),
+               },
             ]
             return (
                <Space>
