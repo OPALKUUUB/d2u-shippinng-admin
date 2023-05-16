@@ -36,6 +36,18 @@ function CalBaseRateByWeight(weight) {
    return 200
 }
 async function handler(req, res) {
+   if (req.method === "PUT") {
+      const { deduct } = req.body
+      const id = parseInt(req.query.id, 10)
+      await mysql.connect()
+      const result = await mysql.query(
+         `
+      UPDATE ship_billing SET deduct = ? WHERE id = ?
+      `,
+         [deduct, id]
+      )
+      res.status(200).json(result)
+   }
    if (req.method === "GET") {
       const { voyage } = req.query
       await mysql.connect()
@@ -97,7 +109,7 @@ async function handler(req, res) {
                   check: null,
                   check_2: null,
                   remark: null,
-                  slip_image: c.slip_image
+                  slip_image: c.slip_image,
                },
             ]
          }

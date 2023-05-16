@@ -2,7 +2,7 @@
 /* eslint-disable indent */
 /* eslint-disable no-else-return */
 /* eslint-disable prefer-destructuring */
-import { message, Modal, Select, Space, Table } from "antd"
+import { Button, message, Modal, Select, Space, Table } from "antd"
 import React, { useEffect, useRef, useState } from "react"
 
 function CalRate(rate_w, rate_s, deduct) {
@@ -116,19 +116,26 @@ function InvoicePage({ user_id, voyage }) {
          window.location.reload(false)
       }
    }
+   const handleConfirmDeduct = async () => {
+      const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
+         method: "PUT",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            deduct
+         }),
+      })
+   }
    function CalMerFril(weight) {
       const baseRateByWeight = CalBaseRateByWeight(weight)
       const rate_use = CalRate(baseRateByWeight, scoreBaseRate.rate, deduct)
-      if (weight < 1) {
-         if (deduct) {
-            return weight * rate_use
-         }
-         return 0
-      }
       if (deduct) {
+         console.log("deduct true")
          return weight * rate_use
       }
-      return weight * 200
+      if (weight < 1) {
+         return Math.ceil(weight * 200 * 100) / 100
+      }
+      return Math.ceil((weight - 1) * 200 * 100) / 100
    }
    useEffect(() => {
       ;(async () => {
@@ -158,6 +165,7 @@ function InvoicePage({ user_id, voyage }) {
                []
             ),
          ])
+         setDeduct(responseJson.billing.deduct)
          setBill(responseJson.billing)
          setDiscount(responseJson.billing?.discount)
          setCostdDelivery(
@@ -212,7 +220,7 @@ function InvoicePage({ user_id, voyage }) {
             if (c === "shimizu" && scoreBaseRate.min && c2.weight < 0.5) {
                return 100 + c2.cod
             }
-            const weight = Math.floor(c2.weight * 100) / 100
+            const weight = Math.ceil(c2.weight * 100) / 100
             return Math.ceil(weight * rate_use + c2.cod)
          }, 0)
          return {
@@ -226,7 +234,8 @@ function InvoicePage({ user_id, voyage }) {
          .filter((ft) => ft.channel === "mercari" || ft.channel === "fril")
          .reduce(
             (a, c) => {
-               const cal_mer_fril = Math.floor(CalMerFril(c.weight))
+               const cal_mer_fril = Math.ceil(CalMerFril(c.weight))
+               // console.log(CalMerFril(c.weight))
                const before_price = a[c.channel].price + c.cod * c.rate_yen
                const sprice = Math.ceil(before_price + cal_mer_fril)
                // console.log(cal_mer_fril)
@@ -310,6 +319,8 @@ function InvoicePage({ user_id, voyage }) {
       },
    ]
    // console.log(sum_channel)
+   console.log(deduct)
+   console.log(deduct === 0 ? false : deduct === 1 ? true : 150)
    return (
       <div className="w-[90vw] mx-auto">
          <div className="flex px-4 py-2">
@@ -402,11 +413,12 @@ function InvoicePage({ user_id, voyage }) {
                      value={deduct}
                      onChange={(value) => setDeduct(value)}
                      options={[
-                        { label: "หัก 1 kg.", value: false },
-                        { label: "ไม่หัก 1 kg.", value: true },
+                        { label: "หัก 1 kg.", value: 0 },
+                        { label: "ไม่หัก 1 kg.", value: 1 },
                         { label: "เรทพนักงาน", value: 150 },
                      ]}
                   />
+                  <Button type="primary" onClick={handleConfirmDeduct}>ยืนยัน</Button>
                </Space>
             </div>
             <table className="text-center">
