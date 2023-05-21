@@ -121,7 +121,7 @@ function InvoicePage({ user_id, voyage }) {
          method: "PUT",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
-            deduct
+            deduct,
          }),
       })
    }
@@ -132,8 +132,8 @@ function InvoicePage({ user_id, voyage }) {
          console.log("deduct true")
          return weight * rate_use
       }
-      if (weight < 1) {
-         return Math.ceil(weight * 200 * 100) / 100
+      if (weight <= 1) {
+         return 0
       }
       return Math.ceil((weight - 1) * 200 * 100) / 100
    }
@@ -220,7 +220,7 @@ function InvoicePage({ user_id, voyage }) {
             if (c === "shimizu" && scoreBaseRate.min && c2.weight < 0.5) {
                return 100 + c2.cod
             }
-            const weight = Math.ceil(c2.weight * 100) / 100
+            const weight = Math.floor(c2.weight * 100) / 100
             return Math.ceil(weight * rate_use + c2.cod)
          }, 0)
          return {
@@ -418,7 +418,9 @@ function InvoicePage({ user_id, voyage }) {
                         { label: "เรทพนักงาน", value: 150 },
                      ]}
                   />
-                  <Button type="primary" onClick={handleConfirmDeduct}>ยืนยัน</Button>
+                  <Button type="primary" onClick={handleConfirmDeduct}>
+                     ยืนยัน
+                  </Button>
                </Space>
             </div>
             <table className="text-center">
@@ -582,6 +584,7 @@ function InvoicePage({ user_id, voyage }) {
                                        {channel === "123" ? "web123" : channel})
                                     </th>
                                     <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {/* {sum_channel[channel]?.price} */}
                                        {new Intl.NumberFormat("th-TH", {
                                           currency: "THB",
                                           style: "currency",
