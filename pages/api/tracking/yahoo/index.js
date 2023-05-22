@@ -52,6 +52,7 @@ async function handler(req, res) {
          remark_user,
          received,
          finished,
+         airbilling
       } = req.body
       const { id } = req.query
       await mysql.connect()
@@ -63,6 +64,11 @@ async function handler(req, res) {
       } else if (finished !== undefined) {
          await mysql.query("update trackings set finished = ? where id = ?", [
             finished,
+            id,
+         ])
+      } else if (airbilling !== undefined) {
+         await mysql.query("update trackings set airbilling = ? where id = ?", [
+            airbilling,
             id,
          ])
       } else {
