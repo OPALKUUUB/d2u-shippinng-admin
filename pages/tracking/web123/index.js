@@ -110,6 +110,23 @@ function Web123Page() {
    const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
    const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
+   const handleChangeAirBilling = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ airbilling: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const handleChangeReceived = async (status, id) => {
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
@@ -674,6 +691,23 @@ function Web123Page() {
             )
          },
          ellipsis: false,
+      },
+      {
+         title: "ทางเรือ",
+         dataIndex: "airbilling",
+         key: "airbilling",
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ),
       },
       {
          title: "pre-order",

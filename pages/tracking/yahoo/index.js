@@ -83,6 +83,23 @@ function YahooTrackingsPage(props) {
          message.success("เพิ่มข้อมูลผิดพลาด!")
       }
    }
+   const handleChangeAirBilling = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/yahoo?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ airbilling: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const handleChangeReceived = async (status, id) => {
       try {
          const response = await fetch(`/api/tracking/yahoo?id=${id}`, {
@@ -343,6 +360,23 @@ function YahooTrackingsPage(props) {
             )
          },
          ellipsis: false,
+      },
+      {
+         title: "ทางเรือ",
+         dataIndex: "airbilling",
+         key: "airbilling",
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ),
       },
       {
          title: "จ่ายเงิน",

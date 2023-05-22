@@ -155,7 +155,7 @@ function MercariTrackingsPage() {
       })
    const handlePasteImage = async (e) => {
       const file = e.clipboardData.files[0]
-      
+
       const image = await toBase64(file)
       try {
          const response = await fetch(`/api/tracking/images?id=${trackingId}`, {
@@ -316,6 +316,23 @@ function MercariTrackingsPage() {
       setshowEditModal(true)
    }
 
+   const handleChangeAirBilling = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/mercari?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ airbilling: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const handleCancelAddModal = () => {
       setShowAddModal(false)
    }
@@ -663,6 +680,23 @@ function MercariTrackingsPage() {
             ),
       },
       {
+         title: "ทางเรือ",
+         dataIndex: "airbilling",
+         key: "airbilling",
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ),
+      },
+      {
          title: "รับของ",
          dataIndex: "received",
          key: "received",
@@ -670,7 +704,7 @@ function MercariTrackingsPage() {
             {
                text: "รับของแล้ว",
                value: 1,
-            },
+            }, 
             {
                text: "รอรับของ",
                value: 0,
@@ -762,7 +796,8 @@ function MercariTrackingsPage() {
                </Button>
             )
          },
-      },{
+      },
+      {
          title: "ช่องทางจ่ายออก",
          dataIndex: "paid_channel",
          key: "paid_channel",
