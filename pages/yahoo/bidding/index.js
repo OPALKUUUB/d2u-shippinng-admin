@@ -172,6 +172,7 @@ function YahooBiddingPage(props) {
       const { status, bid, tranfer_fee, delivery_fee, payment_status } =
          statusForm
       try {
+         console.log("selectedRow", id, user_id, name, line_access_token)
          const response = await fetch("/api/yahoo/payment", {
             method: "POST",
             headers: {
