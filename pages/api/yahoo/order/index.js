@@ -6,7 +6,7 @@ async function handler(req, res) {
       await mysql.connect()
       // eslint-disable-next-line prefer-const
       let yahoo_orders = await mysql.query(
-         "SELECT `yahoo-auction-order`.*, users.username FROM `yahoo-auction-order` LEFT JOIN users ON `yahoo-auction-order`.user_id = users.id WHERE `yahoo-auction-order`.status IS NULL"
+         "SELECT `yahoo-auction-order`.*, users.username, users.line_access_token FROM `yahoo-auction-order` LEFT JOIN users ON `yahoo-auction-order`.user_id = users.id WHERE `yahoo-auction-order`.status IS NULL"
       )
       const admins = await mysql.query("SELECT id, username FROM admins")
       for (let i = 0; i < yahoo_orders.length; i++) {

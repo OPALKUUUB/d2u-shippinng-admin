@@ -20,6 +20,7 @@ import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import sortDateTime from "../../../utils/sortDateTime"
 import sortDate from "../../../utils/sortDate"
+import api from "../../../lib/api"
 
 const { TextArea } = Input
 
@@ -33,6 +34,7 @@ const ordersModel = {
    admin_addbid2_id: null,
    date: null,
    image: "https://auctions.c.yimg.jp/images.auctions.yahoo.co.jp/image/dr000/auc0311/users/8a8f2885e18a4dbc0066a428562b16c8927af0c6/i-img1200x1200-1669100123d4a86k51092.jpg",
+   line_access_token: null,
    link: "https://page.auctions.yahoo.co.jp/jp/auction/q1073037683",
    name: "【DJ】HERMES/エルメス ベルト2点/バックル3点 セット H金具/シェーヌダンクル レザー リバーシブル 送料無料 R9589443386",
    price: 51000,
@@ -88,7 +90,7 @@ function YahooBiddingPage(props) {
          message.error("ลบไม่สำเร็จ!")
       }
    }
-   const handleCheck = async (name, check, id) => {
+   const handleCheck = async (name, check, id, order) => {
       try {
          const response = await fetch(`/api/yahoo/order/addbid/${id}`, {
             method: "PUT",
@@ -99,6 +101,26 @@ function YahooBiddingPage(props) {
             }),
          })
          const responseJson = await response.json()
+         if (!check && order.line_access_token) {
+            if (name === "maxbid") {
+               api.postMessageLine(
+                  `ชื่อสินค้า: ${order.name}\nสถานะ: กำลังประมูล (ราคาประมูล#1)`,
+                  order.line_access_token
+               )
+            }
+            if (name === "addbid1") {
+               api.postMessageLine(
+                  `ชื่อสินค้า: ${order.name}\nสถานะ: กำลังประมูล (ราคาประมูล#2)`,
+                  order.line_access_token
+               )
+            }
+            if (name === "addbid2") {
+               api.postMessageLine(
+                  `ชื่อสินค้า: ${order.name}\nสถานะ: กำลังประมูล (ราคาประมูล#3)`,
+                  order.line_access_token
+               )
+            }
+         }
          // setCheck(!check)
          setData(
             responseJson.orders
@@ -145,7 +167,7 @@ function YahooBiddingPage(props) {
       }
    }
    const handleOkEditStatusModal = async () => {
-      const { id, user_id } = selectedRow
+      const { id, user_id, name, line_access_token } = selectedRow
       const order_id = id
       const { status, bid, tranfer_fee, delivery_fee, payment_status } =
          statusForm
@@ -166,6 +188,18 @@ function YahooBiddingPage(props) {
             }),
          })
          const responseJson = await response.json()
+         if (line_access_token) {
+            if (status === "ชนะ")
+               api.postMessageLine(
+                  `ชื่อสินค้า: ${name}\nสถานะ: ชนะการประมูลด้วยราคา ${bid} เยน`,
+                  line_access_token
+               )
+            if (status === "แพ้")
+               api.postMessageLine(
+                  `ชื่อสินค้า: ${name}\nสถานะ: แพ้การประมูล`,
+                  line_access_token
+               )
+         }
          alert("Add Payment Success!")
          setData(
             responseJson.orders
@@ -395,7 +429,7 @@ function YahooBiddingPage(props) {
                   <br />
                   <Switch
                      checked={check}
-                     onClick={() => handleCheck("maxbid", check, id)}
+                     onClick={() => handleCheck("maxbid", check, id, order)}
                   />
                   <span>{order.admin_maxbid_username}</span>
                </div>
@@ -430,7 +464,7 @@ function YahooBiddingPage(props) {
                   <br />
                   <Switch
                      checked={check}
-                     onClick={() => handleCheck("addbid1", check, id)}
+                     onClick={() => handleCheck("addbid1", check, id, order)}
                   />
                   <span>{order.admin_addbid1_username}</span>
                </div>
@@ -466,7 +500,7 @@ function YahooBiddingPage(props) {
                   <br />
                   <Switch
                      checked={check}
-                     onClick={() => handleCheck("addbid2", check, id)}
+                     onClick={() => handleCheck("addbid2", check, id, order)}
                   />
                   <span>{order.admin_addbid2_username}</span>
                </div>
