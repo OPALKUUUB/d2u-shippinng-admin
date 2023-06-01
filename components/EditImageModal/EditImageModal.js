@@ -8,11 +8,21 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
    const [thumbUrl, setThumbUrl] = useState(
       images.length > 0 ? images[0] : null
    )
+   console.log(images)
+   // const [fileList, setFileList] = useState(
+   //    images.map((img, idx) => ({
+   //       uid: `image-${idx}`,
+   //       name: `image-${idx}`,
+   //       url: img,
+   //    }))
+   // )
    const [fileList, setFileList] = useState(
       images.map((img, idx) => ({
          uid: `image-${idx}`,
          name: `image-${idx}`,
-         url: img,
+         url: typeof img === "string" ? img : null, // Handle URL images
+         thumbUrl: typeof img === "string" ? img : null, // Handle URL images
+         originFileObj: typeof img === "string" ? null : img, // Handle base64 images
       }))
    )
    const handleOpenModal = () => {
@@ -25,7 +35,8 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
       setFileList(newFileList)
    }
    const onPreview = async (file) => {
-      let src = file.url
+      // let src = file.url
+      let src = file.url || file.thumbUrl
       if (!src) {
          src = await new Promise((resolve) => {
             const reader = new FileReader()
@@ -38,6 +49,7 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
       const imgWindow = window.open(src)
       imgWindow?.document.write(image.outerHTML)
    }
+
    const handlePasteImage = async (e) => {
       const items = e.clipboardData?.items
       if (!items) return
@@ -75,15 +87,29 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
          fileList
             .filter((fi) => fi?.status === "done")
             .map(async (cur) => {
-               const file = cur
+               // const file = cur
+               // const src = await new Promise((resolve) => {
+               //    const reader = new FileReader()
+               //    reader.readAsDataURL(file.originFileObj)
+               //    reader.onload = () => resolve(reader.result)
+               // })
+               // const image = new Image()
+               // image.src = src
+               // return image.src
+               if (cur.url) {
+                  // URL image
+                  return cur.url
+               } 
+               // Base64 image
                const src = await new Promise((resolve) => {
                   const reader = new FileReader()
-                  reader.readAsDataURL(file.originFileObj)
+                  reader.readAsDataURL(cur.originFileObj)
                   reader.onload = () => resolve(reader.result)
                })
                const image = new Image()
                image.src = src
                return image.src
+               
             })
       )
       try {

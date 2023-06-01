@@ -680,7 +680,7 @@ YahooBiddingPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
    // eslint-disable-next-line prefer-template
-
+   console.log("in")
    if (!session) {
       return {
          redirect: {

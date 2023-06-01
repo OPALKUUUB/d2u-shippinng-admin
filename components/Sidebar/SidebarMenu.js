@@ -1,9 +1,10 @@
-import { ProfileOutlined } from "@ant-design/icons"
+import { DingdingOutlined, ProfileOutlined } from "@ant-design/icons"
 import BillingIcon from "../icon/BillingIcon"
 import DashboardIcon from "../icon/DashboardIcon"
 import StoreIcon from "../icon/StoreIcon"
 import TrackingPackageIcon from "../icon/TrackingPackageIcon"
 import YahooIcon from "../icon/YahooIcon"
+
 
 // eslint-disable-next-line import/prefer-default-export
 const sidebarMenuData = [
@@ -34,22 +35,24 @@ const sidebarMenuData = [
          { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
-   {
-      id: 4,
-      name: "Mart",
-      icon: <StoreIcon />,
-      childs: [
-         { id: 1, name: "Order", to: "/" },
-         { id: 2, name: "Buy List", to: "/" },
-         { id: 3, name: "Promotion", to: "/mart/promotion" },
-         { id: 4, name: "Gachapong", to: "/mart/ewelcia" },
-         { id: 5, name: "7-Eleven", to: "/mart/omni7" },
-         { id: 6, name: "Donki", to: "/mart/donki" },
-         { id: 7, name: "Disney", to: "/mart/disney" },
-         { id: 8, name: "Disnayland", to: "/mart/disneyland" },
-      ],
-   },
+   // {
+   //    id: 4,
+   //    name: "Mart",
+   //    icon: <StoreIcon />,
+   //    childs: [
+   //       { id: 1, name: "Order", to: "/" },
+   //       { id: 2, name: "Buy List", to: "/" },
+   //       { id: 3, name: "Promotion", to: "/mart/promotion" },
+   //       { id: 4, name: "Gachapong", to: "/mart/ewelcia" },
+   //       { id: 5, name: "7-Eleven", to: "/mart/omni7" },
+   //       { id: 6, name: "Donki", to: "/mart/donki" },
+   //       { id: 7, name: "Disney", to: "/mart/disney" },
+   //       { id: 8, name: "Disnayland", to: "/mart/disneyland" },
+   //    ],
+   // },
    { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/shipbilling" },
+   { id: 4, name: "Cargo", icon: <DingdingOutlined />, to: "/cargo" },
+
 ]
 
 export default sidebarMenuData

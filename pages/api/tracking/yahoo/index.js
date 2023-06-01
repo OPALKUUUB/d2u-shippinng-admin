@@ -2,6 +2,7 @@ import mysql from "../../../../lib/db"
 import sortDateTime from "../../../../utils/sortDateTime"
 
 async function handler(req, res) {
+   console.log("----------------------------------------------------------------")
    if (req.method === "GET") {
       await mysql.connect()
       const trackings = await mysql.query(
