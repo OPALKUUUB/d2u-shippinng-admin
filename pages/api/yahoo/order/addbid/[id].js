@@ -1,10 +1,13 @@
-import { getSession } from "next-auth/react"
+
 import mysql from "../../../../../lib/db"
 import genDate from "../../../../../utils/genDate"
 
 async function handler(req, res) {
    if (req.method === "PUT") {
-      const session = await getSession({ req })
+      // const session = await getSession({ req })
+      // console.log(session)
+      const {session} = req.body
+      console.log(session)
       if (!session) {
          console.log("Not Found Session!")
          res.status(400).json({ message: "Not found session!" })

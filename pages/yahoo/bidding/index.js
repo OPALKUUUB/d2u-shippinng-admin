@@ -96,6 +96,7 @@ function YahooBiddingPage(props) {
             body: JSON.stringify({
                name,
                check,
+               session: props.session
             }),
          })
          const responseJson = await response.json()
@@ -678,9 +679,10 @@ YahooBiddingPage.getLayout = function getLayout(page) {
 }
 
 export async function getServerSideProps(context) {
+   // console.log(context.req)
    const session = await getSession({ req: context.req })
+   
    // eslint-disable-next-line prefer-template
-   console.log("in")
    if (!session) {
       return {
          redirect: {
