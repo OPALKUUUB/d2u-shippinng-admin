@@ -121,7 +121,6 @@ function YahooBiddingPage(props) {
    }
    const handleOkEditModal = async () => {
       // console.log("ok")
-      console.log(selectedRow.remark_admin)
       const { id } = selectedRow
       const remark = selectedRow.remark_admin
       try {
@@ -131,7 +130,7 @@ function YahooBiddingPage(props) {
             headers: {
                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ remark }),
+            body: JSON.stringify({ remark, session: props.session }),
          })
          const responseJson = await response.json()
          setShowEditModal(false)

@@ -4,12 +4,6 @@ import genDate from "../../../../../utils/genDate"
 
 async function handler(req, res) {
    if (req.method === "PUT") {
-      const session = await getSession({ req })
-      if (!session) {
-         console.log("Not Found Session!")
-         res.status(400).json({ message: "Not found session!" })
-         return
-      }
       const { remark } = req.body
       const order_id = req.query.id
       const date = genDate()
