@@ -333,10 +333,12 @@ function CustomerPage() {
       </div>
    )
 }
+CustomerPage.getLayout = function getLayout(page) {
+   return <Layout>{page}</Layout>
+}
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   console.log(session)
 
    if (!session) {
       return {
@@ -350,8 +352,6 @@ export async function getServerSideProps(context) {
       props: { session },
    }
 }
-CustomerPage.getLayout = function getLayout(page) {
-   return <Layout>{page}</Layout>
-}
+
 
 export default CustomerPage
