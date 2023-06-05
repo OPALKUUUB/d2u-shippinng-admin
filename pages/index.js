@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Button, DatePicker, Form, Input, InputNumber, message } from "antd"
-import { AppstoreAddOutlined } from "@ant-design/icons"
+import { AppstoreAddOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import moment from "moment"
 import axios from "axios"
 import Layout from "../components/layout/layout"
@@ -34,7 +34,9 @@ function DashboardPage() {
                <ChangeRateYen />
                <TodolistForm stik={tik} />
             </div>
-            <TodolistList tasks={todolist} />
+            <div className="overflow-y-scroll h-[420px] my-3"> 
+               <TodolistList tasks={todolist} />
+            </div>
          </div>
       </div>
    )
@@ -186,12 +188,16 @@ function TodolistForm({ tik }) {
                >
                   <Input className="w-full" />
                </Form.Item>
-               <Form.Item labelCol={{ span: 5 }} className="mb-4" label="ราคา">
-                  <InputNumber
+               <Form.Item labelCol={{ span: 5 }} className="mb-4" label="รายละเอียด"
+                  value={price}
+                  onChange={handleChangePrice}
+               >
+                  {/* <InputNumber
                      className="w-full"
                      value={price}
                      onChange={handleChangePrice}
-                  />
+                  /> */}
+                  <Input className="w-full" />
                </Form.Item>
             </div>
             <div className="w-full text-center">
@@ -222,12 +228,54 @@ function TodolistList({ tasks }) {
 }
 
 function TodolistItem({ task }) {
+
+   //----- calculate differenceInDays to set TodolistItem color -----//
+   const currentDate = Date.now();
+   // const targetDate = new Date('2023-04-06'); // Replace with your specific date
+   if (task.end_date && typeof task.end_date === 'string') {
+      const dateParts = task.end_date.split(/\s*\/\s*/);
+      const targetDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+
+      const differenceInTime = targetDate.getTime() - currentDate;
+      var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+   }
+   const classNameColor = differenceInDays > 1 ? 'relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' 
+      : differenceInDays >= 0 ? 'relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' : 'relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5';
+   
+
+   const handleEdit = () => {
+      console.log("Edit")
+   }
+
+   const handleDelete = () => {
+      console.log("Delete")
+   }
+
    return (
-      <div className="bg-gray-300 w-[100px] h-[100px] text-gray-600 rounded-md p-2">
-         <div>{task.start_date}</div>
-         <div>{task.end_date}</div>
-         <div>{task.title}</div>
-         <div>{task.price}</div>
+      // <div className="bg-gray-300 w-[100px] h-[100px] text-gray-600 rounded-md p-2">
+      //    <div>{task.start_date}</div>
+      //    <div>{task.end_date}</div>
+      //    <div>{task.title}</div>
+      //    <div>{task.price}</div>
+      // </div>
+      <div className={classNameColor}>
+            <Button className="float-right bg-white hover:border-white"
+               icon={<DeleteOutlined />}
+               onClick={handleDelete}
+            />
+            <Button className="float-right bg-white mr-1" hoverStyle={{ backgroundColor: 'red', borderColor: 'red' }}
+               icon={ <EditOutlined />}
+               onClick={handleEdit}
+            />
+            <div className="text-lg">วันที่จบรายการ</div>
+            <div>{task.end_date}</div>
+
+         <div className="absolute bottom-2 bg-white w-[275px] h-[240px] text-gray-600 rounded-md p-2">
+            <div className="text-lg">TITLE: {task.title}</div>
+            <br/>
+            <div>{task.price}</div>
+            <div className="absolute bottom-2">วันที่ลงข้อมูล: {task.start_date}</div>
+         </div>
       </div>
    )
 }
