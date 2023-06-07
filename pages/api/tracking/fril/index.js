@@ -118,6 +118,7 @@ async function handler(req, res) {
       const {
          user_id,
          date,
+         link,
          voyage,
          received,
          finished,
@@ -130,10 +131,11 @@ async function handler(req, res) {
       } = req.body
       await mysql.connect()
       await mysql.query(
-         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ?, received = ?, finished = ? WHERE id = ?",
+         "UPDATE trackings SET user_id = ?, date = ?, link = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ?, received = ?, finished = ? WHERE id = ?",
          [
             user_id,
             date,
+            link,
             voyage,
             track_no,
             box_no,

@@ -203,6 +203,9 @@ function MartDisneylandPage(props) {
    }
 
    const handleDeleteEditModal = async (id) => {
+      if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
+         return 
+      }
       try {
          const response = await fetch(`/api/mart/disneyland?id=${id}`, {
             method: "DELETE",

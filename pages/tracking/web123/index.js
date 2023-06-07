@@ -323,6 +323,8 @@ function Web123Page() {
       }
    }
    const handleShowEditModal = (id) => {
+      // console.log("data",data);
+      // console.log("ft",ft);
       const temp = data.filter((ft) => ft.id === id)
       const tracking = temp[0]
       setInputDate(
@@ -332,6 +334,7 @@ function Web123Page() {
          tracking.voyage === "" ? null : dayjs(tracking.voyage, "D/M/YYYY")
       )
       setSelectedRow(tracking)
+      // console.log(tracking);
       setshowEditModal(true)
    }
 
@@ -385,6 +388,9 @@ function Web123Page() {
    }
 
    const handleDeleteRow = async (id) => {
+      if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
+         return 
+      }
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
             method: "DELETE",

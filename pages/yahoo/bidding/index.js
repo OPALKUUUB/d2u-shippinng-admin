@@ -70,6 +70,9 @@ function YahooBiddingPage(props) {
    const [showEditStatusModal, setShowEditStatusModal] = useState(false)
    const [statusForm, setStatusForm] = useState(statusFormModel)
    const handleDeleteRow = async (id) => {
+      if (!window.confirm("คุณแน่ใจที่จะลบรายการนี้ใช่หรือไม่")) {
+         return 
+      }
       try {
          const response = await fetch("/api/yahoo/order", {
             method: "DELETE",

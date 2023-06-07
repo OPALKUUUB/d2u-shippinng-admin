@@ -1,6 +1,8 @@
+/* eslint-disable no-shadow */
+/* eslint-disable block-scoped-var */
 import React, { useEffect, useState } from "react"
-import { Button, DatePicker, Form, Input, InputNumber, message } from "antd"
-import { AppstoreAddOutlined } from "@ant-design/icons"
+import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Space } from "antd"
+import { AppstoreAddOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import moment from "moment"
 import axios from "axios"
 import Layout from "../components/layout/layout"
@@ -34,7 +36,9 @@ function DashboardPage() {
                <ChangeRateYen />
                <TodolistForm stik={tik} />
             </div>
-            <TodolistList tasks={todolist} />
+            <div className="overflow-y-scroll h-[420px] my-3"> 
+               <TodolistList tasks={todolist} />
+            </div>
          </div>
       </div>
    )
@@ -186,12 +190,16 @@ function TodolistForm({ tik }) {
                >
                   <Input className="w-full" />
                </Form.Item>
-               <Form.Item labelCol={{ span: 5 }} className="mb-4" label="ราคา">
-                  <InputNumber
+               <Form.Item labelCol={{ span: 5 }} className="mb-4" label="รายละเอียด"
+                  value={price}
+                  onChange={handleChangePrice}
+               >
+                  {/* <InputNumber
                      className="w-full"
                      value={price}
                      onChange={handleChangePrice}
-                  />
+                  /> */}
+                  <Input className="w-full" />
                </Form.Item>
             </div>
             <div className="w-full text-center">
@@ -222,13 +230,201 @@ function TodolistList({ tasks }) {
 }
 
 function TodolistItem({ task }) {
+
+   const TodoListForm_model = {
+      id: "",
+      start_date: "",
+      end_date: "",
+      title: "",
+      price: ""
+   }
+
+   const [selectedRow, setSelectedRow] = useState(TodoListForm_model)
+   const [showEditModal, setShowEditModal] = useState(false)
+   const [startDate, setStartDate] = useState()
+   const [endDate, setEndDate] = useState()
+
+
+   // ----- calculate differenceInDays to set TodolistItem color -----//
+   const currentDate = Date.now()
+   if (task.end_date && typeof task.end_date === 'string') {
+      const dateParts = task.end_date.split(/\s*\/\s*/)
+      const targetDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`)
+
+      const differenceInTime = targetDate.getTime() - currentDate
+      // eslint-disable-next-line vars-on-top, no-var
+      var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24))
+   }
+   // eslint-disable-next-line no-nested-ternary
+   const classNameColor = differenceInDays > 1 ? 'relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' 
+      : differenceInDays >= 0 ? 'relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' : 'relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5'
+   
+
+   const handleShowEditModal = (task) => {
+      const endDateParts = task.end_date.split(/\s*\/\s*/)
+      const targetEndDate = new Date(`${endDateParts[2]}-${endDateParts[1]}-${endDateParts[0]}`)
+      setEndDate(targetEndDate)
+
+      setSelectedRow(task)
+      setShowEditModal(true)
+      // console.log("Edit");
+      // console.log("ID:",id);
+      // console.log("Task:",task);
+   }
+
+   const handleUpdateTodoList = async () => {
+      console.log(selectedRow)
+      console.log("ID:",selectedRow.id)
+      try {
+         const response = await fetch(`/api/tasks?id=${selectedRow.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(selectedRow),
+         })
+         const responseJson = await response.json()
+         console.log("Json",responseJson)
+         // setUsers(responseJson.users)
+         setShowEditModal(false)
+         message.success("แก้ไข้ข้อมูลเรียบร้อย")
+      } catch (err) {
+         console.log(err)
+         message.error("Edit user fail!")
+      }
+   }
+
+   const testUpdate = () => {
+      // setSelectedRow({...selectedRow,price: e.target.value,})
+      // setSelectedRow({...selectedRow,start_date: startDate})
+      console.log(selectedRow)
+      setShowEditModal(false)
+   }
+
+   const handleDeleteTodoList = async () => {
+      if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
+         return 
+      }
+
+      try {
+         const response = await fetch(`/api/tasks?id=${selectedRow.id}`, {
+            method: "DELETE",
+         })
+         const responseJson = await response.json()
+         // setData(responseJson.trackings)
+         console.log("responseJson",responseJson)
+         message.success("ลบข้อมูลเรียบร้อย!")
+      } catch (err) {
+         console.log(err)
+         message.error("ลบข้อมูลผิดพลาด!")
+      }
+   }
+
+   const handleEditStartDate = (value) => {
+      if (value) {
+         setStartDate(value)
+         const formattedDate = value.format("DD/MM/YYYY")
+         // console.log("Date:",formattedDate);
+         // setStartDate(formattedDate)
+         setSelectedRow({...selectedRow,start_date: formattedDate})
+         // console.log("selectRow",selectedRow);
+      } else {
+         setStartDate(null)
+      }
+   }
+
+   const handleEditEndDate = (value) => {
+      if (value) {
+         setEndDate(value)
+         const formattedDate = value.format("DD/MM/YYYY")
+         // console.log("Date:",formattedDate);
+         // setEndDate(formattedDate)
+         setSelectedRow({...selectedRow,end_date: formattedDate})
+         // console.log("selectRow",selectedRow);
+      } else {
+         setEndDate(null)
+      }
+   }
+
    return (
-      <div className="bg-gray-300 w-[100px] h-[100px] text-gray-600 rounded-md p-2">
-         <div>{task.start_date}</div>
-         <div>{task.end_date}</div>
-         <div>{task.title}</div>
-         <div>{task.price}</div>
+      <div>
+         <Modal
+            title="แก้ไข List"
+            open={showEditModal}
+            onCancel={() => setShowEditModal(false)}
+            onOk={handleUpdateTodoList}
+         >
+            <div className="flex flex-col gap-2">
+               <Space className="mb-[10px]">
+                  <label>วันที่ลงข้อมูล: </label>
+                  <DatePicker
+                     // value={startDate}
+                     // value={selectedRow.start_date}
+                     format="DD/MM/YYYY"
+                     // value={startDate}
+                     value={selectedRow.start_date && moment(selectedRow.start_date, "DD/MM/YYYY")}
+                     onChange={(value) => handleEditStartDate(value)}
+                  />
+               </Space>
+               <Space className="mb-[10px]">
+                  <label>วันที่จบรายการ: </label>
+                  <DatePicker
+                     // value={selectedRow.end_date}
+                     // value={moment(endDate, "DD/MM/YYYY")}
+                     format="DD/MM/YYYY"
+                     // value={endDate && moment(endDate, "DD/MM/YYYY")}
+                     onChange={(value) => handleEditEndDate(value)}
+                  />
+               </Space>
+               <Space className="mb-[10px]">
+                  <label>เรื่อง: </label>
+                  <Input
+                     // value={task.title}
+                     value={selectedRow.title}
+                     onChange={(e) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           title: e.target.value,
+                        })
+                     }
+                  />
+               </Space>
+               <Space className="mb-[10px]">
+                  <label>รายละเอียด: </label>
+                  <Input 
+                     // value={task.price}
+                     value={selectedRow.price}
+                     onChange={(e) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           price: e.target.value,
+                        })
+                     }
+                  />
+               </Space>
+            </div>
+
+         </Modal>
+
+         <div className={classNameColor}>
+            <Button className="float-right bg-white hover:border-white"
+               icon={<DeleteOutlined />}
+               onClick={() => handleDeleteTodoList(task.id)}
+            />
+            <Button className="float-right bg-white mr-1" hoverStyle={{ backgroundColor: 'red', borderColor: 'red' }}
+               icon={ <EditOutlined />}
+               onClick={() => handleShowEditModal(task)}
+            />
+            <div className="text-lg">วันที่จบรายการ</div>
+            <div>{task.end_date}</div>
+
+            <div className="absolute bottom-2 bg-white w-[275px] h-[240px] text-gray-600 rounded-md p-2">
+               <div className="text-lg">TITLE: {task.title}</div>
+               <br/>
+               <div>{task.price}</div>
+               <div className="absolute bottom-2">วันที่ลงข้อมูล: {task.start_date}</div>
+            </div>
+         </div>
       </div>
+      
    )
 }
 DashboardPage.getLayout = function getLayout(page) {

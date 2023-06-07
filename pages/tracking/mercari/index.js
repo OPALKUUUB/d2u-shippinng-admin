@@ -382,6 +382,9 @@ function MercariTrackingsPage() {
    }
 
    const handleDeleteRow = async (id) => {
+      if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
+         return 
+      }
       try {
          const response = await fetch(`/api/tracking/mercari?id=${id}`, {
             method: "DELETE",
