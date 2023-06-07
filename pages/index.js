@@ -1,3 +1,5 @@
+/* eslint-disable no-shadow */
+/* eslint-disable block-scoped-var */
 import React, { useEffect, useState } from "react"
 import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Space } from "antd"
 import { AppstoreAddOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
@@ -243,22 +245,24 @@ function TodolistItem({ task }) {
    const [endDate, setEndDate] = useState()
 
 
-   //----- calculate differenceInDays to set TodolistItem color -----//
-   const currentDate = Date.now();
+   // ----- calculate differenceInDays to set TodolistItem color -----//
+   const currentDate = Date.now()
    if (task.end_date && typeof task.end_date === 'string') {
-      const dateParts = task.end_date.split(/\s*\/\s*/);
-      const targetDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+      const dateParts = task.end_date.split(/\s*\/\s*/)
+      const targetDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`)
 
-      const differenceInTime = targetDate.getTime() - currentDate;
-      var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+      const differenceInTime = targetDate.getTime() - currentDate
+      // eslint-disable-next-line vars-on-top, no-var
+      var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24))
    }
+   // eslint-disable-next-line no-nested-ternary
    const classNameColor = differenceInDays > 1 ? 'relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' 
-      : differenceInDays >= 0 ? 'relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' : 'relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5';
+      : differenceInDays >= 0 ? 'relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' : 'relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5'
    
 
    const handleShowEditModal = (task) => {
-      const endDateParts = task.end_date.split(/\s*\/\s*/);
-      const targetEndDate = new Date(`${endDateParts[2]}-${endDateParts[1]}-${endDateParts[0]}`);
+      const endDateParts = task.end_date.split(/\s*\/\s*/)
+      const targetEndDate = new Date(`${endDateParts[2]}-${endDateParts[1]}-${endDateParts[0]}`)
       setEndDate(targetEndDate)
 
       setSelectedRow(task)
@@ -316,7 +320,7 @@ function TodolistItem({ task }) {
 
    const handleEditStartDate = (value) => {
       if (value) {
-         setStartDate(value);
+         setStartDate(value)
          const formattedDate = value.format("DD/MM/YYYY")
          // console.log("Date:",formattedDate);
          // setStartDate(formattedDate)
@@ -329,7 +333,7 @@ function TodolistItem({ task }) {
 
    const handleEditEndDate = (value) => {
       if (value) {
-         setEndDate(value);
+         setEndDate(value)
          const formattedDate = value.format("DD/MM/YYYY")
          // console.log("Date:",formattedDate);
          // setEndDate(formattedDate)
@@ -343,32 +347,32 @@ function TodolistItem({ task }) {
    return (
       <div>
          <Modal
-               title="แก้ไข List"
-               open={showEditModal}
-               onCancel={() => setShowEditModal(false)}
-               onOk={handleUpdateTodoList}
+            title="แก้ไข List"
+            open={showEditModal}
+            onCancel={() => setShowEditModal(false)}
+            onOk={handleUpdateTodoList}
          >
             <div className="flex flex-col gap-2">
                <Space className="mb-[10px]">
                   <label>วันที่ลงข้อมูล: </label>
-                     <DatePicker
-                        // value={startDate}
-                        // value={selectedRow.start_date}
-                        format="DD/MM/YYYY"
-                        // value={startDate}
-                        value={selectedRow.start_date && moment(selectedRow.start_date, "DD/MM/YYYY")}
-                        onChange={(value) => handleEditStartDate(value)}
-                     />
+                  <DatePicker
+                     // value={startDate}
+                     // value={selectedRow.start_date}
+                     format="DD/MM/YYYY"
+                     // value={startDate}
+                     value={selectedRow.start_date && moment(selectedRow.start_date, "DD/MM/YYYY")}
+                     onChange={(value) => handleEditStartDate(value)}
+                  />
                </Space>
                <Space className="mb-[10px]">
                   <label>วันที่จบรายการ: </label>
-                     <DatePicker
-                        // value={selectedRow.end_date}
-                        // value={moment(endDate, "DD/MM/YYYY")}
-                        format="DD/MM/YYYY"
-                        // value={endDate && moment(endDate, "DD/MM/YYYY")}
-                        onChange={(value) => handleEditEndDate(value)}
-                     />
+                  <DatePicker
+                     // value={selectedRow.end_date}
+                     // value={moment(endDate, "DD/MM/YYYY")}
+                     format="DD/MM/YYYY"
+                     // value={endDate && moment(endDate, "DD/MM/YYYY")}
+                     onChange={(value) => handleEditEndDate(value)}
+                  />
                </Space>
                <Space className="mb-[10px]">
                   <label>เรื่อง: </label>
@@ -401,16 +405,16 @@ function TodolistItem({ task }) {
          </Modal>
 
          <div className={classNameColor}>
-               <Button className="float-right bg-white hover:border-white"
-                  icon={<DeleteOutlined />}
-                  onClick={() => handleDeleteTodoList(task.id)}
-               />
-               <Button className="float-right bg-white mr-1" hoverStyle={{ backgroundColor: 'red', borderColor: 'red' }}
-                  icon={ <EditOutlined />}
-                  onClick={() => handleShowEditModal(task)}
-               />
-               <div className="text-lg">วันที่จบรายการ</div>
-               <div>{task.end_date}</div>
+            <Button className="float-right bg-white hover:border-white"
+               icon={<DeleteOutlined />}
+               onClick={() => handleDeleteTodoList(task.id)}
+            />
+            <Button className="float-right bg-white mr-1" hoverStyle={{ backgroundColor: 'red', borderColor: 'red' }}
+               icon={ <EditOutlined />}
+               onClick={() => handleShowEditModal(task)}
+            />
+            <div className="text-lg">วันที่จบรายการ</div>
+            <div>{task.end_date}</div>
 
             <div className="absolute bottom-2 bg-white w-[275px] h-[240px] text-gray-600 rounded-md p-2">
                <div className="text-lg">TITLE: {task.title}</div>
