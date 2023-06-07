@@ -351,7 +351,6 @@ CustomerPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
-   // console.log(session,"session");
 
    if (!session) {
       return {
