@@ -327,6 +327,18 @@ function CustomerPage() {
                         }
                      />
                   </div>
+                  <div className="flex items-center gap-2">
+                     <label>คะแนน: </label>
+                     <Input
+                        value={selectedRow.point_last}
+                        onChange={(e) =>
+                           setSelectedRow({
+                              ...selectedRow,
+                              point_last: e.target.value,
+                           })
+                        }
+                     />
+                  </div>
                </div>
             </Modal>
          </div>
@@ -339,6 +351,7 @@ CustomerPage.getLayout = function getLayout(page) {
 
 export async function getServerSideProps(context) {
    const session = await getSession({ req: context.req })
+   // console.log(session,"session");
 
    if (!session) {
       return {

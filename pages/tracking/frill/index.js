@@ -35,6 +35,7 @@ import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
 import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
+import Link from "next/link"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -238,6 +239,7 @@ function FrillPage() {
       const body = {
          date: selectedRow.date,
          user_id: selectedRow.user_id,
+         link: selectedRow.link,
          box_no: selectedRow.box_no,
          track_no: selectedRow.track_no,
          weight: selectedRow.weight,
@@ -333,6 +335,9 @@ function FrillPage() {
    }
 
    const handleDeleteRow = async (id) => {
+      if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
+         return 
+      }
       try {
          const response = await fetch(`/api/tracking/fril?id=${id}`, {
             method: "DELETE",
@@ -612,6 +617,22 @@ function FrillPage() {
          width: "120px",
          key: "username",
          ...getColumnSearchProps("username"),
+      },
+      {
+         title: "URL",
+         dataIndex: "link",
+         key: "link",
+         width: 150,
+         render: (text) =>
+            text !== null ? (
+               <Link href={text} target="_blank" rel="noopener">
+                  <div style={{ display: "inline-block" }}>
+                     {text.split("/").slice(-1)}
+                  </div>
+               </Link>
+            ) : (
+               "-"
+            ),
       },
       {
          title: "รับของ",
@@ -1049,6 +1070,18 @@ function FrillPage() {
                         setInputDate(value)
                      }
                   }}
+               />
+            </Space>
+            <Space className="mb-[10px]">
+               <label>URL: </label>
+               <Input
+                  value={selectedRow.link}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        link: e.target.value,
+                     })
+                  }
                />
             </Space>
             <Space className="mb-[10px]">
