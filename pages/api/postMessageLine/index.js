@@ -20,15 +20,16 @@ async function handler(req, res) {
          await mysql.end()
          if (users.length === 0) {
             res.status(301).json({ message: "not found user" })
+            return
          }
          if (line_access_token) {
             const body = new URLSearchParams()
             body.append("message", message)
-            fetch("https://notify-api.line.me/api/notify", {
+            await fetch("https://notify-api.line.me/api/notify", {
                method: "POST",
                headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
-                  Authorization: `Bearer ${line_access_token}`,
+                  "Authorization": `Bearer ${line_access_token}`,
                },
                body: body.toString(),
             })
@@ -43,7 +44,6 @@ async function handler(req, res) {
             })
          }
       } catch (e) {
-         await mysql.end()
          console.log(e)
          res.status(400).json({ status: 400, message: "Bad request" })
       }

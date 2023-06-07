@@ -141,8 +141,6 @@ function YahooBiddingPage(props) {
       setShowEditStatusModal(true)
    }
    const handleOkEditModal = async () => {
-      // console.log("ok")
-      console.log(selectedRow.remark_admin)
       const { id } = selectedRow
       const remark = selectedRow.remark_admin
       try {
@@ -172,7 +170,6 @@ function YahooBiddingPage(props) {
       const { status, bid, tranfer_fee, delivery_fee, payment_status } =
          statusForm
       try {
-         console.log("selectedRow", id, user_id, name, line_access_token)
          const response = await fetch("/api/yahoo/payment", {
             method: "POST",
             headers: {
@@ -222,7 +219,6 @@ function YahooBiddingPage(props) {
       setShowEditStatusModal(false)
    }
    const handleChange = (pagination, filters, sorter) => {
-      console.log(filters, sorter)
       setFilteredInfo(filters)
       setSortedInfo(sorter)
    }
