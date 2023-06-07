@@ -27,6 +27,7 @@ import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 import axios from "axios"
+import Link from "next/link"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import { addForm_model, trackingForm_model } from "../../../model/tracking"
@@ -35,7 +36,6 @@ import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
 import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
-import Link from "next/link"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)

@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react"
 import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Space } from "antd"
 import { AppstoreAddOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
-import moment from "moment"
 import axios from "axios"
+import moment from "moment/moment"
 import Layout from "../components/layout/layout"
 
 function DashboardPage() {
