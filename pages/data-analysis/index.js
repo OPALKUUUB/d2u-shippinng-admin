@@ -128,8 +128,8 @@ function DataAnalysisPage() {
          `ช่องทางจ่ายออก`,
          `Tracking No`,
          `Box No`,
-         `น้ำหนัก`,
-         `ราคา`,
+         `น้ำหนัก(kg.)`,
+         `ราคา(บาท)`,
          `รอบเรือ`,
          `หมายเหตุ`,
       ])
@@ -202,27 +202,31 @@ function DataAnalysisPage() {
          dataIndex: "delivery_type",
          width: "120px",
          key: "delivery_type",
+         render: (text) => (text === null || text === "") ? "-" : text
       },
       {
          title: "Tracking No",
          dataIndex: "track_no",
-         width: "120px",
+         width: "140px",
          key: "track_no",
+         render: (text) => (text === null || text === "") ? "-" : text
       },
       {
          title: "Box No",
          dataIndex: "box_no",
          width: "120px",
          key: "box_no",
+         render: (text) => (text === null || text === "") ? "-" : text
       },
       {
-         title: "น้ำหนัก",
+         title: "น้ำหนัก(Kg.)",
          dataIndex: "weight",
          width: "120px",
          key: "weight",
+         render: (text) => (text === null || text === "") ? "-" : text
       },
       {
-         title: "ราคา",
+         title: "ราคา(บาท)",
          dataIndex: "price",
          width: "120px",
          key: "price",
@@ -232,12 +236,14 @@ function DataAnalysisPage() {
          dataIndex: "voyage",
          width: "120px",
          key: "voyage",
+         render: (text) => (text === null || text === "") ? "-" : text
       },
       {
          title: "หมายเหตุ",
          dataIndex: "remark_admin",
-         width: "120px",
+         width: "300px",
          key: "remark_admin",
+         render: (text) => (text === null || text === "") ? "-" : text
       },
    ]
    return (

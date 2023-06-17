@@ -9,7 +9,7 @@ async function handler(req, res) {
       )
       try {
          const result = await getTrackingExport(startDate, endDate)
-         console.log(result)
+         // console.log(result)
          res.status(200).json({
             message: "get tracking success!",
             data: result,
