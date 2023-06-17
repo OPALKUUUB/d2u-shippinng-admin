@@ -1,4 +1,4 @@
-import { DingdingOutlined, ProfileOutlined } from "@ant-design/icons"
+import { DingdingOutlined, PieChartOutlined, ProfileOutlined } from "@ant-design/icons"
 import BillingIcon from "../icon/BillingIcon"
 import DashboardIcon from "../icon/DashboardIcon"
 import StoreIcon from "../icon/StoreIcon"
@@ -52,6 +52,7 @@ const sidebarMenuData = [
    // },
    { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/shipbilling" },
    { id: 4, name: "Cargo", icon: <DingdingOutlined />, to: "/cargo" },
+   { id: 7, name: "Data Analysis", icon:<PieChartOutlined />, to: "/data-analysis" },
 
 ]
 
