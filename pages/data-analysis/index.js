@@ -10,8 +10,8 @@ import React, { useState } from "react"
 import axios from "axios"
 import * as xlsx from "xlsx-color"
 import { Button, Table } from "antd"
-import Layout from "../../components/layout/layout"
 import { FileExcelOutlined } from "@ant-design/icons"
+import Layout from "../../components/layout/layout"
 
 function DataAnalysisPage() {
    const [startDate, setStartDate] = useState("")
