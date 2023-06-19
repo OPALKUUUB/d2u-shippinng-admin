@@ -5,10 +5,13 @@ async function getAllTask() {
         SELECT
         t.task_id as id,
         t.title,
-        t.price,
+        t.desc,
         t.start_date,
-        t.end_date
+        t.end_date,
+        t.created_at,
+        t.updated_at
         FROM tasks t
+        ORDER BY t.created_at desc
    `)
    return results
 }

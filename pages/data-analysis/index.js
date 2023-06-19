@@ -129,7 +129,7 @@ function DataAnalysisPage() {
          `Tracking No`,
          `Box No`,
          `น้ำหนัก(kg.)`,
-         `ราคา(บาท)`,
+         `ราคา`,
          `รอบเรือ`,
          `หมายเหตุ`,
       ])
@@ -202,48 +202,49 @@ function DataAnalysisPage() {
          dataIndex: "delivery_type",
          width: "120px",
          key: "delivery_type",
-         render: (text) => (text === null || text === "") ? "-" : text
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
          title: "Tracking No",
          dataIndex: "track_no",
          width: "140px",
          key: "track_no",
-         render: (text) => (text === null || text === "") ? "-" : text
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
          title: "Box No",
          dataIndex: "box_no",
          width: "120px",
          key: "box_no",
-         render: (text) => (text === null || text === "") ? "-" : text
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
          title: "น้ำหนัก(Kg.)",
          dataIndex: "weight",
          width: "120px",
          key: "weight",
-         render: (text) => (text === null || text === "") ? "-" : text
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
-         title: "ราคา(บาท)",
+         title: "ราคา",
          dataIndex: "price",
          width: "120px",
          key: "price",
+         render: (text, item) => (`${text} บาท`)
       },
       {
          title: "รอบเรือ",
          dataIndex: "voyage",
          width: "120px",
          key: "voyage",
-         render: (text) => (text === null || text === "") ? "-" : text
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
          title: "หมายเหตุ",
          dataIndex: "remark_admin",
          width: "300px",
          key: "remark_admin",
-         render: (text) => (text === null || text === "") ? "-" : text
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
    ]
    return (
@@ -271,7 +272,7 @@ function DataAnalysisPage() {
                </div>
             </form>
          </div>
-         <div>
+         <div className="mb-3">
             <Table
                dataSource={data}
                columns={columns}
@@ -280,27 +281,13 @@ function DataAnalysisPage() {
                   y: 350,
                }}
             />
-            {/* <table>
-               <thead>
-                  <tr>
-                     <th>วันที่</th>
-                     <th>ชื่อลูกค้า</th>
-                     <th>ช่องทาง</th>
-                     <th>ช่องทางจ่ายออก</th>
-                     <th>Tracking No</th>
-                     <th>Box_no</th>
-                     <th>น้ำหนัก</th>
-                     <th>ราคา</th>
-                     <th>รอบเรือ</th>
-                     <th>หมายเหตุ</th>
-                  </tr>
-               </thead>
-               <tbody>
-                  <ShowData />
-               </tbody>
-            </table> */}
          </div>
-         <Button type="primary" className="font-bold" icon={<FileExcelOutlined />} onClick={handleExportData}>
+         <Button
+            type="primary"
+            className="font-bold"
+            icon={<FileExcelOutlined />}
+            onClick={handleExportData}
+         >
             Export
          </Button>
       </div>
@@ -312,258 +299,3 @@ export default DataAnalysisPage
 DataAnalysisPage.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
 }
-
-const mockup_data = [
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-   {
-      date: "17/06/2023",
-      username: "opal",
-      channel: "yahoo",
-      delivery_type: "9980",
-      track_no: "111111",
-      box_no: "100",
-      weight: 10,
-      price: 1000,
-      round_boat: "20/06/2023",
-      remark: "this is a fake data",
-   },
-]
