@@ -1,21 +1,41 @@
+/* eslint-disable indent */
+/* eslint-disable react/jsx-no-bind */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-shadow */
 /* eslint-disable block-scoped-var */
 import React, { useEffect, useState } from "react"
-import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Space } from "antd"
-import { AppstoreAddOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons"
+import {
+   Button,
+   DatePicker,
+   Form,
+   Input,
+   InputNumber,
+   message,
+   Modal,
+   Space,
+   Spin,
+} from "antd"
+import {
+   AppstoreAddOutlined,
+   DeleteOutlined,
+   EditOutlined,
+} from "@ant-design/icons"
 import axios from "axios"
 import moment from "moment/moment"
+import dayjs from "dayjs"
 import Layout from "../components/layout/layout"
 
 function DashboardPage() {
    const [todolist, setTodolist] = useState([])
    const [trigger, setTrigger] = useState(0)
+   const [loading, setLoading] = useState(false)
 
-   const tik = () => {
+   function tik() {
       setTrigger((prev) => prev + 1)
    }
 
    useEffect(() => {
+      setLoading(true)
       const fetchTasks = async () => {
          try {
             const response = await axios.get("/api/tasks")
@@ -23,6 +43,8 @@ function DashboardPage() {
             setTodolist(tasks)
          } catch (error) {
             console.error(error)
+         } finally {
+            setLoading(false)
          }
       }
 
@@ -30,17 +52,26 @@ function DashboardPage() {
    }, [trigger])
 
    return (
-      <div className="w-full h-full p-5">
-         <div className="w-full h-full bg-white rounded-md p-3">
-            <div className="w-full flex gap-3">
-               <ChangeRateYen />
-               <TodolistForm stik={tik} />
+      <>
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
             </div>
-            <div className="overflow-y-scroll h-[420px] my-3"> 
-               <TodolistList tasks={todolist} />
+         )}
+         <div className="w-full h-full p-5">
+            <div className="w-full h-full bg-white rounded-md p-3">
+               <div className="w-full flex gap-3">
+                  <ChangeRateYen />
+                  <TodolistForm stik={tik} />
+               </div>
+               <div className="overflow-y-scroll h-[420px] my-3">
+                  <TodolistList tasks={todolist} stik={tik} />
+               </div>
             </div>
          </div>
-      </div>
+      </>
    )
 }
 
@@ -103,11 +134,11 @@ function ChangeRateYen() {
    )
 }
 
-function TodolistForm({ tik }) {
+function TodolistForm({ stik }) {
    const [startDate, setStartDate] = useState(null)
    const [endDate, setEndDate] = useState(null)
    const [title, setTitle] = useState("")
-   const [price, setPrice] = useState(null)
+   const [desc, setDesc] = useState("")
    const handleChangeStartDate = (value) => {
       if (value) {
          const formattedDate = value.format("DD/MM/YYYY")
@@ -127,35 +158,35 @@ function TodolistForm({ tik }) {
    const handleChangeTitle = (e) => {
       setTitle(e.target.value)
    }
-   const handleChangePrice = (value) => {
-      setPrice(value)
+   const handleChangeDesc = (e) => {
+      setDesc(e.target.value)
    }
-   const handleAddTodolist = () => {
+   function handleClearForm() {
+      setTitle("")
+      setDesc("")
+      setStartDate(null)
+      setEndDate(null)
+   }
+   const handleAddTodolist = async () => {
       const task = {
          title,
-         price,
+         desc,
          startDate,
          endDate,
       }
-      axios
-         .post("/api/tasks", task)
-         .then((response) => {
-            // Handle the successful response
-            console.log(response.data)
-            // Reset the form fields
-            message.success("เพิ่มข้อมูลสำเร็จ!")
-            setTitle("")
-            setPrice(null)
-            setStartDate(null)
-            setEndDate(null)
-            tik()
-         })
-         .catch((error) => {
-            // Handle the error
-            console.error(error)
-            message.error("เพิ่มข้อมูลล้มเหลว!")
-         })
+      try {
+         await axios.post("/api/tasks", task)
+         message.success("เพิ่มข้อมูลสำเร็จ!")
+         handleClearForm()
+         stik()
+      } catch (error) {
+         console.error(error)
+         message.error("เพิ่มข้อมูลล้มเหลว!")
+      } finally {
+         handleClearForm()
+      }
    }
+
    return (
       <div className="w-[730px] h-[160px] bg-slate-100 rounded-md p-2">
          <Form className="flex flex-wrap w-[700px]">
@@ -190,15 +221,13 @@ function TodolistForm({ tik }) {
                >
                   <Input className="w-full" />
                </Form.Item>
-               <Form.Item labelCol={{ span: 5 }} className="mb-4" label="รายละเอียด"
-                  value={price}
-                  onChange={handleChangePrice}
+               <Form.Item
+                  labelCol={{ span: 5 }}
+                  className="mb-4"
+                  label="รายละเอียด"
+                  value={desc}
+                  onChange={handleChangeDesc}
                >
-                  {/* <InputNumber
-                     className="w-full"
-                     value={price}
-                     onChange={handleChangePrice}
-                  /> */}
                   <Input className="w-full" />
                </Form.Item>
             </div>
@@ -219,62 +248,67 @@ function TodolistForm({ tik }) {
    )
 }
 
-function TodolistList({ tasks }) {
+function TodolistList({ tasks, stik }) {
    return (
       <div className="flex flex-wrap w-full mt-2">
          {tasks.map((task) => (
-            <TodolistItem key={task.id} task={task} />
+            <TodolistItem key={task.id} task={task} stik={stik} />
          ))}
       </div>
    )
 }
 
-function TodolistItem({ task }) {
-
+function TodolistItem({ task, stik }) {
    const TodoListForm_model = {
       id: "",
       start_date: "",
       end_date: "",
       title: "",
-      price: ""
+      desc: "",
    }
 
    const [selectedRow, setSelectedRow] = useState(TodoListForm_model)
    const [showEditModal, setShowEditModal] = useState(false)
-   const [startDate, setStartDate] = useState()
-   const [endDate, setEndDate] = useState()
-
+   const [startDate, setStartDate] = useState(null)
+   const [endDate, setEndDate] = useState(null)
 
    // ----- calculate differenceInDays to set TodolistItem color -----//
    const currentDate = Date.now()
-   if (task.end_date && typeof task.end_date === 'string') {
+   if (task.end_date && typeof task.end_date === "string") {
       const dateParts = task.end_date.split(/\s*\/\s*/)
-      const targetDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`)
+      const targetDate = new Date(
+         `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
+      )
 
       const differenceInTime = targetDate.getTime() - currentDate
       // eslint-disable-next-line vars-on-top, no-var
       var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24))
    }
    // eslint-disable-next-line no-nested-ternary
-   const classNameColor = differenceInDays > 1 ? 'relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' 
-      : differenceInDays >= 0 ? 'relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5' : 'relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5'
-   
+   const classNameColor =
+      differenceInDays > 1
+         ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+         : differenceInDays >= 0
+         ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+         : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
 
    const handleShowEditModal = (task) => {
-      const endDateParts = task.end_date.split(/\s*\/\s*/)
-      const targetEndDate = new Date(`${endDateParts[2]}-${endDateParts[1]}-${endDateParts[0]}`)
-      setEndDate(targetEndDate)
-
-      setSelectedRow(task)
+      if (task.end_date === null) {
+         setEndDate(null)
+      } else {
+         setEndDate(dayjs(task.end_date, "DD/MM/YYYY"))
+      }
+      if (task.start_date === null) {
+         setStartDate(null)
+      } else {
+         setStartDate(dayjs(task.start_date, "DD/MM/YYYY"))
+      }
       setShowEditModal(true)
-      // console.log("Edit");
-      // console.log("ID:",id);
-      // console.log("Task:",task);
    }
 
    const handleUpdateTodoList = async () => {
       console.log(selectedRow)
-      console.log("ID:",selectedRow.id)
+      console.log("ID:", selectedRow.id)
       try {
          const response = await fetch(`/api/tasks?id=${selectedRow.id}`, {
             method: "PUT",
@@ -282,36 +316,24 @@ function TodolistItem({ task }) {
             body: JSON.stringify(selectedRow),
          })
          const responseJson = await response.json()
-         console.log("Json",responseJson)
-         // setUsers(responseJson.users)
+         console.log("Json", responseJson)
          setShowEditModal(false)
          message.success("แก้ไข้ข้อมูลเรียบร้อย")
+         stik()
       } catch (err) {
          console.log(err)
          message.error("Edit user fail!")
       }
    }
 
-   const testUpdate = () => {
-      // setSelectedRow({...selectedRow,price: e.target.value,})
-      // setSelectedRow({...selectedRow,start_date: startDate})
-      console.log(selectedRow)
-      setShowEditModal(false)
-   }
-
-   const handleDeleteTodoList = async () => {
+   const handleDeleteTodoList = async (taskId) => {
       if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
-         return 
+         return
       }
-
       try {
-         const response = await fetch(`/api/tasks?id=${selectedRow.id}`, {
-            method: "DELETE",
-         })
-         const responseJson = await response.json()
-         // setData(responseJson.trackings)
-         console.log("responseJson",responseJson)
+         await axios.delete(`/api/tasks?id=${taskId}`)
          message.success("ลบข้อมูลเรียบร้อย!")
+         stik()
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
@@ -321,11 +343,10 @@ function TodolistItem({ task }) {
    const handleEditStartDate = (value) => {
       if (value) {
          setStartDate(value)
-         const formattedDate = value.format("DD/MM/YYYY")
-         // console.log("Date:",formattedDate);
-         // setStartDate(formattedDate)
-         setSelectedRow({...selectedRow,start_date: formattedDate})
-         // console.log("selectRow",selectedRow);
+         setSelectedRow({
+            ...selectedRow,
+            start_date: moment(value).format("DD/MM/YYYY"),
+         })
       } else {
          setStartDate(null)
       }
@@ -334,11 +355,10 @@ function TodolistItem({ task }) {
    const handleEditEndDate = (value) => {
       if (value) {
          setEndDate(value)
-         const formattedDate = value.format("DD/MM/YYYY")
-         // console.log("Date:",formattedDate);
-         // setEndDate(formattedDate)
-         setSelectedRow({...selectedRow,end_date: formattedDate})
-         // console.log("selectRow",selectedRow);
+         setSelectedRow({
+            ...selectedRow,
+            end_date: moment(value).format("DD/MM/YYYY"),
+         })
       } else {
          setEndDate(null)
       }
@@ -356,21 +376,16 @@ function TodolistItem({ task }) {
                <Space className="mb-[10px]">
                   <label>วันที่ลงข้อมูล: </label>
                   <DatePicker
-                     // value={startDate}
-                     // value={selectedRow.start_date}
+                     value={startDate}
                      format="DD/MM/YYYY"
-                     // value={startDate}
-                     value={selectedRow.start_date && moment(selectedRow.start_date, "DD/MM/YYYY")}
                      onChange={(value) => handleEditStartDate(value)}
                   />
                </Space>
                <Space className="mb-[10px]">
                   <label>วันที่จบรายการ: </label>
                   <DatePicker
-                     // value={selectedRow.end_date}
-                     // value={moment(endDate, "DD/MM/YYYY")}
+                     value={endDate}
                      format="DD/MM/YYYY"
-                     // value={endDate && moment(endDate, "DD/MM/YYYY")}
                      onChange={(value) => handleEditEndDate(value)}
                   />
                </Space>
@@ -389,28 +404,28 @@ function TodolistItem({ task }) {
                </Space>
                <Space className="mb-[10px]">
                   <label>รายละเอียด: </label>
-                  <Input 
-                     // value={task.price}
-                     value={selectedRow.price}
+                  <Input
+                     value={selectedRow.desc}
                      onChange={(e) =>
                         setSelectedRow({
                            ...selectedRow,
-                           price: e.target.value,
+                           desc: e.target.value,
                         })
                      }
                   />
                </Space>
             </div>
-
          </Modal>
 
          <div className={classNameColor}>
-            <Button className="float-right bg-white hover:border-white"
+            <Button
+               className="float-right bg-white hover:border-white"
                icon={<DeleteOutlined />}
                onClick={() => handleDeleteTodoList(task.id)}
             />
-            <Button className="float-right bg-white mr-1" hoverStyle={{ backgroundColor: 'red', borderColor: 'red' }}
-               icon={ <EditOutlined />}
+            <Button
+               className="float-right bg-white mr-1"
+               icon={<EditOutlined />}
                onClick={() => handleShowEditModal(task)}
             />
             <div className="text-lg">วันที่จบรายการ</div>
@@ -418,13 +433,14 @@ function TodolistItem({ task }) {
 
             <div className="absolute bottom-2 bg-white w-[275px] h-[240px] text-gray-600 rounded-md p-2">
                <div className="text-lg">TITLE: {task.title}</div>
-               <br/>
-               <div>{task.price}</div>
-               <div className="absolute bottom-2">วันที่ลงข้อมูล: {task.start_date}</div>
+               <br />
+               <div>{task.desc}</div>
+               <div className="absolute bottom-2">
+                  วันที่ลงข้อมูล: {task.start_date}
+               </div>
             </div>
          </div>
       </div>
-      
    )
 }
 DashboardPage.getLayout = function getLayout(page) {

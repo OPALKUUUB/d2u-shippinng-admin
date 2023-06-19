@@ -33,14 +33,14 @@ async function handlers(req, res) {
       }
    } else if (method === "PUT") {
       console.log("PUT::/api/tasks")
-      const { taskId } = req.query
+      const { id } = req.query
       try {
-         const rowsAffected = await updateTask(taskId, body)
+         const rowsAffected = await updateTask(id, body)
          if (rowsAffected > 0) {
             res.status(200).json({
                code: 200,
                message: "Task updated successfully",
-               taskId,
+               id,
             })
          } else {
             res.status(404).json({ code: 404, message: "Task not found" })
@@ -50,15 +50,15 @@ async function handlers(req, res) {
          res.status(500).json({ code: 500, message: "SERVER ERROR" })
       }
    } else if (method === "DELETE") {
-      console.log("DELETE::/api/tasks")
-      const { taskId } = req.query
+      const { id } = req.query
+      console.log(`DELETE::/api/tasks/${id}`)
       try {
-         const rowsAffected = await deleteTask(taskId)
+         const rowsAffected = await deleteTask(id)
          if (rowsAffected > 0) {
             res.status(200).json({
                code: 200,
                message: "Task deleted successfully",
-               taskId,
+               id,
             })
          } else {
             res.status(404).json({ code: 404, message: "Task not found" })

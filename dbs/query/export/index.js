@@ -7,7 +7,7 @@ async function getTrackingExport(startDate, endDate) {
         SELECT
             t.date, t.channel, t.delivery_type, t.track_no, t.box_no, t.weight, t.voyage, t.remark_admin,
             CASE
-                WHEN t.channel = 'yahoo' THEN FORMAT(CEIL(yap.bid * yap.rate_yen), 0)
+                WHEN t.channel = 'yahoo' THEN FORMAT(CEIL(yap.bid), 0)
                 WHEN t.price IS NULL THEN 0
                 ELSE FORMAT(t.price, 0)
             END AS price,

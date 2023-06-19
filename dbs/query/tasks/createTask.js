@@ -3,14 +3,16 @@ import query from "../../mysql/connection"
 // ... your existing code ...
 
 async function createTask(taskData) {
-   const { title, price, startDate, endDate } = taskData
+   const { title, desc, startDate, endDate } = taskData
    console.log(taskData)
+   const date = new Date()
+   const nowDateString = date.toLocaleString()
    const result = await query(
       `
-    INSERT INTO tasks (title, price, start_date, end_date)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO tasks (title, \`desc\`, start_date, end_date, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
   `,
-      [title, price, startDate, endDate]
+      [title, desc, startDate, endDate, nowDateString, nowDateString]
    )
 
    return result.insertId
