@@ -23,7 +23,7 @@ async function getAllCargo() {
             t.delivery_type,
             t.is_notified,
             t.is_invoiced,
-            t.address
+            t.address,
             u.id as user_id,
             u.username,
             GROUP_CONCAT(ti.image SEPARATOR '|') AS images
