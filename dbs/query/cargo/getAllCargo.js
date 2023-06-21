@@ -3,45 +3,46 @@ import query from "../../mysql/connection"
 async function getAllCargo() {
    const trackings = await query(`
          SELECT
-            trackings.id,
-            trackings.date,
-            trackings.track_no,
-            trackings.box_no,
-            trackings.voyage,
-            trackings.price,
-            trackings.rate_yen,
-            trackings.remark_admin,
-            trackings.remark_user,
-            trackings.created_at,
-            trackings.updated_at,
-            trackings.channel,
-            trackings.tracking_slip_image,
-            trackings.paid_channel,
-            trackings.airbilling,
-            trackings.weight_true,
-            trackings.weight_size,
-            trackings.delivery_type,
-            trackings.is_notified,
-            trackings.is_invoiced,
-            users.id as user_id,
-            users.username,
-            GROUP_CONCAT(\`tracking-image\`.image SEPARATOR '|') AS images
+            t.id,
+            t.date,
+            t.track_no,
+            t.box_no,
+            t.voyage,
+            t.price,
+            t.rate_yen,
+            t.remark_admin,
+            t.remark_user,
+            t.created_at,
+            t.updated_at,
+            t.channel,
+            t.tracking_slip_image,
+            t.paid_channel,
+            t.airbilling,
+            t.weight_true,
+            t.weight_size,
+            t.delivery_type,
+            t.is_notified,
+            t.is_invoiced,
+            t.address
+            u.id as user_id,
+            u.username,
+            GROUP_CONCAT(ti.image SEPARATOR '|') AS images
         FROM 
-            trackings
+            trackings t
         JOIN 
-            users 
+            users u
         ON 
-            users.id = trackings.user_id
+            u.id = t.user_id
         LEFT JOIN 
-            \`tracking-image\`
+            \`tracking-image\` ti
         ON 
-            \`tracking-image\`.tracking_id = trackings.id
+            ti.tracking_id = t.id
         GROUP BY
-            trackings.id
+            t.id
         HAVING
-            trackings.airbilling = 1
+            t.airbilling = 1
         ORDER BY 
-            STR_TO_DATE(trackings.created_at, '%d/%m/%Y %H:%i:%s') DESC
+            STR_TO_DATE(t.created_at, '%d/%m/%Y %H:%i:%s') DESC
    `)
    const trackingObjects = trackings.map((tracking, index) => {
       const images = tracking.images ? tracking.images.split("|") : []
@@ -64,6 +65,12 @@ async function getAllCargo() {
          channel: tracking.channel,
          tracking_slip_image: tracking.tracking_slip_image,
          paid_channel: tracking.paid_channel,
+         delivery_type: tracking.delivery_type,
+         weight_true: tracking.weight_true,
+         weight_size: tracking.weight_size,
+         is_notified: tracking.is_notified,
+         is_invoiced: tracking.is_invoiced,
+         address: tracking.address,
          images,
       }
    })

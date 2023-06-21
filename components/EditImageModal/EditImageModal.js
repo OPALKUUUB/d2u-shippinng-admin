@@ -8,14 +8,7 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
    const [thumbUrl, setThumbUrl] = useState(
       images.length > 0 ? images[0] : null
    )
-   console.log(images)
-   // const [fileList, setFileList] = useState(
-   //    images.map((img, idx) => ({
-   //       uid: `image-${idx}`,
-   //       name: `image-${idx}`,
-   //       url: img,
-   //    }))
-   // )
+   
    const [fileList, setFileList] = useState(
       images.map((img, idx) => ({
          uid: `image-${idx}`,
