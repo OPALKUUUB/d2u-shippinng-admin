@@ -23,6 +23,7 @@ async function getAllCargo() {
             t.delivery_type,
             t.is_notified,
             t.is_invoiced,
+            t.payment_type,
             t.address,
             u.id as user_id,
             u.username,
@@ -70,6 +71,7 @@ async function getAllCargo() {
          weight_size: tracking.weight_size,
          is_notified: tracking.is_notified,
          is_invoiced: tracking.is_invoiced,
+         payment_type: tracking.payment_type,
          address: tracking.address,
          images,
       }
