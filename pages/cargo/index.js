@@ -12,13 +12,15 @@ import {
    Row,
    Select,
    Space,
+   Spin,
    Switch,
    Table,
+   message,
 } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import axios from "axios"
 import dayjs from "dayjs"
-import moment from "moment"
+import moment from "moment/moment"
 import Layout from "../../components/layout/layout"
 import EditImageModal from "../../components/EditImageModal/EditImageModal"
 
@@ -27,12 +29,29 @@ function CargoPage() {
    const [cargo, setCargo] = useState([])
    const [open, setOpen] = useState(false)
    const [selectedRow, setSelectedRow] = useState(null)
+   const [loading, setLoading] = useState(false)
 
+   const editCargo = async (item) => {
+      setLoading(true)
+      try {
+         await axios.put(`/api/cargo?id=${item.id}`, item)
+         message.success("แก้ไขข้อมูลสำเร็จ")
+         setCargo((prev) => {
+            const index = prev.findIndex((c) => c.id === item.id)
+            return [...prev.slice(0, index), item, ...prev.slice(index + 1)]
+         })
+      } catch (err) {
+         console.log(err)
+      }finally {
+         setLoading(false)
+      }
+   }
    const handleCancelEditModal = () => {
       setOpen(false)
       setSelectedRow(null)
    }
    const handleClickEdit = (item) => {
+      // implement api edit
       setSelectedRow(item)
       setOpen(true)
    }
@@ -40,7 +59,30 @@ function CargoPage() {
       if (!window.confirm("Are you sure you want to delete")) {
          return
       }
+      // implement api delete
       alert(id)
+   }
+   const handleSelectDeliveryType = async (value, item) => {
+      // console.log(value, item)
+      // implement api update delivery type
+      await editCargo({ ...item, delivery_type: value })
+   }
+   const handleChangeIsNotified = async (value, item) => {
+      console.log(value, item)
+      const check = value ? 1 : 0
+      // implement api update delivery type
+      await editCargo({ ...item, is_notified: check })
+   }
+   const handleChangePaymentType = async (value, item) => {
+      console.log(value, item)
+      // implement api update delivery type
+      await editCargo({ ...item, payment_type: value })
+   }
+   const handleChangeIsInvoiced = async (value, item) => {
+      console.log(value, item)
+      const check = value ? 1 : 0
+      // implement api update delivery type
+      await editCargo({ ...item, is_invoiced: check })
    }
    const columns = [
       {
@@ -81,6 +123,7 @@ function CargoPage() {
          width: "150px",
          render: (value, item) => {
             const type = isValid(value) ? value : ""
+            console.log(value)
             const options = [
                { label: "เลือก", value: "" },
                { label: "EMS", value: "EMS" },
@@ -88,7 +131,11 @@ function CargoPage() {
             ]
             return (
                <Space>
-                  <Select value={type} options={options} />
+                  <Select
+                     value={type}
+                     options={options}
+                     onChange={(v) => handleSelectDeliveryType(v, item)}
+                  />
                </Space>
             )
          },
@@ -130,7 +177,10 @@ function CargoPage() {
             const checked = isValid(value) ? value === 1 : false
             return (
                <Space>
-                  <Switch checked={checked} />
+                  <Switch
+                     checked={checked}
+                     onChange={(v) => handleChangeIsNotified(v, item)}
+                  />
                </Space>
             )
          },
@@ -146,17 +196,22 @@ function CargoPage() {
          title: "ประเภทการจ่ายเงิน",
          dataIndex: "payment_type",
          key: "payment_type",
-         width: "120px",
+         width: "160px",
          render: (value, item) => {
             const type = isValid(value) ? value : ""
             const options = [
                { label: "เลือก", value: "" },
-               { label: "type 1", value: "type 1" },
-               { label: "type 2", value: "type 2" },
+               { label: "แม่มณี", value: "แม่มณี" },
+               { label: "บัญชีบริษัท", value: "บัญชีบริษัท" },
+               { label: "เงินสด", value: "เงินสด" },
             ]
             return (
                <Space>
-                  <Select value={type} options={options} />
+                  <Select
+                     value={type}
+                     options={options}
+                     onChange={(v) => handleChangePaymentType(v, item)}
+                  />
                </Space>
             )
          },
@@ -170,7 +225,10 @@ function CargoPage() {
             const checked = isValid(value) ? value === 1 : false
             return (
                <Space>
-                  <Switch checked={checked} />
+                  <Switch
+                     checked={checked}
+                     onChange={(v) => handleChangeIsInvoiced(v, item)}
+                  />
                </Space>
             )
          },
@@ -212,6 +270,7 @@ function CargoPage() {
          try {
             const response = await axios.get("/api/cargo")
             setCargo(response.data.cargo)
+            console.log(response.data.cargo)
          } catch (err) {
             console.log(err)
          }
@@ -221,32 +280,43 @@ function CargoPage() {
    }, [trigger])
 
    return (
-      <div className="m-3">
-         <Table
-            columns={columns}
-            dataSource={cargo}
-            scroll={{
-               x: 1500,
-               y: 450,
-            }}
-         />
-         <EditModal
-            open={open}
-            onCancel={handleCancelEditModal}
-            item={selectedRow}
-         />
-      </div>
+      <>
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
+            </div>
+         )}
+         <div className="m-3 bg-white p-5 rounded-lg">
+            <Table
+               columns={columns}
+               dataSource={cargo}
+               scroll={{
+                  x: 1500,
+                  y: 450,
+               }}
+            />
+            <EditModal
+               open={open}
+               onCancel={handleCancelEditModal}
+               item={selectedRow}
+               editCargo={editCargo}
+            />
+         </div>
+      </>
    )
 }
 
-function EditModal({ item, open, onCancel }) {
+function EditModal({ item, open, onCancel, editCargo }) {
    if (!item) {
       return null
    }
    const [formData, setFormData] = useState(item)
 
-   const handleSubmit = () => {
-      console.log(formData)
+   const handleSubmit = async () => {
+      // console.log(formData)
+      await editCargo({...formData})
    }
    useEffect(() => {
       setFormData(item)
@@ -271,11 +341,19 @@ function EditForm({ formData, setFormData }) {
       const changedField = changedFields[0]
       const fieldName = changedField.name[0]
       const fieldValue = changedField.value
-
-      setFormData((prevData) => ({
-         ...prevData,
-         [fieldName]: fieldValue,
-      }))
+      if(fieldName === "date") {
+         // console.log(dayjs(fieldValue, "D/M/YYYY").format("DD/MM/YYYY"))
+         setFormData((prevData) => ({
+            ...prevData,
+            [fieldName]: dayjs(fieldValue, "D/M/YYYY").format("D/M/YYYY"),
+         }))
+      }else {
+         setFormData((prevData) => ({
+            ...prevData,
+            [fieldName]: fieldValue,
+         }))
+      }
+      
    }
 
    const date = !isValid(formData.date)
