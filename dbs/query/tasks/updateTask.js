@@ -1,8 +1,8 @@
 import query from "../../mysql/connection"
 
 async function updateTask(taskId, taskData) {
-   const { title, desc, startDate, endDate } = taskData
-   console.log(taskData)
+   const { title, desc, start_date, end_date } = taskData
+   console.log(taskData, taskId)
    const date = new Date()
    const nowDateString = date.toLocaleString()
    const result = await query(
@@ -11,7 +11,7 @@ async function updateTask(taskId, taskData) {
     SET title = ?, \`desc\` = ?, start_date = ?, end_date = ?, updated_at = ?
     WHERE task_id = ?
   `,
-      [title, desc, startDate, endDate, nowDateString, taskId]
+      [title, desc, start_date, end_date, nowDateString, taskId]
    )
    console.log(result)
 

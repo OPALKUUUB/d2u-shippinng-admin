@@ -24,6 +24,8 @@ import axios from "axios"
 import moment from "moment/moment"
 import dayjs from "dayjs"
 import Layout from "../components/layout/layout"
+// import TextArea from "antd/es/input/TextArea"
+const { TextArea } = Input
 
 function DashboardPage() {
    const [todolist, setTodolist] = useState([])
@@ -61,12 +63,12 @@ function DashboardPage() {
             </div>
          )}
          <div className="w-full h-full p-5">
-            <div className="w-full h-full bg-white rounded-md p-3">
-               <div className="w-full flex gap-3">
+            <div className="w-full h-full bg-white rounded-md p-3 flex">
+               <div>
                   <ChangeRateYen />
                   <TodolistForm stik={tik} />
                </div>
-               <div className="overflow-y-scroll h-[420px] my-3">
+               <div className="overflow-y-scroll h-[98%] w-full">
                   <TodolistList tasks={todolist} stik={tik} />
                </div>
             </div>
@@ -110,7 +112,7 @@ function ChangeRateYen() {
    }
 
    return (
-      <div className="w-[200px] h-[160px] bg-slate-200 rounded-lg text-gray-600 p-2">
+      <div className="w-[220px] h-[160px] bg-slate-200 rounded-lg text-gray-600 p-2 mb-3">
          <div className="mb-3">อัตราการแลกเปลี่ยน (เยน)</div>
          <div className="mb-3 font-bold">{rateYen} บาท</div>
          <div className="mb-3">
@@ -188,61 +190,48 @@ function TodolistForm({ stik }) {
    }
 
    return (
-      <div className="w-[730px] h-[160px] bg-slate-100 rounded-md p-2">
-         <Form className="flex flex-wrap w-[700px]">
-            <div className="flex-col w-[350px]">
-               <Form.Item labelCol={{ span: 8 }} label="วันที่ลงข้อมูล">
-                  <DatePicker
-                     className="w-full"
-                     format="DD/MM/YYYY"
-                     value={startDate && moment(startDate, "DD/MM/YYYY")}
-                     onChange={(value) => handleChangeStartDate(value)}
-                  />
-               </Form.Item>
-               <Form.Item
-                  labelCol={{ span: 8 }}
-                  label="วันที่จบรายการ"
-                  className="mb-4"
-               >
-                  <DatePicker
-                     className="w-full"
-                     format="DD/MM/YYYY"
-                     value={endDate && moment(endDate, "DD/MM/YYYY")}
-                     onChange={(value) => handleChangeEndDate(value)}
-                  />
-               </Form.Item>
-            </div>
-            <div className="flex-col w-[350px]">
-               <Form.Item
-                  labelCol={{ span: 5 }}
-                  label="เรื่อง"
-                  value={title}
-                  onChange={handleChangeTitle}
-               >
-                  <Input className="w-full" />
-               </Form.Item>
-               <Form.Item
-                  labelCol={{ span: 5 }}
-                  className="mb-4"
-                  label="รายละเอียด"
+      <div className="w-[220px] bg-slate-100 rounded-md px-2 py-4 shadow-md">
+         <Form>
+            <Form.Item>
+               <DatePicker
+                  placeholder="วันที่ลงข้อมูล"
+                  className="w-full"
+                  format="DD/MM/YYYY"
+                  value={startDate && moment(startDate, "DD/MM/YYYY")}
+                  onChange={(value) => handleChangeStartDate(value)}
+               />
+            </Form.Item>
+            <Form.Item>
+               <DatePicker
+                  placeholder="วันที่จบรายการ"
+                  className="w-full"
+                  format="DD/MM/YYYY"
+                  value={endDate && moment(endDate, "DD/MM/YYYY")}
+                  onChange={(value) => handleChangeEndDate(value)}
+               />
+            </Form.Item>
+            <Form.Item value={title} onChange={handleChangeTitle}>
+               <Input className="w-full" placeholder="เรื่อง" />
+            </Form.Item>
+            <Form.Item>
+               <TextArea
+                  className="w-full"
+                  placeholder="รายละเอียด"
                   value={desc}
                   onChange={handleChangeDesc}
+                  rows={6}
+               />
+            </Form.Item>
+            <Form.Item>
+               <Button
+                  className="w-full"
+                  icon={<AppstoreAddOutlined />}
+                  type="primary"
+                  onClick={handleAddTodolist}
                >
-                  <Input className="w-full" />
-               </Form.Item>
-            </div>
-            <div className="w-full text-center">
-               <Form.Item>
-                  <Button
-                     className="w-full"
-                     icon={<AppstoreAddOutlined />}
-                     type="primary"
-                     onClick={handleAddTodolist}
-                  >
-                     เพิ่มรายการที่ต้องทำ
-                  </Button>
-               </Form.Item>
-            </div>
+                  เพิ่มรายการที่ต้องทำ
+               </Button>
+            </Form.Item>
          </Form>
       </div>
    )
@@ -250,7 +239,7 @@ function TodolistForm({ stik }) {
 
 function TodolistList({ tasks, stik }) {
    return (
-      <div className="flex flex-wrap w-full mt-2">
+      <div className="flex flex-wrap w-full justify-center">
          {tasks.map((task) => (
             <TodolistItem key={task.id} task={task} stik={stik} />
          ))}
@@ -293,16 +282,18 @@ function TodolistItem({ task, stik }) {
          : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
 
    const handleShowEditModal = (task) => {
+      console.log(task)
       if (task.end_date === null) {
          setEndDate(null)
       } else {
-         setEndDate(dayjs(task.end_date, "DD/MM/YYYY"))
+         setEndDate(dayjs(task.end_date, "D/M/YYYY"))
       }
       if (task.start_date === null) {
          setStartDate(null)
       } else {
-         setStartDate(dayjs(task.start_date, "DD/MM/YYYY"))
+         setStartDate(dayjs(task.start_date, "D/M/YYYY"))
       }
+      setSelectedRow(task)
       setShowEditModal(true)
    }
 
@@ -345,7 +336,7 @@ function TodolistItem({ task, stik }) {
          setStartDate(value)
          setSelectedRow({
             ...selectedRow,
-            start_date: moment(value).format("DD/MM/YYYY"),
+            start_date: dayjs(value, "D/M/YYYY").format("D/M/YYYY"),
          })
       } else {
          setStartDate(null)
@@ -357,7 +348,7 @@ function TodolistItem({ task, stik }) {
          setEndDate(value)
          setSelectedRow({
             ...selectedRow,
-            end_date: moment(value).format("DD/MM/YYYY"),
+            end_date: dayjs(value, "D/M/YYYY").format("D/M/YYYY"),
          })
       } else {
          setEndDate(null)
