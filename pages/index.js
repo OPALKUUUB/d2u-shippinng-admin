@@ -380,9 +380,10 @@ function TodolistItem({ task, stik }) {
                      onChange={(value) => handleEditEndDate(value)}
                   />
                </Space>
-               <Space className="mb-[10px]">
+               <div className="mb-[10px]">
                   <label>เรื่อง: </label>
                   <Input
+                     className="w-full mt-2"
                      // value={task.title}
                      value={selectedRow.title}
                      onChange={(e) =>
@@ -392,10 +393,12 @@ function TodolistItem({ task, stik }) {
                         })
                      }
                   />
-               </Space>
-               <Space className="mb-[10px]">
+               </div>
+               <div>
                   <label>รายละเอียด: </label>
-                  <Input
+                  <TextArea
+                     className="w-full mt-2"
+                     rows={4}
                      value={selectedRow.desc}
                      onChange={(e) =>
                         setSelectedRow({
@@ -404,7 +407,7 @@ function TodolistItem({ task, stik }) {
                         })
                      }
                   />
-               </Space>
+               </div>
             </div>
          </Modal>
 
