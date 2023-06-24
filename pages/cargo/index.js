@@ -2,6 +2,7 @@
 /* eslint-disable consistent-return */
 import React, { useEffect, useState } from "react"
 import {
+   Button,
    Col,
    DatePicker,
    Dropdown,
@@ -17,10 +18,9 @@ import {
    Table,
    message,
 } from "antd"
-import { DownOutlined } from "@ant-design/icons"
+import { DownOutlined, PlusCircleOutlined } from "@ant-design/icons"
 import axios from "axios"
 import dayjs from "dayjs"
-import moment from "moment/moment"
 import Layout from "../../components/layout/layout"
 import EditImageModal from "../../components/EditImageModal/EditImageModal"
 
@@ -28,8 +28,12 @@ function CargoPage() {
    const [trigger, setTrigger] = useState(false)
    const [cargo, setCargo] = useState([])
    const [open, setOpen] = useState(false)
+   const [openAddModal, setOpenAddModal] = useState(false)
    const [selectedRow, setSelectedRow] = useState(null)
    const [loading, setLoading] = useState(false)
+   const [formDataAdd, setFormDataAdd] = useState({
+      date: dayjs(new Date()).format("D/M/YYYY"),
+   })
 
    const editCargo = async (item) => {
       setLoading(true)
@@ -42,7 +46,7 @@ function CargoPage() {
          })
       } catch (err) {
          console.log(err)
-      }finally {
+      } finally {
          setLoading(false)
       }
    }
@@ -50,8 +54,15 @@ function CargoPage() {
       setOpen(false)
       setSelectedRow(null)
    }
+   const handleCancelAddModal = () => {
+      setOpenAddModal(false)
+      // setSelectedRow(null)
+   }
+   const handleClickAdd = () => {
+      // setSelectedRow(item)
+      setOpenAddModal(true)
+   }
    const handleClickEdit = (item) => {
-      // implement api edit
       setSelectedRow(item)
       setOpen(true)
    }
@@ -59,29 +70,20 @@ function CargoPage() {
       if (!window.confirm("Are you sure you want to delete")) {
          return
       }
-      // implement api delete
       alert(id)
    }
    const handleSelectDeliveryType = async (value, item) => {
-      // console.log(value, item)
-      // implement api update delivery type
       await editCargo({ ...item, delivery_type: value })
    }
    const handleChangeIsNotified = async (value, item) => {
-      console.log(value, item)
       const check = value ? 1 : 0
-      // implement api update delivery type
       await editCargo({ ...item, is_notified: check })
    }
    const handleChangePaymentType = async (value, item) => {
-      console.log(value, item)
-      // implement api update delivery type
       await editCargo({ ...item, payment_type: value })
    }
    const handleChangeIsInvoiced = async (value, item) => {
-      console.log(value, item)
       const check = value ? 1 : 0
-      // implement api update delivery type
       await editCargo({ ...item, is_invoiced: check })
    }
    const columns = [
@@ -289,6 +291,15 @@ function CargoPage() {
             </div>
          )}
          <div className="m-3 bg-white p-5 rounded-lg">
+            <div className="w-full flex justify-end mb-2">
+               <Button
+                  type="primary"
+                  icon={<PlusCircleOutlined />}
+                  onClick={handleClickAdd}
+               >
+                  เพิ่มรายการขนส่งทางเรือ
+               </Button>
+            </div>
             <Table
                columns={columns}
                dataSource={cargo}
@@ -303,6 +314,12 @@ function CargoPage() {
                item={selectedRow}
                editCargo={editCargo}
             />
+            <AddModal
+               open={openAddModal}
+               onCancel={handleCancelAddModal}
+               item={formDataAdd}
+               // editCargo={editCargo}
+            />
          </div>
       </>
    )
@@ -315,8 +332,7 @@ function EditModal({ item, open, onCancel, editCargo }) {
    const [formData, setFormData] = useState(item)
 
    const handleSubmit = async () => {
-      // console.log(formData)
-      await editCargo({...formData})
+      await editCargo({ ...formData })
    }
    useEffect(() => {
       setFormData(item)
@@ -341,19 +357,17 @@ function EditForm({ formData, setFormData }) {
       const changedField = changedFields[0]
       const fieldName = changedField.name[0]
       const fieldValue = changedField.value
-      if(fieldName === "date") {
-         // console.log(dayjs(fieldValue, "D/M/YYYY").format("DD/MM/YYYY"))
+      if (fieldName === "date") {
          setFormData((prevData) => ({
             ...prevData,
             [fieldName]: dayjs(fieldValue, "D/M/YYYY").format("D/M/YYYY"),
          }))
-      }else {
+      } else {
          setFormData((prevData) => ({
             ...prevData,
             [fieldName]: fieldValue,
          }))
       }
-      
    }
 
    const date = !isValid(formData.date)
@@ -411,6 +425,58 @@ function EditForm({ formData, setFormData }) {
                </Form.Item>
             </Col>
          </Row>
+      </Form>
+   )
+}
+
+function AddModal({ item, open, onCancel, editCargo }) {
+   const [formData, setFormData] = useState(item)
+
+   // const handleSubmit = async () => {
+   //    await editCargo({ ...formData })
+   // }
+   // useEffect(() => {
+   //    setFormData(item)
+   // }, [item])
+   return (
+      <Modal
+         title="เพิ่มข้อมูลการขนส่ง"
+         open={open}
+         onCancel={onCancel}
+         width={600}
+         // onOk={handleSubmit}
+      >
+         <div className="pt-5">
+            <AddForm formData={formData} setFormData={setFormData} />
+         </div>
+      </Modal>
+   )
+}
+
+function AddForm({ formData, setFormData }) {
+   return (
+      <Form
+      // fields={}
+      // onFieldsChange={handleFieldChange}
+      >
+         <Form.Item label="วันที่" name="date">
+            <DatePicker format="DD/MM/YYYY" />
+         </Form.Item>
+         <Form.Item label="Track No" name="track_no">
+            <Input />
+         </Form.Item>
+         <Form.Item label="Box No" name="box_no">
+            <Input />
+         </Form.Item>
+         <Form.Item label="น้ำหนักจริง" name="weight_true">
+            <InputNumber className="w-full" />
+         </Form.Item>
+         <Form.Item label="น้ำหนักขนาด" name="weight_size">
+            <InputNumber className="w-full" />
+         </Form.Item>
+         <Form.Item label="ราคา" name="price">
+            <InputNumber className="w-full" />
+         </Form.Item>
       </Form>
    )
 }
