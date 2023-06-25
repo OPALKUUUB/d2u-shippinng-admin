@@ -8,7 +8,7 @@ async function getAllCargo() {
             t.track_no,
             t.box_no,
             t.voyage,
-            t.price,
+            t.price_cargo as price,
             t.rate_yen,
             t.remark_admin,
             t.remark_user,
