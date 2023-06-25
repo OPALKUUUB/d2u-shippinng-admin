@@ -37,64 +37,65 @@ import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
 import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
+import EditImageModal from "../../../components/EditImageModal/EditImageModal"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
-const TrackingImage = ({
-   id,
-   handleShowImages,
-   trackingId,
-   tricker,
-   setTricker,
-}) => {
-   const [images, setImages] = useState(null)
-   useEffect(() => {
-      setImages(null)
-      ;(async () => {
-         try {
-            const response = await fetch(`/api/tracking/images?id=${id}`)
-            const responseJson = await response.json()
-            setImages(responseJson.tracking_image)
-         } catch (err) {
-            console.log(err)
-         }
-      })()
-   }, [id])
-   useEffect(() => {
-      if (tricker && id === trackingId) {
-         ;(async () => {
-            try {
-               const response = await fetch(`/api/tracking/images?id=${id}`)
-               const responseJson = await response.json()
-               setImages(responseJson.tracking_image)
-               setTricker(false)
-            } catch (err) {
-               console.log(err)
-            }
-         })()
-      }
-   }, [tricker])
-   return (
-      <div>
-         {images === null ? (
-            <p>Loading...</p>
-         ) : images.length === 0 ? (
-            <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
-         ) : (
-            <img
-               src={images[0].image}
-               alt="tracking_image"
-               width={100}
-               onClick={() => handleShowImages(id)}
-               style={{ cursor: "pointer" }}
-            />
-         )}
-      </div>
-   )
-}
+// const TrackingImage = ({
+//    id,
+//    handleShowImages,
+//    trackingId,
+//    tricker,
+//    setTricker,
+// }) => {
+//    const [images, setImages] = useState(null)
+//    useEffect(() => {
+//       setImages(null)
+//       ;(async () => {
+//          try {
+//             const response = await fetch(`/api/tracking/images?id=${id}`)
+//             const responseJson = await response.json()
+//             setImages(responseJson.tracking_image)
+//          } catch (err) {
+//             console.log(err)
+//          }
+//       })()
+//    }, [id])
+//    useEffect(() => {
+//       if (tricker && id === trackingId) {
+//          ;(async () => {
+//             try {
+//                const response = await fetch(`/api/tracking/images?id=${id}`)
+//                const responseJson = await response.json()
+//                setImages(responseJson.tracking_image)
+//                setTricker(false)
+//             } catch (err) {
+//                console.log(err)
+//             }
+//          })()
+//       }
+//    }, [tricker])
+//    return (
+//       <div>
+//          {images === null ? (
+//             <p>Loading...</p>
+//          ) : images.length === 0 ? (
+//             <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
+//          ) : (
+//             <img
+//                src={images[0].image}
+//                alt="tracking_image"
+//                width={100}
+//                onClick={() => handleShowImages(id)}
+//                style={{ cursor: "pointer" }}
+//             />
+//          )}
+//       </div>
+//    )
+// }
 function MercariTrackingsPage() {
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
@@ -646,13 +647,18 @@ function MercariTrackingsPage() {
          dataIndex: "id",
          width: "120px",
          key: "id",
-         render: (id) => (
-            <TrackingImage
-               id={id}
-               handleShowImages={handleShowImages}
-               trackingId={trackingId}
-               tricker={tricker}
-               setTricker={setTricker}
+         render: (id, item) => (
+            // <TrackingImage
+            //    id={id}
+            //    handleShowImages={handleShowImages}
+            //    trackingId={trackingId}
+            //    tricker={tricker}
+            //    setTricker={setTricker}
+            // />
+            <EditImageModal
+               tracking={item}
+               images={item.images}
+               setTrigger={setTricker}
             />
          ),
          // render: (id) => (
@@ -683,9 +689,10 @@ function MercariTrackingsPage() {
             ),
       },
       {
-         title: "ทางเรือ",
+         title: "Cargo",
          dataIndex: "airbilling",
          key: "airbilling",
+         width: 80,
          render: (ck, item) =>
             ck ? (
                <Switch
@@ -892,14 +899,14 @@ function MercariTrackingsPage() {
          const responseJson = await response.json()
          setUsers(responseJson.users)
       })()
+   }, [])
+   useEffect(() => {
       ;(async () => {
          const response = await fetch("/api/tracking/mercari")
          const responseJson = await response.json()
-         // console.log(responseJson)
-         // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
          setData(responseJson.trackings)
       })()
-   }, [])
+   }, [tricker])
    return (
       <Fragment>
          <CardHead name="Mercari Trackings Page" />

@@ -11,6 +11,10 @@ function Navbar({ slide, setToggleSlide }) {
    const router = useRouter()
    const [showSetting, setShowSetting] = useState(false)
 
+   const handleClickSignOut = () => {
+      signOut()
+   }
+
    return (
       <Fragment>
          <nav>
@@ -58,7 +62,7 @@ function Navbar({ slide, setToggleSlide }) {
                               <span className="icon">
                                  <LogoutIcon />
                               </span>
-                              <span className="text" onClick={signOut}>
+                              <span className="text" onClick={handleClickSignOut}>
                                  Sign Out
                               </span>
                            </li>
