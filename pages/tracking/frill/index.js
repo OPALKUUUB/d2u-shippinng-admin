@@ -36,35 +36,12 @@ import sortDate from "../../../utils/sortDate"
 import PasteImage from "../../../components/PasteImage"
 import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
+import EditImageModal from "../../../components/EditImageModal/EditImageModal"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
-
-const TrackingImage = ({ id, handleShowImages, trackingImages }) => {
-   const [images, setImages] = useState(null)
-   useEffect(() => {
-      setImages(trackingImages)
-   }, [id])
-   return (
-      <div>
-         {images === null ? (
-            <p>Loading...</p>
-         ) : images.length === 0 ? (
-            <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
-         ) : (
-            <img
-               src={images[0]?.image}
-               alt="tracking_image"
-               width={100}
-               onClick={() => handleShowImages(id)}
-               style={{ cursor: "pointer" }}
-            />
-         )}
-      </div>
-   )
-}
 function FrillPage() {
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
@@ -601,13 +578,10 @@ function FrillPage() {
          width: "120px",
          key: "id",
          render: (id, item) => (
-            <TrackingImage
-               id={id}
-               handleShowImages={handleShowImages}
-               trackingId={trackingId}
-               tricker={tricker}
-               setTricker={setTricker}
-               trackingImages={item.images}
+            <EditImageModal
+               tracking={item}
+               images={item.images}
+               setTrigger={setTricker}
             />
          ),
       },
@@ -828,14 +802,14 @@ function FrillPage() {
          const responseJson = await response.json()
          setUsers(responseJson.users)
       })()
+   }, [])
+   useEffect(() => {
       ;(async () => {
          const response = await fetch("/api/tracking/fril")
          const responseJson = await response.json()
-         // console.log(responseJson)
-         // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
          setData(responseJson.trackings)
       })()
-   }, [])
+   }, [tricker])
    return (
       <Fragment>
          <CardHead name="Frill Trackings Page" />

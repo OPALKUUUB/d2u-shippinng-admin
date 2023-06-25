@@ -65,6 +65,7 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
                   size: blob.size,
                   originFileObj: blob,
                   url: reader.result,
+                  status: "done"
                },
                ...fileList,
             ]
@@ -80,6 +81,7 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
          fileList
             .filter((fi) => fi?.status === "done")
             .map(async (cur) => {
+               // console.log(cur)
                // const file = cur
                // const src = await new Promise((resolve) => {
                //    const reader = new FileReader()
@@ -109,6 +111,9 @@ const EditImageModal = ({ images, tracking, setTrigger }) => {
          const deletedImages = images.filter(
             (image) => !fileList.some((fi) => fi.url === image)
          )
+         console.log(temp_images)
+         console.log("deleted images:")
+         console.log(deletedImages)
          await fetch("/api/tracking/shimizu/upload/image", {
             method: "POST",
             headers: {
