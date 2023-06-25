@@ -219,7 +219,7 @@ function CargoPage() {
          },
       },
       {
-         title: "แจ้งวางบิล",
+         title: "รับของสำเร็จ",
          dataIndex: "is_invoiced",
          key: "is_invoiced",
          width: "180px",
@@ -378,6 +378,7 @@ function EditForm({ formData, setFormData }) {
    const weightTrue = formData.weight_true
    const weightSize = formData.weight_size
    const { price } = formData
+   const { address } = formData
 
    return (
       <Form
@@ -388,6 +389,7 @@ function EditForm({ formData, setFormData }) {
             { name: ["weight_true"], value: weightTrue },
             { name: ["weight_size"], value: weightSize },
             { name: ["price"], value: price },
+            { name: ["address"], value: address },
          ]}
          onFieldsChange={handleFieldChange}
       >
@@ -425,6 +427,11 @@ function EditForm({ formData, setFormData }) {
                </Form.Item>
             </Col>
          </Row>
+         <Col span={24}>
+            <Form.Item label="ที่อยู่จัดส่ง" name="address">
+               <Input.TextArea className="w-full" />
+            </Form.Item>
+         </Col>
       </Form>
    )
 }

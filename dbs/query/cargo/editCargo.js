@@ -12,11 +12,12 @@ async function editCargo(id, tracking) {
          , box_no = ?
          , weight_true = ?
          , weight_size = ?
-         , price = ?
+         , price_cargo = ?
          , delivery_type = ?
          , is_notified = ?
          , payment_type = ?
          , is_invoiced = ?
+         , address = ?
          WHERE id = ?
    `,
       [
@@ -30,6 +31,7 @@ async function editCargo(id, tracking) {
          tracking.is_notified === null ? 0 : tracking.is_notified,
          tracking.payment_type,
          tracking.is_invoiced === null ? 0 : tracking.is_invoiced,
+         tracking.address,
          id
       ]
    )
