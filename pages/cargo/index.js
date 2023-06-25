@@ -125,7 +125,7 @@ function CargoPage() {
          width: "150px",
          render: (value, item) => {
             const type = isValid(value) ? value : ""
-            console.log(value)
+            // console.log(value)
             const options = [
                { label: "เลือก", value: "" },
                { label: "EMS", value: "EMS" },
@@ -291,7 +291,7 @@ function CargoPage() {
             </div>
          )}
          <div className="m-3 bg-white p-5 rounded-lg">
-            <div className="w-full flex justify-end mb-2">
+            {/* <div className="w-full flex justify-end mb-2">
                <Button
                   type="primary"
                   icon={<PlusCircleOutlined />}
@@ -299,7 +299,7 @@ function CargoPage() {
                >
                   เพิ่มรายการขนส่งทางเรือ
                </Button>
-            </div>
+            </div> */}
             <Table
                columns={columns}
                dataSource={cargo}
@@ -314,12 +314,12 @@ function CargoPage() {
                item={selectedRow}
                editCargo={editCargo}
             />
-            <AddModal
+            {/* <AddModal
                open={openAddModal}
                onCancel={handleCancelAddModal}
                item={formDataAdd}
                // editCargo={editCargo}
-            />
+            /> */}
          </div>
       </>
    )

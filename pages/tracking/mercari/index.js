@@ -44,58 +44,6 @@ dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
-// const TrackingImage = ({
-//    id,
-//    handleShowImages,
-//    trackingId,
-//    tricker,
-//    setTricker,
-// }) => {
-//    const [images, setImages] = useState(null)
-//    useEffect(() => {
-//       setImages(null)
-//       ;(async () => {
-//          try {
-//             const response = await fetch(`/api/tracking/images?id=${id}`)
-//             const responseJson = await response.json()
-//             setImages(responseJson.tracking_image)
-//          } catch (err) {
-//             console.log(err)
-//          }
-//       })()
-//    }, [id])
-//    useEffect(() => {
-//       if (tricker && id === trackingId) {
-//          ;(async () => {
-//             try {
-//                const response = await fetch(`/api/tracking/images?id=${id}`)
-//                const responseJson = await response.json()
-//                setImages(responseJson.tracking_image)
-//                setTricker(false)
-//             } catch (err) {
-//                console.log(err)
-//             }
-//          })()
-//       }
-//    }, [tricker])
-//    return (
-//       <div>
-//          {images === null ? (
-//             <p>Loading...</p>
-//          ) : images.length === 0 ? (
-//             <Button onClick={() => handleShowImages(id)}>เพิ่มรูปภาพ</Button>
-//          ) : (
-//             <img
-//                src={images[0].image}
-//                alt="tracking_image"
-//                width={100}
-//                onClick={() => handleShowImages(id)}
-//                style={{ cursor: "pointer" }}
-//             />
-//          )}
-//       </div>
-//    )
-// }
 function MercariTrackingsPage() {
    const [users, setUsers] = useState([])
    const [data, setData] = useState([])
@@ -384,7 +332,7 @@ function MercariTrackingsPage() {
 
    const handleDeleteRow = async (id) => {
       if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
-         return 
+         return
       }
       try {
          const response = await fetch(`/api/tracking/mercari?id=${id}`, {
@@ -648,22 +596,12 @@ function MercariTrackingsPage() {
          width: "120px",
          key: "id",
          render: (id, item) => (
-            // <TrackingImage
-            //    id={id}
-            //    handleShowImages={handleShowImages}
-            //    trackingId={trackingId}
-            //    tricker={tricker}
-            //    setTricker={setTricker}
-            // />
             <EditImageModal
                tracking={item}
                images={item.images}
                setTrigger={setTricker}
             />
          ),
-         // render: (id) => (
-         //    <Button onClick={() => handleShowImages(id)}>ดูรูปภาพ</Button>
-         // ),
       },
       {
          title: "ชื่อลูกค้า",
@@ -678,7 +616,7 @@ function MercariTrackingsPage() {
          key: "link",
          width: 150,
          render: (text) =>
-            text !== null ? (
+            text !== null && text !== "" ? (
                <Link href={text} target="_blank" rel="noopener">
                   <div style={{ display: "inline-block" }}>
                      {text.split("/").slice(-1)}
@@ -714,7 +652,7 @@ function MercariTrackingsPage() {
             {
                text: "รับของแล้ว",
                value: 1,
-            }, 
+            },
             {
                text: "รอรับของ",
                value: 0,
@@ -811,6 +749,7 @@ function MercariTrackingsPage() {
          title: "ช่องทางจ่ายออก",
          dataIndex: "paid_channel",
          key: "paid_channel",
+         width: 100,
          render: (paid_channel, item) => (
             <SelectPaidChannel
                // eslint-disable-next-line react/jsx-no-bind
@@ -824,24 +763,28 @@ function MercariTrackingsPage() {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
+         width: 150,
          ...getColumnSearchProps("track_no"),
       },
       {
          title: "เลขกล่อง",
          dataIndex: "box_no",
          key: "box_no",
+         width: 100,
          ...getColumnSearchProps("box_no"),
       },
       {
          title: "น้ำหนัก",
          dataIndex: "weight",
          key: "weight",
-         render: (text) => (text === null ? "-" : text),
+         width: 80,
+         render: (text) => (text === null ? "-" : `${text} Kg.`),
       },
       {
          title: "ราคา",
          dataIndex: "price",
          key: "price",
+         width: 120,
          render: (text) =>
             text === null
                ? "-"
@@ -854,6 +797,7 @@ function MercariTrackingsPage() {
          title: "รอบเรือ",
          dataIndex: "voyage",
          key: "voyage",
+         width: 120,
          ...getColumnDateProps(),
       },
       {
@@ -923,7 +867,7 @@ function MercariTrackingsPage() {
                dataSource={data}
                columns={columns}
                scroll={{
-                  x: 1500,
+                  x: 2000,
                   y: 450,
                }}
             />

@@ -1,20 +1,13 @@
+import getTrackings from "../../../../dbs/query/trackings/getTrackings"
 import mysql from "../../../../lib/db"
 import genDate from "../../../../utils/genDate"
-import sortDateTime from "../../../../utils/sortDateTime"
 
 async function handler(req, res) {
    if (req.method === "GET") {
-      await mysql.connect()
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["123"]
-      )
-      await mysql.end()
+      const trackings = await getTrackings("123")
       res.status(200).json({
          message: "get 123 tracking success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings,
       })
    }
    if (req.method === "POST") {
@@ -58,16 +51,11 @@ async function handler(req, res) {
             date_created,
          ]
       )
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["123"]
-      )
       await mysql.end()
+      const trackings = await getTrackings("123")
       res.status(201).json({
          message: "insert data success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings,
       })
    } else if (req.method === "PUT") {
       const id = parseInt(req.query.id, 10)
@@ -89,16 +77,11 @@ async function handler(req, res) {
             id,
          ])
       }
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["123"]
-      )
+      const trackings = await getTrackings("123")
       await mysql.end()
       res.status(200).json({
          message: "update received or finished mercari tracking success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings,
       })
    } else if (req.method === "PATCH") {
       const { id } = req.query
@@ -135,31 +118,21 @@ async function handler(req, res) {
             id,
          ]
       )
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["123"]
-      )
       await mysql.end()
+      const trackings = await getTrackings("123")
       res.status(200).json({
          message: "update data success!",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings,
       })
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
       await mysql.connect()
       await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
-      const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ?",
-         ["123"]
-      )
       await mysql.end()
+      const trackings = await getTrackings("123")
       res.status(200).json({
          message: "delete row successful !",
-         trackings: trackings
-            .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-            .reduce((a, c, i) => [...a, { ...c, key: i }], []),
+         trackings,
       })
    }
 }
