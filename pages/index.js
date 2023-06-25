@@ -23,6 +23,7 @@ import {
 import axios from "axios"
 import moment from "moment/moment"
 import dayjs from "dayjs"
+import { getSession } from "next-auth/react"
 import Layout from "../components/layout/layout"
 // import TextArea from "antd/es/input/TextArea"
 const { TextArea } = Input
@@ -439,6 +440,26 @@ function TodolistItem({ task, stik }) {
 }
 DashboardPage.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
+}
+
+export async function getServerSideProps(context) {
+   // console.log(context.req)
+   const session = await getSession({ req: context.req })
+   
+   // eslint-disable-next-line prefer-template
+   if (!session) {
+      return {
+         redirect: {
+            destination: "/auth/signin",
+            permanent: false,
+         },
+      }
+   }
+   return {
+      props: {
+         session,
+      },
+   }
 }
 
 export default DashboardPage

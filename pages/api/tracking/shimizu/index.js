@@ -1,9 +1,9 @@
 import mysql from "../../../../lib/db"
 import genDate from "../../../../utils/genDate"
+import query from "../../../../dbs/mysql/connection"
 
 async function getShimizu() {
-   await mysql.connect()
-   const trackings = await mysql.query(`
+   const trackings = await query(`
       SELECT
          trackings.id,
          trackings.date,
@@ -61,7 +61,6 @@ async function getShimizu() {
       paid_channel: tracking.paid_channel,
       images: tracking.images ? tracking.images.split(",") : [],
    }))
-   await mysql.end()
    return trackingObjects
 }
 

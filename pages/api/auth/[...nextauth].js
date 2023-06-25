@@ -1,8 +1,8 @@
+/* eslint-disable no-param-reassign */
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { verifyPassword } from "../../../lib/auth"
-import mysql from "../../../lib/db"
-
+import query from "../../../dbs/mysql/connection"
 
 export default NextAuth({
    session: {
@@ -11,12 +11,11 @@ export default NextAuth({
    providers: [
       CredentialsProvider({
          async authorize(credentials) {
-            await mysql.connect()
-            const users = await mysql.query("SELECT * FROM admins WHERE username = ?", [
-               credentials.username,
-            ])
+            const users = await query(
+               "SELECT * FROM admins WHERE username = ?",
+               [credentials.username]
+            )
             if (users.length === 0) {
-               await mysql.end()
                throw new Error("No user found!")
             }
             const user = users[0]
@@ -25,12 +24,22 @@ export default NextAuth({
                user.password
             )
             if (!isValid) {
-               await mysql.end()
                throw new Error("Could not log you in!")
             }
-            await mysql.end()
-            return {  name: user.username  }
+            return { name: JSON.stringify(user) }
          },
       }),
    ],
+   callbacks: {
+      async session({ session }) {
+         console.log(session)
+         const user_data = JSON.parse(session.user.name)
+         console.log(user_data)
+         session.user.username = user_data.username
+         session.user.name = user_data.username
+         session.user.real_name = user_data.name
+         session.user.role = user_data.role
+         return session
+      },
+   },
 })

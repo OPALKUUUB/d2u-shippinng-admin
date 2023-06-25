@@ -11,9 +11,16 @@ import axios from "axios"
 import * as xlsx from "xlsx-color"
 import { Button, Table } from "antd"
 import { FileExcelOutlined } from "@ant-design/icons"
+import { getSession } from "next-auth/react"
+import { useRouter } from "next/dist/client/router"
 import Layout from "../../components/layout/layout"
 
-function DataAnalysisPage() {
+function DataAnalysisPage(props) {
+   const router = useRouter()
+   if(props.session.user.role !== "SuperAdmin") {
+      alert("คุณไม่มีสิทธิในการจัดการหน้านี้!")
+      router.push("/")
+   }
    const [startDate, setStartDate] = useState("")
    const [endDate, setEndDate] = useState("")
    const [data, setData] = useState(null)
@@ -298,4 +305,24 @@ export default DataAnalysisPage
 
 DataAnalysisPage.getLayout = function getLayout(page) {
    return <Layout>{page}</Layout>
+}
+
+export async function getServerSideProps(context) {
+   // console.log(context.req)
+   const session = await getSession({ req: context.req })
+   
+   // eslint-disable-next-line prefer-template
+   if (!session) {
+      return {
+         redirect: {
+            destination: "/auth/signin",
+            permanent: false,
+         },
+      }
+   }
+   return {
+      props: {
+         session,
+      },
+   }
 }

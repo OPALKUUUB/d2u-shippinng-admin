@@ -20,12 +20,15 @@ function SignInForm() {
             username: usernameRef.current.value,
             password: passwordRef.current.value,
          })
+
+         console.log(response)
+
          if (response.ok) {
             message.success("Login Success!")
             message.success(`Welcome Back Admin ${usernameRef.current.value}`)
-            router.replace("/")
-         }else {
-            throw new Error(response)
+            router.push("/")
+         } else {
+            throw new Error(response.error)
          }
       } catch (err) {
          console.log(err)
