@@ -80,9 +80,9 @@ async function handler(req, res) {
       const values = Object.values(req.body)
       await query(`
          UPDATE trackings
-         SET ${keys} = ?
+         SET ${keys[0]} = ?
          WHERE id = ?
-      `, [values, id])
+      `, [values[0], id])
       const trackings = await getShimizu()
       res.status(200).json({message: "success!", trackings})
    }
