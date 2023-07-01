@@ -429,7 +429,7 @@ function TodolistItem({ task, stik }) {
             <div className="absolute bottom-2 bg-white w-[275px] h-[240px] text-gray-600 rounded-md p-2">
                <div className="text-lg">TITLE: {task.title}</div>
                <br />
-               <div className="whitespace-pre-line">{task.desc}</div>
+               <div className="whitespace-pre-line overflow-auto h-[120px]">{task.desc}</div>
                <div className="absolute bottom-2">
                   วันที่ลงข้อมูล: {task.start_date}
                </div>

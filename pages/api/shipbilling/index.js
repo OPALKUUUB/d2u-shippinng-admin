@@ -65,7 +65,8 @@ async function handler(req, res) {
          ON 
             users.id = trackings.user_id 
          WHERE 
-            trackings.voyage = ?;`,
+            trackings.voyage = ?
+            AND trackings.airbilling = 0`,
          [voyage]
       )
       // console.log( trackings_by_voyage.length)
@@ -135,6 +136,7 @@ async function handler(req, res) {
             user_id = ?
             AND channel NOT LIKE 'yahoo'
             and voyage like ?
+            AND airbilling = 0
          `,
          [user_id, voyage]
       )
@@ -145,9 +147,10 @@ async function handler(req, res) {
             JOIN
             ${"`yahoo-auction-payment`"} 
             ON ${"`yahoo-auction-payment`"}.tracking_id = trackings.id
-            where
-            trackings.user_id  = ? 
-            AND trackings.channel LIKE ? and trackings.voyage like ?;
+            WHERE trackings.user_id  = ? 
+            AND trackings.channel LIKE ? 
+            AND trackings.voyage like ? 
+            AND trackings.airbilling = 0
          `,
          [user_id, "yahoo", voyage]
       )
@@ -162,12 +165,10 @@ async function handler(req, res) {
             return a + Math.ceil(price / 1000) + weight >= 1 ? weight - 1 : 0
          }
          if (c.channel === "yahoo") {
-            console.log("in")
             return a + Math.ceil(c.bid / 2000) + weight
          }
          return a + Math.ceil(price / 2000) + weight
       }, 0)
-      // console.log(point_current)
       // eslint-disable-next-line prefer-destructuring
       const count_billing = await mysql.query(
          "SELECT COUNT(*) AS count FROM ship_billing WHERE voyage = ? and user_id = ?",

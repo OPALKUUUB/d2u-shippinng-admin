@@ -18,6 +18,7 @@ import {
    Dropdown,
    message,
    Spin,
+   Switch,
 } from "antd"
 import Highlighter from "react-highlight-words"
 import { getSession } from "next-auth/react"
@@ -312,6 +313,26 @@ function ShimizuTrackingsPage() {
          console.log(err)
       }
    }
+   const handleChangeAirBilling = async (status, id) => {
+      setLoading(true)
+      try {
+         const response = await fetch(`/api/tracking/shimizu?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ airbilling: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      } finally {
+         setLoading(false)
+      }
+   }
    const columns = [
       {
          title: "วันที่",
@@ -408,6 +429,24 @@ function ShimizuTrackingsPage() {
          dataIndex: "voyage",
          key: "voyage",
          ...getColumnSearchProps("voyage"),
+      },
+      {
+         title: "Cargo",
+         dataIndex: "airbilling",
+         key: "airbilling",
+         width: 80,
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ),
       },
       {
          title: "จัดการ",

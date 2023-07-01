@@ -32,9 +32,9 @@ export default NextAuth({
    ],
    callbacks: {
       async session({ session }) {
-         console.log(session)
+         // console.log(session)
          const user_data = JSON.parse(session.user.name)
-         console.log(user_data)
+         // console.log(user_data)
          session.user.username = user_data.username
          session.user.name = user_data.username
          session.user.real_name = user_data.name

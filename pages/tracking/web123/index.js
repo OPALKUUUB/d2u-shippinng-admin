@@ -646,7 +646,7 @@ function Web123Page() {
          ellipsis: false,
       },
       {
-         title: "ทางเรือ",
+         title: "Cargo",
          dataIndex: "airbilling",
          key: "airbilling",
          render: (ck, item) =>

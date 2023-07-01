@@ -365,7 +365,7 @@ function YahooTrackingsPage(props) {
          ellipsis: false,
       },
       {
-         title: "ทางเรือ",
+         title: "Cargo",
          dataIndex: "airbilling",
          key: "airbilling",
          render: (ck, item) =>
