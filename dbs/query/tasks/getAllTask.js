@@ -6,6 +6,7 @@ async function getAllTask() {
         t.task_id as id,
         t.title,
         t.desc,
+        t.team,
         t.start_date,
         t.end_date,
         t.created_at,

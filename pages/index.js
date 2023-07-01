@@ -12,6 +12,7 @@ import {
    InputNumber,
    message,
    Modal,
+   Select,
    Space,
    Spin,
 } from "antd"
@@ -255,12 +256,14 @@ function TodolistItem({ task, stik }) {
       end_date: "",
       title: "",
       desc: "",
+      team: ""
    }
 
    const [selectedRow, setSelectedRow] = useState(TodoListForm_model)
    const [showEditModal, setShowEditModal] = useState(false)
    const [startDate, setStartDate] = useState(null)
    const [endDate, setEndDate] = useState(null)
+
 
    // ----- calculate differenceInDays to set TodolistItem color -----//
    const currentDate = Date.now()
@@ -374,6 +377,24 @@ function TodolistItem({ task, stik }) {
                   />
                </Space>
                <Space className="mb-[10px]">
+                  <label>ทีมที่ดูแล: </label>
+                  <Select
+                  className="w-[150px]"
+                     options={[
+                        { value: "ADMIN", label: "ทีม ADMIN" },
+                        { value: "DELIVER", label: "ทีม DELIVER" },
+                        { value: "ACCOUNT", label: "ทีมบัญชี" },
+                     ]}
+                     value={selectedRow.team}
+                     onChange={(value) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           team: value,
+                        })
+                     }
+                  />
+               </Space>
+               <Space className="mb-[10px]">
                   <label>วันที่จบรายการ: </label>
                   <DatePicker
                      value={endDate}
@@ -429,7 +450,9 @@ function TodolistItem({ task, stik }) {
             <div className="absolute bottom-2 bg-white w-[275px] h-[240px] text-gray-600 rounded-md p-2">
                <div className="text-lg">TITLE: {task.title}</div>
                <br />
-               <div className="whitespace-pre-line overflow-auto h-[120px]">{task.desc}</div>
+               <div className="whitespace-pre-line overflow-auto h-[120px]">
+                  {task.desc}
+               </div>
                <div className="absolute bottom-2">
                   วันที่ลงข้อมูล: {task.start_date}
                </div>
@@ -445,7 +468,7 @@ DashboardPage.getLayout = function getLayout(page) {
 export async function getServerSideProps(context) {
    // console.log(context.req)
    const session = await getSession({ req: context.req })
-   
+
    // eslint-disable-next-line prefer-template
    if (!session) {
       return {
