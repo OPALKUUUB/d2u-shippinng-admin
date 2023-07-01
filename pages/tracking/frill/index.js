@@ -563,6 +563,23 @@ function FrillPage() {
          console.log(err)
       }
    }
+   const handleChangeAirBilling = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/fril?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ airbilling: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const columns = [
       {
          title: "วันที่",
@@ -606,6 +623,24 @@ function FrillPage() {
                </Link>
             ) : (
                "-"
+            ),
+      },
+      {
+         title: "Cargo",
+         dataIndex: "airbilling",
+         key: "airbilling",
+         width: 80,
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleChangeAirBilling(ck, item.id)}
+               />
             ),
       },
       {

@@ -1,3 +1,4 @@
+import query from "../../../../dbs/mysql/connection"
 import getTrackings from "../../../../dbs/query/trackings/getTrackings"
 import mysql from "../../../../lib/db"
 import genDate from "../../../../utils/genDate"
@@ -56,21 +57,15 @@ async function handler(req, res) {
          trackings,
       })
    } else if (req.method === "PUT") {
-      const id = parseInt(req.query.id, 10)
-      const { received, finished } = req.body
-      await mysql.connect()
-      if (received !== undefined) {
-         await mysql.query("update trackings set received = ? where id = ?", [
-            received,
-            id,
-         ])
-      } else if (finished !== undefined) {
-         await mysql.query("update trackings set finished = ? where id = ?", [
-            finished,
-            id,
-         ])
-      }
-      await mysql.end()
+      const {id} = req.query
+      const keys = Object.keys(req.body)
+      const values = Object.values(req.body)
+      console.log(keys[0], values[0])
+      await query(`
+         UPDATE trackings
+         SET ${keys[0]} = ?
+         WHERE id = ?
+      `, [values[0], id])
       const trackings = await getTrackings("fril")
       res.status(200).json({
          message: "update received or finished mercari tracking success!",
@@ -129,5 +124,11 @@ async function handler(req, res) {
       })
    }
 }
-
+export const config = {
+   api: {
+      bodyParser: {
+         responseLimit: false,
+      },
+   },
+}
 export default handler
