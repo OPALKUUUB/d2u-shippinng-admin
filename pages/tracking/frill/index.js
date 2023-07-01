@@ -601,7 +601,7 @@ function FrillPage() {
             text !== null ? (
                <Link href={text} target="_blank" rel="noopener">
                   <div style={{ display: "inline-block" }}>
-                     {text.split("/").slice(-1)}
+                     link
                   </div>
                </Link>
             ) : (

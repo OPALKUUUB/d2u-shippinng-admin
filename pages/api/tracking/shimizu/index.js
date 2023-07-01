@@ -20,6 +20,7 @@ async function getShimizu() {
          trackings.channel,
          trackings.tracking_slip_image,
          trackings.paid_channel,
+         trackings.airbilling,
          users.id as user_id,
          users.username,
          GROUP_CONCAT(\`tracking-image\`.image) AS images
@@ -59,6 +60,7 @@ async function getShimizu() {
       channel: tracking.channel,
       tracking_slip_image: tracking.tracking_slip_image,
       paid_channel: tracking.paid_channel,
+      airbilling: tracking.airbilling,
       images: tracking.images ? tracking.images.split(",") : [],
    }))
    return trackingObjects
@@ -71,6 +73,18 @@ async function handler(req, res) {
          message: "get shimizu tracking success!",
          trackings,
       })
+   }
+   if (req.method === "PUT") {
+      const {id} = req.query
+      const keys = Object.keys(req.body)
+      const values = Object.values(req.body)
+      await query(`
+         UPDATE trackings
+         SET ${keys} = ?
+         WHERE id = ?
+      `, [values, id])
+      const trackings = await getShimizu()
+      res.status(200).json({message: "success!", trackings})
    }
    if (req.method === "POST") {
       const {
