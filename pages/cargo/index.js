@@ -2,7 +2,6 @@
 /* eslint-disable consistent-return */
 import React, { useEffect, useState } from "react"
 import {
-   Button,
    Col,
    DatePicker,
    Dropdown,
@@ -28,15 +27,10 @@ function CargoPage() {
    const [trigger, setTrigger] = useState(false)
    const [cargo, setCargo] = useState([])
    const [open, setOpen] = useState(false)
-   const [openAddModal, setOpenAddModal] = useState(false)
    const [selectedRow, setSelectedRow] = useState(null)
    const [loading, setLoading] = useState(false)
-   const [formDataAdd, setFormDataAdd] = useState({
-      date: dayjs(new Date()).format("D/M/YYYY"),
-   })
 
    const editCargo = async (item) => {
-      setLoading(true)
       try {
          await axios.put(`/api/cargo?id=${item.id}`, item)
          message.success("แก้ไขข้อมูลสำเร็จ")
@@ -46,21 +40,11 @@ function CargoPage() {
          })
       } catch (err) {
          console.log(err)
-      } finally {
-         setLoading(false)
       }
    }
    const handleCancelEditModal = () => {
       setOpen(false)
       setSelectedRow(null)
-   }
-   const handleCancelAddModal = () => {
-      setOpenAddModal(false)
-      // setSelectedRow(null)
-   }
-   const handleClickAdd = () => {
-      // setSelectedRow(item)
-      setOpenAddModal(true)
    }
    const handleClickEdit = (item) => {
       setSelectedRow(item)
@@ -73,18 +57,26 @@ function CargoPage() {
       alert(id)
    }
    const handleSelectDeliveryType = async (value, item) => {
+      setLoading(true)
       await editCargo({ ...item, delivery_type: value })
+      setLoading(false)
    }
    const handleChangeIsNotified = async (value, item) => {
+      setLoading(true)
       const check = value ? 1 : 0
       await editCargo({ ...item, is_notified: check })
+      setLoading(false)
    }
    const handleChangePaymentType = async (value, item) => {
+      setLoading(true)
       await editCargo({ ...item, payment_type: value })
+      setLoading(false)
    }
    const handleChangeIsInvoiced = async (value, item) => {
+      setLoading(true)
       const check = value ? 1 : 0
       await editCargo({ ...item, is_invoiced: check })
+      setLoading(false)
    }
    const columns = [
       {
@@ -146,6 +138,13 @@ function CargoPage() {
          title: "เลขกล่อง",
          dataIndex: "box_no",
          key: "box_no",
+         width: "120px",
+         render: (text) => (isValid(text) ? text : "-"),
+      },
+      {
+         title: "รอบปิด",
+         dataIndex: "round_closed",
+         key: "round_closed",
          width: "120px",
          render: (text) => (isValid(text) ? text : "-"),
       },
@@ -269,12 +268,15 @@ function CargoPage() {
 
    useEffect(() => {
       const fetchData = async () => {
+         setLoading(true)
          try {
             const response = await axios.get("/api/cargo")
             setCargo(response.data.cargo)
             console.log(response.data.cargo)
          } catch (err) {
             console.log(err)
+         } finally {
+            setLoading(false)
          }
       }
 
@@ -291,15 +293,6 @@ function CargoPage() {
             </div>
          )}
          <div className="m-3 bg-white p-5 rounded-lg">
-            {/* <div className="w-full flex justify-end mb-2">
-               <Button
-                  type="primary"
-                  icon={<PlusCircleOutlined />}
-                  onClick={handleClickAdd}
-               >
-                  เพิ่มรายการขนส่งทางเรือ
-               </Button>
-            </div> */}
             <Table
                columns={columns}
                dataSource={cargo}
@@ -314,12 +307,6 @@ function CargoPage() {
                item={selectedRow}
                editCargo={editCargo}
             />
-            {/* <AddModal
-               open={openAddModal}
-               onCancel={handleCancelAddModal}
-               item={formDataAdd}
-               // editCargo={editCargo}
-            /> */}
          </div>
       </>
    )
@@ -329,10 +316,14 @@ function EditModal({ item, open, onCancel, editCargo }) {
    if (!item) {
       return null
    }
+   const [confirmLoading, setConfirmLoading] = useState(false)
    const [formData, setFormData] = useState(item)
 
    const handleSubmit = async () => {
+      setConfirmLoading(true)
       await editCargo({ ...formData })
+      setConfirmLoading(false)
+      onCancel()
    }
    useEffect(() => {
       setFormData(item)
@@ -344,6 +335,7 @@ function EditModal({ item, open, onCancel, editCargo }) {
          onCancel={onCancel}
          width={600}
          onOk={handleSubmit}
+         confirmLoading={confirmLoading}
       >
          <div className="pt-5">
             <EditForm formData={formData} setFormData={setFormData} />
@@ -357,7 +349,7 @@ function EditForm({ formData, setFormData }) {
       const changedField = changedFields[0]
       const fieldName = changedField.name[0]
       const fieldValue = changedField.value
-      if (fieldName === "date") {
+      if (fieldName === "date" || fieldName === "round_closed") {
          setFormData((prevData) => ({
             ...prevData,
             [fieldName]: dayjs(fieldValue, "D/M/YYYY").format("D/M/YYYY"),
@@ -373,6 +365,9 @@ function EditForm({ formData, setFormData }) {
    const date = !isValid(formData.date)
       ? null
       : dayjs(formData.date, "D/M/YYYY")
+   const round_closed = !isValid(formData.round_closed)
+      ? null
+      : dayjs(formData.round_closed, "D/M/YYYY")
    const trackNo = formData.track_no
    const boxNo = formData.box_no
    const weightTrue = formData.weight_true
@@ -384,6 +379,7 @@ function EditForm({ formData, setFormData }) {
       <Form
          fields={[
             { name: ["date"], value: date },
+            { name: ["round_closed"], value: round_closed },
             { name: ["track_no"], value: trackNo },
             { name: ["box_no"], value: boxNo },
             { name: ["weight_true"], value: weightTrue },
@@ -393,11 +389,18 @@ function EditForm({ formData, setFormData }) {
          ]}
          onFieldsChange={handleFieldChange}
       >
-         <Col>
-            <Form.Item label="วันที่" name="date">
-               <DatePicker format="DD/MM/YYYY" />
-            </Form.Item>
-         </Col>
+         <Row gutter={16}>
+            <Col>
+               <Form.Item label="วันที่" name="date">
+                  <DatePicker format="DD/MM/YYYY" />
+               </Form.Item>
+            </Col>
+            <Col>
+               <Form.Item label="รอบปิด" name="round_closed">
+                  <DatePicker format="DD/MM/YYYY" />
+               </Form.Item>
+            </Col>
+         </Row>
          <Row gutter={16}>
             <Col span={12}>
                <Form.Item label="Track No" name="track_no">

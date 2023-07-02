@@ -4,7 +4,7 @@ async function getAllCargo() {
    const trackings = await query(`
          SELECT
             t.id,
-            t.date,
+            DATE_FORMAT(STR_TO_DATE(t.date, '%d/%m/%Y %H:%i:%s'), '%d/%m/%Y') AS date,
             t.track_no,
             t.box_no,
             t.voyage,
@@ -25,6 +25,7 @@ async function getAllCargo() {
             t.is_invoiced,
             t.payment_type,
             t.address,
+            t.round_closed,
             u.id as user_id,
             u.username,
             GROUP_CONCAT(ti.image SEPARATOR '|') AS images
@@ -73,6 +74,7 @@ async function getAllCargo() {
          is_invoiced: tracking.is_invoiced,
          payment_type: tracking.payment_type,
          address: tracking.address,
+         round_closed: tracking.round_closed,
          images,
       }
    })

@@ -18,6 +18,7 @@ async function editCargo(id, tracking) {
          , payment_type = ?
          , is_invoiced = ?
          , address = ?
+         , round_closed = ?
          WHERE id = ?
    `,
       [
@@ -32,11 +33,13 @@ async function editCargo(id, tracking) {
          tracking.payment_type,
          tracking.is_invoiced === null ? 0 : tracking.is_invoiced,
          tracking.address,
-         id
+         tracking.round_closed,
+         id,
       ]
    )
-   const trackingById = await query(`select delivery_type from trackings where id = ?`, [id])
-   console.log(trackingById)
+   return result
+   // const trackingById = await query(`select delivery_type from trackings where id = ?`, [id])
+   // console.log(trackingById)
    // console.log(result)
 }
 export default editCargo

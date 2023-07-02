@@ -258,7 +258,7 @@ function TodolistItem({ task, stik }) {
       desc: "",
       team: ""
    }
-
+   const [confirmLoading, setConfirmLoading] = useState(false)
    const [selectedRow, setSelectedRow] = useState(TodoListForm_model)
    const [showEditModal, setShowEditModal] = useState(false)
    const [startDate, setStartDate] = useState(null)
@@ -279,11 +279,11 @@ function TodolistItem({ task, stik }) {
    // }
    // eslint-disable-next-line no-nested-ternary
    const classNameColor =
-      selectedRow.team === "ADMIN"
+      task.team === "ADMIN"
             ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-            : selectedRow.team === "DELIVER"
+            : task.team === "DELIVER"
             ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-            : selectedRow.team === "ACCOUNT"
+            : task.team === "ACCOUNT"
             ? "relative bg-blue-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
             : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
       // differenceInDays > 1
@@ -293,7 +293,6 @@ function TodolistItem({ task, stik }) {
       //    : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
 
    const handleShowEditModal = (task) => {
-      console.log(task)
       if (task.end_date === null) {
          setEndDate(null)
       } else {
@@ -309,22 +308,22 @@ function TodolistItem({ task, stik }) {
    }
 
    const handleUpdateTodoList = async () => {
-      console.log(selectedRow)
-      console.log("ID:", selectedRow.id)
+      setConfirmLoading(true)
       try {
          const response = await fetch(`/api/tasks?id=${selectedRow.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(selectedRow),
          })
-         const responseJson = await response.json()
-         console.log("Json", responseJson)
+         await response.json()
          setShowEditModal(false)
          message.success("แก้ไข้ข้อมูลเรียบร้อย")
          stik()
       } catch (err) {
          console.log(err)
          message.error("Edit user fail!")
+      } finally {
+         setConfirmLoading(false)
       }
    }
 
@@ -373,6 +372,7 @@ function TodolistItem({ task, stik }) {
             open={showEditModal}
             onCancel={() => setShowEditModal(false)}
             onOk={handleUpdateTodoList}
+            confirmLoading={confirmLoading}
          >
             <div className="flex flex-col gap-2">
                <Space className="mb-[10px]">
