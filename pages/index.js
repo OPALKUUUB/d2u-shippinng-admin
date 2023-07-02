@@ -266,24 +266,31 @@ function TodolistItem({ task, stik }) {
 
 
    // ----- calculate differenceInDays to set TodolistItem color -----//
-   const currentDate = Date.now()
-   if (task.end_date && typeof task.end_date === "string") {
-      const dateParts = task.end_date.split(/\s*\/\s*/)
-      const targetDate = new Date(
-         `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
-      )
+   // const currentDate = Date.now()
+   // if (task.end_date && typeof task.end_date === "string") {
+   //    const dateParts = task.end_date.split(/\s*\/\s*/)
+   //    const targetDate = new Date(
+   //       `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
+   //    )
 
-      const differenceInTime = targetDate.getTime() - currentDate
-      // eslint-disable-next-line vars-on-top, no-var
-      var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24))
-   }
+   //    const differenceInTime = targetDate.getTime() - currentDate
+   //    // eslint-disable-next-line vars-on-top, no-var
+   //    var differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24))
+   // }
    // eslint-disable-next-line no-nested-ternary
    const classNameColor =
-      differenceInDays > 1
-         ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-         : differenceInDays >= 0
-         ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-         : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+      selectedRow.team === "ADMIN"
+            ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+            : selectedRow.team === "DELIVER"
+            ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+            : selectedRow.team === "ACCOUNT"
+            ? "relative bg-blue-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+            : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+      // differenceInDays > 1
+      //    ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+      //    : differenceInDays >= 0
+      //    ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+      //    : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
 
    const handleShowEditModal = (task) => {
       console.log(task)
@@ -381,11 +388,12 @@ function TodolistItem({ task, stik }) {
                   <Select
                   className="w-[150px]"
                      options={[
+                        { value: "", label: "เลือกทีมดูแล"},
                         { value: "ADMIN", label: "ทีม ADMIN" },
                         { value: "DELIVER", label: "ทีม DELIVER" },
                         { value: "ACCOUNT", label: "ทีมบัญชี" },
                      ]}
-                     value={selectedRow.team}
+                     value={selectedRow.team === null ? "": selectedRow.team}
                      onChange={(value) =>
                         setSelectedRow({
                            ...selectedRow,
