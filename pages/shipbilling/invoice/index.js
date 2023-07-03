@@ -54,24 +54,33 @@ function InvoicePage({ user_id, voyage }) {
    const [selectRow, setSelectRow] = useState()
    const [openModal, setOpenModal] = useState(false)
    const [deduct, setDeduct] = useState(false)
+   const [confirmLoading, setConfirmLoading] = useState(false)
    let seq = 0
 
    const handleSaveCod = async () => {
-      await fetch(`/api/tracking?id=${selectRow?.id}`, {
-         method: "PATCH",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ cod: selectRow?.cod || 0 }),
-      })
-      message.success("success!")
-      setData((prev) => {
-         const temp = prev.reduce((a, c) => {
-            if (c.id === selectRow.id) {
-               return [...a, { ...c, cod: selectRow?.cod || 0 }]
-            }
-            return [...a, c]
-         }, [])
-         return temp
-      })
+      setConfirmLoading(true)
+      try {
+         await fetch(`/api/tracking?id=${selectRow?.id}`, {
+            method: "put",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cod: selectRow?.cod || 0 }),
+         })
+         // console.log(response)
+         message.success("success!")
+         setData((prev) => {
+            const temp = prev.reduce((a, c) => {
+               if (c.id === selectRow.id) {
+                  return [...a, { ...c, cod: selectRow?.cod || 0 }]
+               }
+               return [...a, c]
+            }, [])
+            return temp
+         })
+      } catch (err) {
+         console.log(err)
+      }finally {
+         setConfirmLoading(false)
+      }
    }
    const handleSaveCostDelivery = async () => {
       const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
@@ -396,6 +405,7 @@ function InvoicePage({ user_id, voyage }) {
                open={openModal}
                onCancel={() => setOpenModal(false)}
                onOk={handleSaveCod}
+               confirmLoading={confirmLoading}
             >
                <input
                   value={selectRow?.cod}

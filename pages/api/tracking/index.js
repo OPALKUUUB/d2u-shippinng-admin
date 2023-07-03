@@ -71,7 +71,7 @@ async function handler(req, res) {
       })
    } else if (req.method === "PUT") {
       const id = parseInt(req.query.id, 10)
-      const { received, finished, airbilling } = req.body
+      const { received, finished, airbilling, cod } = req.body
       await mysql.connect()
       if (received !== undefined) {
          await mysql.query("update trackings set received = ? where id = ?", [
@@ -88,6 +88,13 @@ async function handler(req, res) {
             airbilling,
             id,
          ])
+      } else if (cod !== undefined) {
+         await mysql.query("update trackings set cod = ? where id = ?", [
+            cod,
+            id,
+         ])
+         res.status(200).json({message: "success!"})
+         return
       }
       const trackings = await mysql.query(
          "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ? OR channel = ? OR channel = ? OR channel = ? OR channel = ?",
