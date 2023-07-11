@@ -50,6 +50,7 @@ async function handler(req, res) {
    }
    if (req.method === "GET") {
       const { voyage } = req.query
+      console.log(`----------> Call GET::/api/ship_billing?voyage=${voyage}`)
       await mysql.connect()
       const trackings_by_voyage = await mysql.query(
          `
@@ -82,7 +83,9 @@ async function handler(req, res) {
          ship_billing.remark,
          ship_billing.address,
          ship_billing.rate,
-         ship_billing.slip_image
+         ship_billing.slip_image,
+         ship_billing.delivery_type,
+         ship_billing.voyage_price
          FROM ship_billing 
          WHERE voyage = ?`,
          [voyage]
@@ -100,7 +103,7 @@ async function handler(req, res) {
                   shipbilling_id: null,
                   user_id: c.user_id,
                   username: c.username,
-                  address: c.address,
+                  address: null,
                   box_no: c.box_no,
                   rate: null,
                   created_at: date,
@@ -111,6 +114,8 @@ async function handler(req, res) {
                   check_2: null,
                   remark: null,
                   slip_image: c.slip_image,
+                  delivery_type: null,
+                  voyage_price: null
                },
             ]
          }
@@ -209,6 +214,8 @@ async function handler(req, res) {
       })
    } else if (req.method === "PATCH") {
       const id = parseInt(req.query.id, 10)
+      console.log(`----------> Call PATCH::/api/ship_billing/${id}`)
+      console.log(req.body)
       await mysql.connect()
       await mysql.query("UPDATE ship_billing SET ? WHERE id = ?", [
          req.body,

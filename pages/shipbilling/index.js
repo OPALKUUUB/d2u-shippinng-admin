@@ -1,3 +1,5 @@
+/* eslint-disable no-unsafe-optional-chaining */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable prefer-const */
 import {
    Table,
@@ -10,12 +12,8 @@ import {
    Button,
    Switch,
    Collapse,
+   Spin,
 } from "antd"
-import { getSession } from "next-auth/react"
-import React, { Fragment, useEffect, useState, useRef } from "react"
-import { useRouter } from "next/router"
-import { DownOutlined, SearchOutlined } from "@ant-design/icons"
-import Highlighter from "react-highlight-words"
 import {
    Page,
    Text,
@@ -25,11 +23,31 @@ import {
    PDFViewer,
    Font,
 } from "@react-pdf/renderer"
+import { getSession } from "next-auth/react"
+import React, { Fragment, useEffect, useState, useRef } from "react"
+import { useRouter } from "next/router"
+import {
+   DownOutlined,
+   PlusCircleFilled,
+   SearchOutlined,
+   CheckOutlined,
+} from "@ant-design/icons"
+import Highlighter from "react-highlight-words"
+import axios from "axios"
 import CardHead from "../../components/CardHead"
 import Layout from "../../components/layout/layout"
 import EditImageModal from "../../components/Modal/EditImageModal"
 
 const { TextArea } = Input
+
+const ShipBillingModel = {
+   shipbilling_id: "",
+   user_id: "",
+   payment_type: "",
+   slip_image: "",
+   delivery_type: "",
+   remark: "",
+}
 
 function ShipBilling() {
    const router = useRouter()
@@ -38,19 +56,14 @@ function ShipBilling() {
    const [voyageSelect, setVoyageSelect] = useState("เลือกรอบเรือ")
    const [items, setItems] = useState([])
    const [showEditModal, setShowEditModal] = useState(false)
-   const [selectedRow, setSelectedRow] = useState({
-      shipbilling_id: "",
-      user_id: "",
-      payment_type: "",
-      slip_image: "",
-      remark: "",
-   })
+   const [selectedRow, setSelectedRow] = useState(ShipBillingModel)
    const [selectedRowKeys, setSelectedRowKeys] = useState([])
    const [searchText, setSearchText] = useState("")
    const [searchedColumn, setSearchedColumn] = useState("")
    const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
-
    const searchInput = useRef(null)
+   const [loading, setLoading] = useState(false)
+
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
       setVoyageSelect(value)
@@ -58,27 +71,20 @@ function ShipBilling() {
          router.push({ query: { voyage: value } })
       }
       try {
-         const response = await fetch(`/api/shipbilling?voyage=${value}`)
-         const responseJson = await response.json()
+         const response = await axios.get(`/api/shipbilling?voyage=${value}`)
+         const responseJson = await response.data
+         console.log(responseJson)
          setDataTemp(responseJson.trackings)
          setData(
             responseJson.trackings
                .sort((a, b) => {
-                  if (a.username.toLowerCase() < b.username.toLowerCase()) {
-                     return -1
-                  }
-                  if (a.username.toLowerCase() > b.username.toLowerCase()) {
-                     return 1
-                  }
-                  return 0
+                  const ua = a.username.toLowerCase()
+                  const ub = b.username.toLowerCase()
+                  return ua < ub ? -1 : ua > ub ? 1 : 0
                })
                .reduce((a, c, idx) => {
-                  const group_user = a.find(
-                     (acc, index, arr) => acc.username === c.username
-                  )
-                  if (group_user !== undefined) {
-                     return a
-                  }
+                  const group_user = a.find((fi) => fi.username === c.username)
+                  if (group_user !== undefined) return a
                   return [...a, { ...c, key: idx }]
                }, [])
          )
@@ -109,6 +115,7 @@ function ShipBilling() {
             body: JSON.stringify({
                address: selectedRow.address,
                remark: selectedRow.remark,
+               delivery_type: selectedRow.delivery_type,
                payment_type: selectedRow.payment_type,
             }),
          })
@@ -130,13 +137,7 @@ function ShipBilling() {
       } catch (err) {
          console.log(err)
       } finally {
-         setSelectedRow({
-            shipbilling_id: "",
-            user_id: "",
-            payment_type: "",
-            slip_image: "",
-            remark: "",
-         })
+         setSelectedRow(ShipBillingModel)
          setShowEditModal(false)
       }
    }
@@ -145,17 +146,27 @@ function ShipBilling() {
       const { user_id } = selectedRow
       const response = await fetch(`/api/user/all?user_id=${user_id}`)
       const responseJson = await response.json()
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      const txt = selectedRow.address + responseJson.user?.address
-      setSelectedRow((prev) => ({ ...prev, address: txt }))
+      const txt = responseJson.user?.address
+      setSelectedRow((prev) => ({
+         ...prev,
+         delivery_type: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+         address: txt,
+      }))
    }
 
-   const handleClickLeaveItToMe = async () => {
-      setSelectedRow((prev) => ({ ...prev, address: "ฝากไว้ก่อน" }))
+   const handleChangeDeliveryType = async (value) => {
+      if (value === "ขนส่งเอกชน(ที่อยู่ ลค.)") {
+         handleClickAddressCustomer()
+      } else {
+         setSelectedRow((prev) => ({
+            ...prev,
+            delivery_type: value,
+            address: value,
+         }))
+      }
    }
 
    const handleChangeNoti = async (status, bill) => {
-      // console.log(bill)
       // eslint-disable-next-line prefer-destructuring
       let shipbilling_id = bill.shipbilling_id
       if (bill.shipbilling_id === null) {
@@ -185,7 +196,6 @@ function ShipBilling() {
          const index = prev.findIndex(
             (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
          )
-         // console.log(index)
          return [
             ...prev.slice(0, index),
             { ...billing },
@@ -195,7 +205,6 @@ function ShipBilling() {
       message.success("success!")
    }
    const handleChangeCheck = async (status, bill) => {
-      // console.log(bill)
       // eslint-disable-next-line prefer-destructuring
       let shipbilling_id = bill.shipbilling_id
       if (bill.shipbilling_id === null) {
@@ -235,7 +244,6 @@ function ShipBilling() {
       message.success("success!")
    }
    const handleChangeCheck2 = async (status, bill) => {
-      console.log(bill)
       // eslint-disable-next-line prefer-destructuring
       let shipbilling_id = bill.shipbilling_id
       if (bill.shipbilling_id === null) {
@@ -401,15 +409,20 @@ function ShipBilling() {
       {
          title: "username",
          dataIndex: "username",
-         width: "120px",
+         width: "80px",
          key: "username",
          ...getColumnSearchProps("username"),
+         render: (text, item) => (
+            <div>
+               {text} {item.checked && <CheckOutlined className="text-green-500" />}
+            </div>
+         ),
       },
       {
-         title: "ที่อยู่จัดส่ง",
-         dataIndex: "address",
+         title: "วิธีการจัดส่ง",
+         dataIndex: "delivery_type",
          width: "120px",
-         key: "address",
+         key: "delivery_type",
          filters: [
             {
                text: "รับเอง พระราม 3",
@@ -427,17 +440,45 @@ function ShipBilling() {
                text: "ฝากไว้ก่อน",
                value: "ฝากไว้ก่อน",
             },
+            {
+               text: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+               value: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+            },
          ],
          onFilter: (value, record) =>
-            record.address === null || record.address === undefined
+            record.delivery_type === null || record.delivery_type === undefined
                ? false
-               : record.address.indexOf(value) === 0,
-         render: (text) => (text === null ? "-" : text),
+               : record.delivery_type.indexOf(value) === 0,
+         render: (text) => (text === "" || text === null ? "-" : text),
       },
       {
-         title: "payment_type",
-         dataIndex: "payment_type",
+         title: "ที่อยู่จัดส่ง",
+         dataIndex: "address",
          width: "120px",
+         key: "address",
+         render: (text) => (text === "" || text === null ? "-" : text),
+         ...getColumnSearchProps("address"),
+      },
+      {
+         title: "ค่าเรือ",
+         dataIndex: "voyage_price",
+         width: "60px",
+         key: "voyage_price",
+         render: (num) => {
+            if (num === "" || num === null) {
+               return "-"
+            }
+            return new Intl.NumberFormat("th-TH", {
+               currency: "THB",
+               style: "currency",
+            }).format(num)
+         },
+      },
+      {
+         title: "ประเภทการจ่าย",
+         dataIndex: "payment_type",
+         width: "60px",
+         align: "center",
          key: "payment_type",
          filters: [
             {
@@ -454,20 +495,21 @@ function ShipBilling() {
             },
          ],
          onFilter: (value, record) => record.payment_type?.indexOf(value) === 0,
-         render: (text) => (text === null ? "-" : text),
+         render: (text) => (text === null || text === "" ? "-" : text),
       },
       {
-         title: "invoice_notificate",
+         title: "แจ้งยอด",
          dataIndex: "user_id",
-         width: "120px",
+         width: "70px",
+         align: "center",
          key: "invoice_notificate",
          filters: [
             {
-               text: "จ่ายเงินแล้ว",
+               text: "แจ้งยอดแล้ว",
                value: 1,
             },
             {
-               text: "รอจ่ายเงิน",
+               text: "ยังไม่แจ้งยอด",
                value: 0 || null,
             },
          ],
@@ -477,72 +519,73 @@ function ShipBilling() {
             const billing = billings[0]
             const invoice_notificate = billing.invoice_notificate === 1
             return invoice_notificate ? (
-               <div>
-                  <span style={{ color: "green" }}>จ่ายเงินแล้ว</span>
+               <div className="flex flex-col items-center">
                   <Switch
                      checked={invoice_notificate}
                      onClick={() =>
                         handleChangeNoti(invoice_notificate, billing)
                      }
                   />
+                  <div style={{ color: "green" }}>แจ้งยอดแล้ว</div>
                </div>
             ) : (
-               <div>
-                  <span style={{ color: "red" }}>รอจ่ายเงิน</span>
+               <div className="flex flex-col items-center">
                   <Switch
                      checked={invoice_notificate}
                      onClick={() =>
                         handleChangeNoti(invoice_notificate, billing)
                      }
                   />
+                  <div style={{ color: "red" }}>ยังไม่แจ้งยอด</div>
                </div>
             )
          },
       },
-      {
-         title: "check",
-         dataIndex: "user_id",
-         width: "120px",
-         key: "check",
-         filters: [
-            {
-               text: "check",
-               value: 1,
-            },
-            {
-               text: "not",
-               value: 0 || null,
-            },
-         ],
-         onFilter: (value, record) => record.check === value,
-         render: (user_id) => {
-            const billings = data.filter((ft) => ft.user_id === user_id)
-            const billing = billings[0]
-            const check = billing.check === 1
-            return check ? (
-               <div>
-                  <span style={{ color: "green" }}>check</span>
-                  <Switch
-                     checked={check}
-                     onClick={() => handleChangeCheck(check, billing)}
-                  />
-               </div>
-            ) : (
-               <div>
-                  <span style={{ color: "red" }}>not</span>
-                  <Switch
-                     checked={check}
-                     onClick={() => handleChangeCheck(check, billing)}
-                  />
-               </div>
-            )
-         },
-      },
+      // {
+      //    title: "check",
+      //    dataIndex: "user_id",
+      //    width: "120px",
+      //    key: "check",
+      //    filters: [
+      //       {
+      //          text: "check",
+      //          value: 1,
+      //       },
+      //       {
+      //          text: "not",
+      //          value: 0 || null,
+      //       },
+      //    ],
+      //    onFilter: (value, record) => record.check === value,
+      //    render: (user_id) => {
+      //       const billings = data.filter((ft) => ft.user_id === user_id)
+      //       const billing = billings[0]
+      //       const check = billing.check === 1
+      //       return check ? (
+      //          <div>
+      //             <span style={{ color: "green" }}>check</span>
+      //             <Switch
+      //                checked={check}
+      //                onClick={() => handleChangeCheck(check, billing)}
+      //             />
+      //          </div>
+      //       ) : (
+      //          <div>
+      //             <span style={{ color: "red" }}>not</span>
+      //             <Switch
+      //                checked={check}
+      //                onClick={() => handleChangeCheck(check, billing)}
+      //             />
+      //          </div>
+      //       )
+      //    },
+      // },
       {
          title: "done",
          dataIndex: "user_id",
-         width: "120px",
+         width: "60px",
          key: "check_2",
+         align: "center",
          filters: [
             {
                text: "done",
@@ -550,7 +593,7 @@ function ShipBilling() {
             },
             {
                text: "not done",
-               value: 0 || null,
+               value: 0,
             },
          ],
          onFilter: (value, record) => record.check_2 === value,
@@ -559,28 +602,28 @@ function ShipBilling() {
             const billing = billings[0]
             const check = billing.check_2 === 1
             return check ? (
-               <div>
-                  <span style={{ color: "green" }}>done</span>
+               <div className="flex flex-col items-center">
                   <Switch
                      checked={check}
                      onClick={() => handleChangeCheck2(check, billing)}
                   />
+                  <div style={{ color: "green" }}>done</div>
                </div>
             ) : (
-               <div>
-                  <span style={{ color: "red" }}>not done</span>
+               <div className="flex flex-col items-center">
                   <Switch
                      checked={check}
                      onClick={() => handleChangeCheck2(check, billing)}
                   />
+                  <div style={{ color: "red" }}>not done</div>
                </div>
             )
          },
       },
       {
-         title: "slip",
+         title: "สลิป",
          dataIndex: "slip_image",
-         width: "120px",
+         width: "60px",
          key: "slip_image",
          render: (image, item) => {
             if (image) {
@@ -603,8 +646,9 @@ function ShipBilling() {
                      setSelectedRow(item)
                      setOpenEditSlipModal(true)
                   }}
+                  icon={<PlusCircleFilled />}
                >
-                  Add Image
+                  เพิ่ม
                </Button>
             )
          },
@@ -614,7 +658,8 @@ function ShipBilling() {
          dataIndex: "remark",
          width: "120px",
          key: "remark",
-         render: (text) => (text === null ? "-" : text),
+         render: (text) => (text === null || text === "" ? "-" : text),
+         ...getColumnSearchProps("remark"),
       },
       {
          title: "จัดการ",
@@ -663,10 +708,10 @@ function ShipBilling() {
       },
    ]
    useEffect(() => {
+      setLoading(true)
       ;(async () => {
          const response = await fetch("/api/shipbilling/voyage")
          const responseJson = await response.json()
-         console.log(responseJson)
          setItems(
             responseJson.voyages.reduce(
                (accumulator, currentValue) => [
@@ -681,6 +726,7 @@ function ShipBilling() {
          if (router.query.voyage) {
             await handleChangeSelect(router.query.voyage)
          }
+         setLoading(false)
       })()
    }, [])
    const onSelectChange = (newSelectedRowKeys) => {
@@ -693,6 +739,13 @@ function ShipBilling() {
    }
    return (
       <Fragment>
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
+            </div>
+         )}
          <CardHead name="Ship Billing" />
          <div className="container-table">
             <Select
@@ -736,38 +789,29 @@ function ShipBilling() {
          >
             <div>
                <label>จัดส่ง: </label>
-               <Button
-                  onClick={() =>
-                     setSelectedRow({
-                        ...selectedRow,
-                        address: "รับเอง พระราม 3",
-                     })
+               {/* {JSON.stringify(selectedRow)} */}
+               <Select
+                  className="w-[180px] mb-1"
+                  options={[
+                     { label: "กรุณาเลือกที่อยู่จัดส่ง", value: "" },
+                     {
+                        label: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+                        value: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+                     },
+                     { label: "รับเอง พระราม 3", value: "รับเอง พระราม 3" },
+                     { label: "รับเอง ร่มเกล้า", value: "รับเอง ร่มเกล้า" },
+                     { label: "D2U ส่งให้", value: "D2U ส่งให้" },
+                     { label: "ฝากไว้ก่อน", value: "ฝากไว้ก่อน" },
+                  ]}
+                  value={
+                     selectedRow.delivery_type === null
+                        ? ""
+                        : selectedRow.delivery_type
                   }
-               >
-                  รับเอง พระราม 3
-               </Button>
-               <Button
-                  onClick={() =>
-                     setSelectedRow({
-                        ...selectedRow,
-                        address: "รับเอง ร่มเกล้า",
-                     })
-                  }
-               >
-                  รับเอง ร่มเกล้า
-               </Button>
-               <Button
-                  onClick={() =>
-                     setSelectedRow({ ...selectedRow, address: "D2U ส่งให้" })
-                  }
-               >
-                  D2U ส่งให้
-               </Button>
-               <Button onClick={handleClickAddressCustomer}>
-                  ขนส่งเอกชน(ที่อยู่ ลค.)
-               </Button>
-               <Button onClick={handleClickLeaveItToMe}>ฝากไว้ก่อน</Button>
+                  onChange={handleChangeDeliveryType}
+               />
                <TextArea
+                  className="mb-1"
                   rows={4}
                   value={selectedRow?.address}
                   onChange={(e) =>
@@ -776,15 +820,33 @@ function ShipBilling() {
                />
                <label>หมายเหตุ: </label>
                <TextArea
+                  className="mb-1"
                   rows={4}
                   value={selectedRow?.remark}
                   onChange={(e) =>
                      setSelectedRow({ ...selectedRow, remark: e.target.value })
                   }
                />
-               <label>payment_type: </label>
-               {selectedRow?.payment_type || "null"}
-               <select
+               <label>ประเภทการชำระเงิน: </label>
+               <Select
+                  className="w-[120px]"
+                  options={[
+                     { label: "กรุณาเลือก", value: "" },
+                     { label: "เงินสด", value: "เงินสด" },
+                     { label: "แม่มณี", value: "แม่มณี" },
+                     { label: "โอนเงิน", value: "โอนเงิน" },
+                     { label: "บัญชีบริษัท", value: "บัญชีบริษัท" },
+                     { label: "ไม่มีค่าเรือ", value: "ไม่มีค่าเรือ" },
+                  ]}
+                  value={selectedRow?.payment_type || ""}
+                  onChange={(value) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        payment_type: value,
+                     })
+                  }
+               />
+               {/* <select
                   defaultValue={selectedRow?.payment_type}
                   value={selectedRow?.payment_type || ""}
                   onChange={(e) =>
@@ -800,7 +862,7 @@ function ShipBilling() {
                   <option value="โอนเงิน">โอนเงิน</option>
                   <option value="บัญชีบริษัท">บัญชีบริษัท</option>
                   <option value="ไม่มีค่าเรือ">ไม่มีค่าเรือ</option>
-               </select>
+               </select> */}
             </div>
          </Modal>
          <style jsx>
