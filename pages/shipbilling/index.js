@@ -855,7 +855,7 @@ function ShipBilling() {
                      }
                      onChange={handleChangeDeliveryType}
                   />
-                  <div className="w-full text-gray-500">
+                  <div className="w-full text-red-400">
                      * เลือกบริษัทขนส่งได้ก็ต่อเมื่อเลือก{" "}
                      <span className="font-semibold underline">
                         ขนส่งเอกชน(ที่อยู่ ลค.)
