@@ -2,14 +2,23 @@
 /* eslint-disable indent */
 /* eslint-disable no-else-return */
 /* eslint-disable prefer-destructuring */
-import { Button, message, Modal, Select, Space, Table } from "antd"
+import {
+   Button,
+   Checkbox,
+   Divider,
+   InputNumber,
+   message,
+   Modal,
+   Select,
+   Space,
+   Spin,
+   Table,
+} from "antd"
 import React, { useEffect, useRef, useState } from "react"
 
 function CalRate(rate_w, rate_s, deduct) {
-   // console.log(deduct)
    const rate = rate_w > rate_s ? rate_s : rate_w
    if (deduct) {
-      // console.log(`deduct${rate}`)
       return deduct === 150 ? 150 : rate
    }
    return 200
@@ -55,6 +64,7 @@ function InvoicePage({ user_id, voyage }) {
    const [openModal, setOpenModal] = useState(false)
    const [deduct, setDeduct] = useState(false)
    const [confirmLoading, setConfirmLoading] = useState(false)
+   const [loading, setLoading] = useState(false)
    let seq = 0
 
    const handleSaveCod = async () => {
@@ -78,7 +88,7 @@ function InvoicePage({ user_id, voyage }) {
          })
       } catch (err) {
          console.log(err)
-      }finally {
+      } finally {
          setConfirmLoading(false)
       }
    }
@@ -111,7 +121,6 @@ function InvoicePage({ user_id, voyage }) {
       setCheckDiscount(checked)
    }
    const handleUpdateRate = async () => {
-      console.log(scoreBaseRate.rate)
       const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
@@ -125,8 +134,38 @@ function InvoicePage({ user_id, voyage }) {
          window.location.reload(false)
       }
    }
-   const handleConfirmDeduct = async () => {
+   const handleSaveVoyagePrice = async (price) => {
+      setLoading(true)
       const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            voyage_price: price,
+            check: true,
+         }),
+      })
+      await response.json()
+      message.success("success!")
+      setBill((prev) => ({ ...prev, voyage_price: price }))
+      setLoading(false)
+   }
+   const handleResetVoyagePrice = async () => {
+      setLoading(true)
+      const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            voyage_price: null,
+            check: false,
+         }),
+      })
+      await response.json()
+      message.success("success!")
+      setBill((prev) => ({ ...prev, voyage_price: null }))
+      setLoading(false)
+   }
+   const handleConfirmDeduct = async () => {
+      await fetch(`/api/shipbilling?id=${bill?.id}`, {
          method: "PUT",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
@@ -138,7 +177,6 @@ function InvoicePage({ user_id, voyage }) {
       const baseRateByWeight = CalBaseRateByWeight(weight)
       const rate_use = CalRate(baseRateByWeight, scoreBaseRate.rate, deduct)
       if (deduct) {
-         console.log("deduct true")
          return weight * rate_use
       }
       if (weight <= 1) {
@@ -147,6 +185,7 @@ function InvoicePage({ user_id, voyage }) {
       return Math.ceil((weight - 1) * 200 * 100) / 100
    }
    useEffect(() => {
+      setLoading(true)
       ;(async () => {
          const response = await fetch(`/api/shipbilling`, {
             method: "POST",
@@ -199,6 +238,7 @@ function InvoicePage({ user_id, voyage }) {
             setScoreBaseRate({ rate: responseJson.billing.rate, min: false })
          }
          setCheckDiscount(responseJson.billing?.check_50 === 1)
+         setLoading(false)
       })()
    }, [])
 
@@ -275,431 +315,470 @@ function InvoicePage({ user_id, voyage }) {
       {
          title: "วันที่",
          dataIndex: "date",
-         width: "120px",
          key: "date",
       },
       {
          title: "ช่องทาง",
          dataIndex: "channel",
-         width: "120px",
          key: "channel",
       },
       {
          title: "Track No.",
          dataIndex: "track_no",
-         width: "120px",
          key: "track_no",
       },
       {
          title: "Box No.",
          dataIndex: "box_no",
-         width: "120px",
          key: "box_no",
       },
       {
          title: "COD(¥)",
          dataIndex: "cod",
-         width: "120px",
          key: "cod",
       },
       {
          title: "หมายเหตุแอดมิน",
          dataIndex: "remark_admin",
-         width: "120px",
          key: "remark_admin",
          render: (text) => (text === "" || null ? "-" : text),
       },
       {
          title: "แก้ไข COD",
          dataIndex: "id",
-         width: "80px",
          key: "id",
          fixed: "right",
          render: (id) => (
-            <button
+            <Button
                onClick={() => {
                   setSelectRow(data.filter((ft) => ft.id === id)[0])
                   setOpenModal(true)
                }}
             >
                manage
-            </button>
+            </Button>
          ),
       },
    ]
-   // console.log(sum_channel)
-   console.log(deduct)
-   console.log(deduct === 0 ? false : deduct === 1 ? true : 150)
+   const voyagePrice = Math.ceil(
+      parseFloat(
+         Math.ceil(
+            parseFloat(
+               sum_channel.mercari.price +
+                  sum_channel.fril.price +
+                  sum_channel.shimizu.price +
+                  sum_channel.yahoo.price +
+                  sum_channel.mart.price +
+                  sum_channel.web123.price
+            )
+         ) +
+            parseFloat(costDelivery, 10) -
+            parseFloat(discount, 10) -
+            (checkDiscount
+               ? Math.ceil(
+                    Math.ceil(
+                       parseFloat(
+                          sum_channel.mercari.price +
+                             sum_channel.fril.price +
+                             sum_channel.shimizu.price +
+                             sum_channel.yahoo.price +
+                             sum_channel.mart.price +
+                             sum_channel.web123.price
+                       )
+                    ) * 5
+                 ) / 100
+               : 0),
+         10
+      )
+   )
+   const voyagePriceShow = new Intl.NumberFormat("th-TH", {
+      currency: "THB",
+      style: "currency",
+   }).format(voyagePrice)
    return (
-      <div className="w-[90vw] mx-auto">
-         <div className="flex px-4 py-2">
-            <p className="w-[40%]">
-               <span>ชื่อลูกค้า: </span>
-               {user?.username}
-               <br />
-               <span>เบอร์: </span>
-               {user?.phone}
-               <br />
-               <span>ที่อยู่: </span>
-               {user?.address}
-            </p>
-            <p className="w-[40%]">
-               <span>คะแนนเก่า: </span>
-               {user?.point_last}
-               <br />
-               <span>คะเเนนล่าสุด: </span>
-               {pointCurrent}
-               <br />
-               <span>ฐานค่าส่ง: </span>
-               {scoreBaseRate.rate} บาท
-               <input
-                  type="number"
-                  value={scoreBaseRate.rate}
-                  onChange={(e) =>
-                     setScoreBaseRate((prev) => ({
-                        ...prev,
-                        rate: e.target.value,
-                     }))
-                  }
-               />
-               <button onClick={handleUpdateRate}>ยืนยัน</button>
-               <br />
-               <span>ค่าส่ง: </span>
-               <input
-                  type="number"
-                  className="border border-gray-400 border-solid"
-                  value={costDelivery}
-                  onChange={(e) => setCostdDelivery(e.target.value)}
-               />
-               <button onClick={handleSaveCostDelivery}>ยืนยัน</button> บาท
-               <br />
-               <span>ส่วนลด: </span>
-               <input
-                  type="number"
-                  className="border border-gray-400 border-solid"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-               />
-               <button onClick={handleSaveDiscount}>ยืนยัน</button> บาท
-               <br />
-               <label>
-                  <input
-                     type="checkbox"
-                     checked={checkDiscount}
-                     onChange={(e) => handleCheckDiscount(e.target.checked)}
-                  />
-                  ส่วนลด 5%
-               </label>
-            </p>
-         </div>
-         <div>
-            <Table
-               columns={columns}
-               dataSource={data}
-               scroll={{
-                  x: 1500,
-                  y: 450,
-               }}
-            />
-            <Modal
-               open={openModal}
-               onCancel={() => setOpenModal(false)}
-               onOk={handleSaveCod}
-               confirmLoading={confirmLoading}
-            >
-               <input
-                  value={selectRow?.cod}
-                  onChange={(e) =>
-                     setSelectRow((prev) => ({ ...prev, cod: e.target.value }))
-                  }
-               />
-            </Modal>
-         </div>
-         <div className="Invoice-body pb-6">
-            <div>
-               <Space className="mb-4">
-                  <Select
-                     style={{ width: "150px" }}
-                     value={deduct}
-                     onChange={(value) => setDeduct(value)}
-                     options={[
-                        { label: "หัก 1 kg.", value: 0 },
-                        { label: "ไม่หัก 1 kg.", value: 1 },
-                        { label: "เรทพนักงาน", value: 150 },
-                     ]}
-                  />
-                  <Button type="primary" onClick={handleConfirmDeduct}>
-                     ยืนยัน
-                  </Button>
-               </Space>
+      <div className="w-screen h-screen bg-gray-100 overflow-x-hidden overflow-y-auto">
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
             </div>
-            <table className="text-center">
-               <thead className="text-center ">
-                  <tr>
-                     <th
-                        colSpan={7}
-                        className="border-solid border-[0.5px] border-gray-400 py-2"
+         )}
+         <div className="w-[90vw] mx-auto bg-white pt-2 px-6 pb-6">
+            <div className="w-full pt-3 bg-gray-200 rounded-md px-2">
+               <div className="w-full font-bold text-[1.2rem] p-2 underline">
+                  วางบิลรอบเรือ {voyage}
+               </div>
+               <div className="w-full grid grid-cols-2">
+                  <div className="w-[500px] p-2">
+                     <div className="flex mb-1">
+                        <div className="font-bold w-[100px]">ชื่อลูกค้า:</div>
+                        {user?.username}
+                     </div>
+                     <div className="flex mb-1">
+                        <div className="font-bold w-[100px]">เบอร์:</div>
+                        {user?.phone}
+                     </div>
+                     <div className="flex mb-1">
+                        <div className="font-bold w-[100px]">ที่อยู่:</div>
+                        {user?.address}
+                     </div>
+                     <div className="flex mb-1">
+                        <div className="font-bold w-[100px]">คะแนนเก่า:</div>
+                        {user?.point_last} คะแนน
+                     </div>
+                     <div className="flex mb-1">
+                        <div className="font-bold w-[100px]">คะเเนนล่าสุด:</div>
+                        {pointCurrent} คะแนน
+                     </div>
+                     <br />
+                  </div>
+                  <div className="w-[350px]">
+                     <div className="flex items-center mb-1">
+                        <div className="font-bold w-[80px]">ฐานค่าส่ง: </div>
+                        <InputNumber
+                           className="w-[120px] me-2"
+                           addonAfter="฿"
+                           value={scoreBaseRate.rate}
+                           onChange={(value) =>
+                              setScoreBaseRate((prev) => ({
+                                 ...prev,
+                                 rate: value,
+                              }))
+                           }
+                        />
+                        <Button type="primary" onClick={handleUpdateRate}>
+                           ยืนยัน
+                        </Button>
+                     </div>
+                     <div className="flex items-center mb-1">
+                        <div className="font-bold w-[80px]">ค่าส่ง: </div>
+                        <InputNumber
+                           className="w-[120px] me-2"
+                           addonAfter="฿"
+                           value={costDelivery}
+                           onChange={(value) => setCostdDelivery(value)}
+                        />
+                        <Button type="primary" onClick={handleSaveCostDelivery}>
+                           ยืนยัน
+                        </Button>
+                     </div>
+                     <div className="flex items-center mb-2">
+                        <div className="font-bold w-[80px]">ส่วนลด: </div>
+                        <InputNumber
+                           className="w-[120px] me-2"
+                           addonAfter="฿"
+                           value={discount}
+                           onChange={(value) => setDiscount(value)}
+                        />
+                        <Button type="primary" onClick={handleSaveDiscount}>
+                           ยืนยัน
+                        </Button>
+                     </div>
+                     <div className="flex items-center">
+                        <Checkbox
+                           className="me-2"
+                           value={checkDiscount}
+                           onChange={(e) =>
+                              handleCheckDiscount(e.target.checked)
+                           }
+                        />
+                        ส่วนลด 5%
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <Divider
+               orientation="left"
+               style={{ fontSize: "1rem", fontWeight: "bold" }}
+            >
+               รายการสินค้า
+            </Divider>
+            <div>
+               <Table columns={columns} dataSource={data} />
+               <Modal
+                  open={openModal}
+                  onCancel={() => setOpenModal(false)}
+                  onOk={handleSaveCod}
+                  confirmLoading={confirmLoading}
+               >
+                  <input
+                     value={selectRow?.cod}
+                     onChange={(e) =>
+                        setSelectRow((prev) => ({
+                           ...prev,
+                           cod: e.target.value,
+                        }))
+                     }
+                  />
+               </Modal>
+            </div>
+            <div>
+               <div className="grid grid-cols-2 gap-4 w-[840px]">
+                  <div>
+                     <Space className="mb-4">
+                        <Select
+                           style={{ width: "150px" }}
+                           value={deduct}
+                           onChange={(value) => setDeduct(value)}
+                           options={[
+                              { label: "หัก 1 kg.", value: 0 },
+                              { label: "ไม่หัก 1 kg.", value: 1 },
+                              { label: "เรทพนักงาน", value: 150 },
+                           ]}
+                        />
+                        <Button type="primary" onClick={handleConfirmDeduct}>
+                           ยืนยัน
+                        </Button>
+                     </Space>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 w-[300px]">
+                     {bill.voyage_price === null || bill.voyage_price === "" ? (
+                        <div className="text-gray-500">
+                           ยังไม่ได้ทำการบันทึกค่าเรือ
+                        </div>
+                     ) : (
+                        <div className="text-green-500">
+                           ค่าเรือที่ถูกบันทึก {bill.voyage_price}
+                        </div>
+                     )}
+                     <Button onClick={() => handleSaveVoyagePrice(voyagePrice)}>
+                        บันทึกค่าเรือ
+                     </Button>
+                     <Button
+                        type="dashed"
+                        danger
+                        onClick={handleResetVoyagePrice}
                      >
-                        <span className="text-[1.4rem]">{user.username}</span>{" "}
-                        รอบเรือ( {voyage} )
-                     </th>
-                  </tr>
-                  <tr>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        #
-                     </th>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        ช่องทาง
-                     </th>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        Track No.
-                     </th>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        Box No.
-                     </th>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        น้ำหนัก(กก.)
-                     </th>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        ราคา(฿)
-                     </th>
-                     <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                        COD(฿)
-                     </th>
-                  </tr>
-               </thead>
-               <tbody>
-                  {data
-                     .sort((a, b) => {
-                        const priority_a =
-                           a.channel === "mercari"
-                              ? 1
-                              : a.channel === "fril"
-                              ? 2
-                              : a.channel === "shimizu"
-                              ? 3
-                              : a.channel === "yahoo"
-                              ? 4
-                              : a.channel === "123"
-                              ? 5
-                              : 6
-                        const priority_b =
-                           b.channel === "mercari"
-                              ? 1
-                              : b.channel === "fril"
-                              ? 2
-                              : b.channel === "shimizu"
-                              ? 3
-                              : b.channel === "yahoo"
-                              ? 4
-                              : b.channel === "123"
-                              ? 5
-                              : 6
-                        return priority_a - priority_b
-                     })
-                     .map((item, index, arr) => {
-                        seq += 1
-                        if (
-                           item.channel === "mercari" ||
-                           item.channel === "fril"
-                        ) {
-                           return (
-                              <tr key={`TrInvoice-${item.id}-${index}`}>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {seq}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.channel}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.track_no}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.box_no}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.weight}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {new Intl.NumberFormat("th-TH", {
-                                       currency: "THB",
-                                       style: "currency",
-                                    }).format(
-                                       Math.floor(CalMerFril(item.weight))
-                                    )}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {new Intl.NumberFormat("th-TH", {
-                                       currency: "THB",
-                                       style: "currency",
-                                    }).format(item.cod * item.rate_yen)}
-                                 </td>
-                              </tr>
-                           )
-                        }
-                        let showSum = false
-                        const channel = item.channel
-                        if (
-                           ["shimizu", "123", "yahoo"].find(
-                              (fi) => fi === item.channel
-                           ) !== undefined
-                        ) {
-                           if (index + 1 < arr.length) {
-                              if (item.channel !== arr[index + 1].channel) {
-                                 showSum = true
-                              }
-                           }
-                           if (index + 1 === arr.length) {
-                              showSum = true
-                           }
-                        }
-                        return (
-                           <>
-                              <tr
-                                 key={`TrInvoice-${item.id}-${index}`}
-                                 className=""
-                              >
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {seq}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.channel}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.track_no}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.box_no}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {item.weight}
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    -
-                                 </td>
-                                 <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                    {new Intl.NumberFormat("th-TH", {
-                                       currency: "THB",
-                                       style: "currency",
-                                    }).format(item.cod * item.rate_yen)}
-                                 </td>
-                              </tr>
-                              {showSum && (
-                                 <tr>
-                                    <th
-                                       colSpan={5}
-                                       className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                                    >
-                                       รวมราคา(
-                                       {channel === "123" ? "web123" : channel})
-                                    </th>
+                        reset
+                     </Button>
+                  </div>
+               </div>
+               <table className="text-center">
+                  <thead className="text-center ">
+                     <tr>
+                        <th
+                           colSpan={7}
+                           className="border-solid border-[0.5px] border-gray-400 py-2"
+                        >
+                           <span className="text-[1.4rem]">
+                              {user.username}
+                           </span>{" "}
+                           รอบเรือ( {voyage} )
+                        </th>
+                     </tr>
+                     <tr>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           #
+                        </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           ช่องทาง
+                        </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           Track No.
+                        </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           Box No.
+                        </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           น้ำหนัก(กก.)
+                        </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           ราคา(฿)
+                        </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           COD(฿)
+                        </th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {data
+                        .sort((a, b) => {
+                           const priority_a =
+                              a.channel === "mercari"
+                                 ? 1
+                                 : a.channel === "fril"
+                                 ? 2
+                                 : a.channel === "shimizu"
+                                 ? 3
+                                 : a.channel === "yahoo"
+                                 ? 4
+                                 : a.channel === "123"
+                                 ? 5
+                                 : 6
+                           const priority_b =
+                              b.channel === "mercari"
+                                 ? 1
+                                 : b.channel === "fril"
+                                 ? 2
+                                 : b.channel === "shimizu"
+                                 ? 3
+                                 : b.channel === "yahoo"
+                                 ? 4
+                                 : b.channel === "123"
+                                 ? 5
+                                 : 6
+                           return priority_a - priority_b
+                        })
+                        .map((item, index, arr) => {
+                           seq += 1
+                           if (
+                              item.channel === "mercari" ||
+                              item.channel === "fril"
+                           ) {
+                              return (
+                                 <tr key={`TrInvoice-${item.id}-${index}`}>
                                     <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                       {/* {sum_channel[channel]?.price} */}
+                                       {seq}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.channel}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.track_no}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.box_no}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.weight}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                        {new Intl.NumberFormat("th-TH", {
                                           currency: "THB",
                                           style: "currency",
                                        }).format(
-                                          Math.ceil(
-                                             sum_channel[
-                                                channel === "123"
-                                                   ? "web123"
-                                                   : channel
-                                             ]?.price
-                                          )
+                                          Math.floor(CalMerFril(item.weight))
                                        )}
                                     </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(item.cod * item.rate_yen)}
+                                    </td>
                                  </tr>
-                              )}
-                           </>
-                        )
-                     })}
-               </tbody>
-               <tfoot className="">
-                  <tr>
-                     {checkDiscount ? (
-                        <>
-                           <td colSpan={2}></td>
-                           <th
-                              colSpan={1}
-                              className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                           >
-                              ส่วนลด 5%:
-                           </th>
-                           <td
-                              colSpan={1}
-                              className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                           >
-                              {new Intl.NumberFormat("th-TH", {
-                                 currency: "THB",
-                                 style: "currency",
-                              }).format(
-                                 Math.ceil(
-                                    (sum_channel.mercari.price +
-                                       sum_channel.fril.price +
-                                       sum_channel.shimizu.price +
-                                       sum_channel.yahoo.price +
-                                       sum_channel.mart.price +
-                                       sum_channel.web123.price) *
-                                       5
-                                 ) / 100
-                              )}
-                           </td>
-                        </>
-                     ) : (
-                        <td colSpan={4}></td>
-                     )}
-                     <th
-                        colSpan={1}
-                        className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                     >
-                        ราคารวม(ทุกช่องทาง):{" "}
-                     </th>
-                     <td
-                        colSpan={1}
-                        className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                     >
-                        {new Intl.NumberFormat("th-TH", {
-                           currency: "THB",
-                           style: "currency",
-                        }).format(
-                           Math.ceil(
-                              sum_channel.mercari.price +
-                                 sum_channel.fril.price +
-                                 sum_channel.shimizu.price +
-                                 sum_channel.yahoo.price +
-                                 sum_channel.mart.price +
-                                 sum_channel.web123.price
+                              )
+                           }
+                           let showSum = false
+                           const channel = item.channel
+                           if (
+                              ["shimizu", "123", "yahoo"].find(
+                                 (fi) => fi === item.channel
+                              ) !== undefined
+                           ) {
+                              if (index + 1 < arr.length) {
+                                 if (item.channel !== arr[index + 1].channel) {
+                                    showSum = true
+                                 }
+                              }
+                              if (index + 1 === arr.length) {
+                                 showSum = true
+                              }
+                           }
+                           return (
+                              <>
+                                 <tr
+                                    key={`TrInvoice-${item.id}-${index}`}
+                                    className=""
+                                 >
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {seq}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.channel}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.track_no}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.box_no}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {item.weight}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       -
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                       {new Intl.NumberFormat("th-TH", {
+                                          currency: "THB",
+                                          style: "currency",
+                                       }).format(item.cod * item.rate_yen)}
+                                    </td>
+                                 </tr>
+                                 {showSum && (
+                                    <tr>
+                                       <th
+                                          colSpan={5}
+                                          className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                                       >
+                                          รวมราคา(
+                                          {channel === "123"
+                                             ? "web123"
+                                             : channel}
+                                          )
+                                       </th>
+                                       <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                          {/* {sum_channel[channel]?.price} */}
+                                          {new Intl.NumberFormat("th-TH", {
+                                             currency: "THB",
+                                             style: "currency",
+                                          }).format(
+                                             Math.ceil(
+                                                sum_channel[
+                                                   channel === "123"
+                                                      ? "web123"
+                                                      : channel
+                                                ]?.price
+                                             )
+                                          )}
+                                       </td>
+                                    </tr>
+                                 )}
+                              </>
                            )
-                        )}
-                     </td>
-                  </tr>
-                  <tr>
-                     <td colSpan={4} className=""></td>
-                     <th
-                        colSpan={1}
-                        className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                     >
-                        ค่าส่ง:
-                     </th>
-                     <td
-                        colSpan={1}
-                        className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                     >
-                        {new Intl.NumberFormat("th-TH", {
-                           currency: "THB",
-                           style: "currency",
-                        }).format(parseFloat(costDelivery, 10))}
-                     </td>
-                  </tr>
-
-                  {discount === 0 ? undefined : (
+                        })}
+                  </tbody>
+                  <tfoot className="">
                      <tr>
-                        <td colSpan={4} className=""></td>
+                        {checkDiscount ? (
+                           <>
+                              <td colSpan={2}></td>
+                              <th
+                                 colSpan={1}
+                                 className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                              >
+                                 ส่วนลด 5%:
+                              </th>
+                              <td
+                                 colSpan={1}
+                                 className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                              >
+                                 {new Intl.NumberFormat("th-TH", {
+                                    currency: "THB",
+                                    style: "currency",
+                                 }).format(
+                                    Math.ceil(
+                                       (sum_channel.mercari.price +
+                                          sum_channel.fril.price +
+                                          sum_channel.shimizu.price +
+                                          sum_channel.yahoo.price +
+                                          sum_channel.mart.price +
+                                          sum_channel.web123.price) *
+                                          5
+                                    ) / 100
+                                 )}
+                              </td>
+                           </>
+                        ) : (
+                           <td colSpan={4}></td>
+                        )}
                         <th
                            colSpan={1}
                            className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
                         >
-                           ส่วนลด:
+                           ราคารวม(ทุกช่องทาง):{" "}
                         </th>
                         <td
                            colSpan={1}
@@ -708,65 +787,78 @@ function InvoicePage({ user_id, voyage }) {
                            {new Intl.NumberFormat("th-TH", {
                               currency: "THB",
                               style: "currency",
-                           }).format(parseFloat(discount, 10))}
+                           }).format(
+                              Math.ceil(
+                                 sum_channel.mercari.price +
+                                    sum_channel.fril.price +
+                                    sum_channel.shimizu.price +
+                                    sum_channel.yahoo.price +
+                                    sum_channel.mart.price +
+                                    sum_channel.web123.price
+                              )
+                           )}
                         </td>
                      </tr>
-                  )}
-                  <tr>
-                     <td colSpan={4} className=""></td>
-                     <th
-                        colSpan={1}
-                        className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
-                     >
-                        ราคาสุทธิ(฿):{" "}
-                     </th>
-                     <td
-                        colSpan={1}
-                        style={{
-                           borderBottom: "5px double black",
-                           borderRight: "0.5px solid black",
-                        }}
-                     >
-                        {new Intl.NumberFormat("th-TH", {
-                           currency: "THB",
-                           style: "currency",
-                        }).format(
-                           Math.ceil(
-                              parseFloat(
-                                 Math.ceil(
-                                    parseFloat(
-                                       sum_channel.mercari.price +
-                                          sum_channel.fril.price +
-                                          sum_channel.shimizu.price +
-                                          sum_channel.yahoo.price +
-                                          sum_channel.mart.price +
-                                          sum_channel.web123.price
-                                    )
-                                 ) +
-                                    parseFloat(costDelivery, 10) -
-                                    parseFloat(discount, 10) -
-                                    (checkDiscount
-                                       ? Math.ceil(
-                                            Math.ceil(
-                                               parseFloat(
-                                                  sum_channel.mercari.price +
-                                                     sum_channel.fril.price +
-                                                     sum_channel.shimizu.price +
-                                                     sum_channel.yahoo.price +
-                                                     sum_channel.mart.price +
-                                                     sum_channel.web123.price
-                                               )
-                                            ) * 5
-                                         ) / 100
-                                       : 0),
-                                 10
-                              )
-                           )
-                        )}
-                     </td>
-                  </tr>
-               </tfoot>
-            </table>
+                     <tr>
+                        <td colSpan={4} className=""></td>
+                        <th
+                           colSpan={1}
+                           className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                        >
+                           ค่าส่ง:
+                        </th>
+                        <td
+                           colSpan={1}
+                           className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                        >
+                           {new Intl.NumberFormat("th-TH", {
+                              currency: "THB",
+                              style: "currency",
+                           }).format(parseFloat(costDelivery, 10))}
+                        </td>
+                     </tr>
+
+                     {discount === 0 ? undefined : (
+                        <tr>
+                           <td colSpan={4} className=""></td>
+                           <th
+                              colSpan={1}
+                              className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                           >
+                              ส่วนลด:
+                           </th>
+                           <td
+                              colSpan={1}
+                              className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                           >
+                              {new Intl.NumberFormat("th-TH", {
+                                 currency: "THB",
+                                 style: "currency",
+                              }).format(parseFloat(discount, 10))}
+                           </td>
+                        </tr>
+                     )}
+                     <tr>
+                        <td colSpan={4} className=""></td>
+                        <th
+                           colSpan={1}
+                           className="border-solid border-[0.5px] border-gray-400 px-4 py-2"
+                        >
+                           ราคาสุทธิ(฿):{" "}
+                        </th>
+                        <td
+                           colSpan={1}
+                           style={{
+                              borderBottom: "5px double black",
+                              borderRight: "0.5px solid black",
+                           }}
+                        >
+                           {voyagePriceShow}
+                        </td>
+                     </tr>
+                  </tfoot>
+               </table>
+            </div>
          </div>
       </div>
    )

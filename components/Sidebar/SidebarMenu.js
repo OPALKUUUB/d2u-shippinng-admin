@@ -8,7 +8,7 @@ import YahooIcon from "../icon/YahooIcon"
 
 // eslint-disable-next-line import/prefer-default-export
 const sidebarMenuData = [
-   { id: 6, name: "Dasboard", icon: <DashboardIcon />, to: "/" },
+   { id: 10, name: "Dasboard", icon: <DashboardIcon />, to: "/" },
    { id: 1, name: "Customer", icon: <ProfileOutlined />, to: "/customer" },
    {
       id: 2,
@@ -32,7 +32,7 @@ const sidebarMenuData = [
          { id: 4, name: "Web123", to: "/tracking/web123" },
          { id: 5, name: "Frill", to: "/tracking/frill" },
          { id: 6, name: "Yahoo", to: "/tracking/yahoo" },
-         { id: 7, name: "Mart", to: "/tracking/mart" },
+         // { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
    // {
@@ -51,8 +51,10 @@ const sidebarMenuData = [
    //    ],
    // },
    { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/shipbilling" },
-   { id: 4, name: "Cargo", icon: <DingdingOutlined />, to: "/cargo" },
-   { id: 7, name: "Data Analysis", icon:<PieChartOutlined />, to: "/data-analysis" },
+   { id: 6, name: "ขนส่งเอกชน", icon: <BillingIcon />, to: "/private-transport" },
+   { id: 7, name: "ฝากไว้ก่อน", icon: <BillingIcon />, to: "/deposite-first" },
+   { id: 8, name: "Cargo", icon: <DingdingOutlined />, to: "/cargo" },
+   { id: 9, name: "Data Analysis", icon:<PieChartOutlined />, to: "/data-analysis" },
 
 ]
 
