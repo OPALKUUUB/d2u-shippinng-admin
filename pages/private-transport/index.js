@@ -19,7 +19,7 @@ import {
 } from "antd"
 import { useRouter } from "next/router"
 import axios from "axios"
-import moment from "moment"
+import dayjs from "dayjs"
 import Layout from "../../components/layout/layout"
 
 const { TextArea } = Input
@@ -82,7 +82,7 @@ function PrivateTransport() {
          address: selectedRow.address,
          delivery_by: selectedRow.delivery_by,
          date_pay_voyage: selectedRow.date_pay_voyage,
-         // track_no: selectedRow.track_no,
+         track_no: selectedRow.track_no,
          delivery_cost: selectedRow.delivery_cost,
          remark: selectedRow.remark,
       }
@@ -174,6 +174,36 @@ function PrivateTransport() {
          title: "บริษัทขนส่ง",
          dataIndex: "delivery_by",
          key: "delivery_by",
+         filters: [
+            {
+               text: "ยังไม่เลือก",
+               value: "",
+            },
+            {
+               text: "FLASH",
+               value: "FLASH",
+            },
+            {
+               text: "KERRY",
+               value: "KERRY",
+            },
+            {
+               text: "J&T",
+               value: "J&T",
+            },
+            {
+               text: "ปณ",
+               value: "ปณ",
+            },
+            {
+               text: "DHL",
+               value: "DHL",
+            },
+         ],
+         onFilter: (value, record) =>
+            record.delivery_by === null || record.delivery_by === undefined
+               ? false
+               : record.delivery_by === value,
          render: (txt) => (txt === null || txt === "" ? "-" : txt),
       },
       {
@@ -185,6 +215,20 @@ function PrivateTransport() {
          title: "แจ้งข้อมูลคลอง 4",
          dataIndex: "notify_data_klong4",
          key: "notify_data_klong4",
+         filters: [
+            {
+               text: "แจ้งแล้ว",
+               value: 1,
+            },
+            {
+               text: "ยังไม่แจ้ง",
+               value: 0,
+            }
+         ],
+         onFilter: (value, record) =>
+            record.notify_data_klong4 === null || record.notify_data_klong4 === undefined
+               ? false
+               : record.notify_data_klong4 === value,
          render: (ck, item) => {
             const { shipbilling_id } = item
             const check = ck === 1
@@ -205,17 +249,32 @@ function PrivateTransport() {
          title: "Track No.",
          dataIndex: "track_no",
          key: "track_no",
+         render: (txt) => (txt === null || txt === "" ? "-" : txt),
       },
       {
          title: "ค่าขนส่ง",
          dataIndex: "delivery_cost",
          key: "delivery_cost",
-         render: (txt) => (txt === null || txt === "" ? "-" : txt)
+         render: (txt) => (txt === null || txt === "" ? "-" : txt),
       },
       {
          title: "จ่ายค่าส่ง",
          dataIndex: "check_pay_delivery_cost",
          key: "check_pay_delivery_cost",
+         filters: [
+            {
+               text: "จ่ายแล้ว",
+               value: 1,
+            },
+            {
+               text: "ยังไม่จ่าย",
+               value: 0,
+            }
+         ],
+         onFilter: (value, record) =>
+            record.check_pay_delivery_cost === null || record.check_pay_delivery_cost === undefined
+               ? false
+               : record.check_pay_delivery_cost === value,
          render: (ck, item) => {
             const { shipbilling_id } = item
             const check = ck === 1
@@ -236,7 +295,7 @@ function PrivateTransport() {
          title: "หมายเหตุ",
          dataIndex: "remark",
          key: "remark",
-         render: (txt) => (txt === null || txt === "" ? "-" : txt)
+         render: (txt) => (txt === null || txt === "" ? "-" : txt),
       },
       {
          title: "จัดการ",
@@ -283,7 +342,7 @@ function PrivateTransport() {
                   onCancel={() => setOpenEditModal(false)}
                   title="แก้ไขข้อมูลขนส่งเอกชน"
                >
-                  {JSON.stringify(selectedRow)}
+                  {/* {JSON.stringify(selectedRow)} */}
                   <div className="mb-2">
                      <label>บริษัทขนส่ง: </label>
                      <Select
@@ -316,7 +375,7 @@ function PrivateTransport() {
                         value={
                            selectedRow?.date_pay_voyage === null
                               ? null
-                              : moment(
+                              : dayjs(
                                    selectedRow?.date_pay_voyage,
                                    "D/M/YYYY HH:mm:ss"
                                 )
@@ -324,18 +383,18 @@ function PrivateTransport() {
                         onChange={handleChangeDatePayVoyage}
                      />
                   </div>
-                  {/* <div className="mb-2">
+                  <div className="mb-2">
                      <label>Track No.:</label>
                      <Input
                         value={selectedRow?.track_no}
-                        onChange={(value) =>
+                        onChange={(e) =>
                            setSelectedRow((prev) => ({
                               ...prev,
-                              track_no: value,
+                              track_no: e.target.value,
                            }))
                         }
                      />
-                  </div> */}
+                  </div>
                   <div className="mb-2">
                      <label>ค่าขนส่ง:</label>
                      <InputNumber
