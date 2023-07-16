@@ -117,6 +117,7 @@ function ShipBilling() {
                remark: selectedRow.remark,
                delivery_type: selectedRow.delivery_type,
                payment_type: selectedRow.payment_type,
+               date_pay_voyage: new Date().toLocaleString("th-BK")
             }),
          })
          const responseJson = await response.json()

@@ -58,7 +58,8 @@ async function handler(req, res) {
             trackings.user_id, 
             users.username,
             trackings.voyage,
-            trackings.box_no
+            trackings.box_no,
+            trackings.track_no
          FROM 
             trackings
          JOIN 
@@ -85,7 +86,12 @@ async function handler(req, res) {
          ship_billing.rate,
          ship_billing.slip_image,
          ship_billing.delivery_type,
-         ship_billing.voyage_price
+         ship_billing.voyage_price,
+         ship_billing.delivery_by,
+         ship_billing.date_pay_voyage,
+         ship_billing.delivery_cost,
+         ship_billing.notify_data_klong4,
+         ship_billing.check_pay_delivery_cost
          FROM ship_billing 
          WHERE voyage = ?`,
          [voyage]
@@ -105,6 +111,7 @@ async function handler(req, res) {
                   username: c.username,
                   address: null,
                   box_no: c.box_no,
+                  track_no: c.track_no,
                   rate: null,
                   created_at: date,
                   voyage,
@@ -115,7 +122,12 @@ async function handler(req, res) {
                   remark: null,
                   slip_image: c.slip_image,
                   delivery_type: null,
-                  voyage_price: null
+                  voyage_price: null,
+                  delivery_by: null,
+                  date_pay_voyage: null,
+                  delivery_cost: null,
+                  notify_data_klong4: 0,
+                  check_pay_delivery_cost: 0
                },
             ]
          }

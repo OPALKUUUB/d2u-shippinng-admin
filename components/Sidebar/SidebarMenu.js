@@ -8,7 +8,7 @@ import YahooIcon from "../icon/YahooIcon"
 
 // eslint-disable-next-line import/prefer-default-export
 const sidebarMenuData = [
-   { id: 6, name: "Dasboard", icon: <DashboardIcon />, to: "/" },
+   { id: 10, name: "Dasboard", icon: <DashboardIcon />, to: "/" },
    { id: 1, name: "Customer", icon: <ProfileOutlined />, to: "/customer" },
    {
       id: 2,
