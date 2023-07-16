@@ -13,6 +13,7 @@ import {
    Switch,
    Collapse,
    Spin,
+   Tag,
 } from "antd"
 import {
    Page,
@@ -46,6 +47,7 @@ const ShipBillingModel = {
    payment_type: "",
    slip_image: "",
    delivery_type: "",
+   delivery_by: "",
    remark: "",
 }
 
@@ -117,7 +119,8 @@ function ShipBilling() {
                remark: selectedRow.remark,
                delivery_type: selectedRow.delivery_type,
                payment_type: selectedRow.payment_type,
-               date_pay_voyage: new Date().toLocaleString("th-BK")
+               date_pay_voyage: new Date().toLocaleString("th-BK"),
+               delivery_by: selectedRow.delivery_by,
             }),
          })
          const responseJson = await response.json()
@@ -415,7 +418,8 @@ function ShipBilling() {
          ...getColumnSearchProps("username"),
          render: (text, item) => (
             <div>
-               {text} {item.checked && <CheckOutlined className="text-green-500" />}
+               {text}{" "}
+               {item.checked && <CheckOutlined className="text-green-500" />}
             </div>
          ),
       },
@@ -450,7 +454,25 @@ function ShipBilling() {
             record.delivery_type === null || record.delivery_type === undefined
                ? false
                : record.delivery_type.indexOf(value) === 0,
-         render: (text) => (text === "" || text === null ? "-" : text),
+         render: (text, item) => {
+            if (text === "ขนส่งเอกชน(ที่อยู่ ลค.)") {
+               return (
+                  <div>
+                     <Tag color="orange">{text}</Tag>
+                     <Tag color="gold">
+                        {item.delivery_by === null || item.delivery_by === ""
+                           ? "ยังไม่ได้เลือก"
+                           : item.delivery_by}
+                     </Tag>
+                  </div>
+               )
+            }
+            return text === "" || text === null ? (
+               "-"
+            ) : (
+               <Tag color="magenta">{text}</Tag>
+            )
+         },
       },
       {
          title: "ที่อยู่จัดส่ง",
@@ -784,69 +806,117 @@ function ShipBilling() {
             setData={setData}
          />
          <Modal
+            title="แก้ไขข้อมูล Ship Billing"
             open={showEditModal}
             onCancel={() => setShowEditModal(false)}
             onOk={handleOkEditModal}
          >
             <div>
-               <label>จัดส่ง: </label>
-               {/* {JSON.stringify(selectedRow)} */}
-               <Select
-                  className="w-[180px] mb-1"
-                  options={[
-                     { label: "กรุณาเลือกที่อยู่จัดส่ง", value: "" },
-                     {
-                        label: "ขนส่งเอกชน(ที่อยู่ ลค.)",
-                        value: "ขนส่งเอกชน(ที่อยู่ ลค.)",
-                     },
-                     { label: "รับเอง พระราม 3", value: "รับเอง พระราม 3" },
-                     { label: "รับเอง ร่มเกล้า", value: "รับเอง ร่มเกล้า" },
-                     { label: "D2U ส่งให้", value: "D2U ส่งให้" },
-                     { label: "ฝากไว้ก่อน", value: "ฝากไว้ก่อน" },
-                  ]}
-                  value={
-                     selectedRow.delivery_type === null
-                        ? ""
-                        : selectedRow.delivery_type
-                  }
-                  onChange={handleChangeDeliveryType}
-               />
-               <TextArea
-                  className="mb-1"
-                  rows={4}
-                  value={selectedRow?.address}
-                  onChange={(e) =>
-                     setSelectedRow({ ...selectedRow, address: e.target.value })
-                  }
-               />
-               <label>หมายเหตุ: </label>
-               <TextArea
-                  className="mb-1"
-                  rows={4}
-                  value={selectedRow?.remark}
-                  onChange={(e) =>
-                     setSelectedRow({ ...selectedRow, remark: e.target.value })
-                  }
-               />
-               <label>ประเภทการชำระเงิน: </label>
-               <Select
-                  className="w-[120px]"
-                  options={[
-                     { label: "กรุณาเลือก", value: "" },
-                     { label: "เงินสด", value: "เงินสด" },
-                     { label: "แม่มณี", value: "แม่มณี" },
-                     { label: "โอนเงิน", value: "โอนเงิน" },
-                     { label: "บัญชีบริษัท", value: "บัญชีบริษัท" },
-                     { label: "ไม่มีค่าเรือ", value: "ไม่มีค่าเรือ" },
-                  ]}
-                  value={selectedRow?.payment_type || ""}
-                  onChange={(value) =>
-                     setSelectedRow({
-                        ...selectedRow,
-                        payment_type: value,
-                     })
-                  }
-               />
+               <div className="mb-2">
+                  <label>ประเภทการชำระเงิน: </label>
+                  <Select
+                     className="w-[120px]"
+                     options={[
+                        { label: "กรุณาเลือก", value: "" },
+                        { label: "เงินสด", value: "เงินสด" },
+                        { label: "แม่มณี", value: "แม่มณี" },
+                        { label: "โอนเงิน", value: "โอนเงิน" },
+                        { label: "บัญชีบริษัท", value: "บัญชีบริษัท" },
+                        { label: "ไม่มีค่าเรือ", value: "ไม่มีค่าเรือ" },
+                     ]}
+                     value={selectedRow?.payment_type || ""}
+                     onChange={(value) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           payment_type: value,
+                        })
+                     }
+                  />
+               </div>
+               <div className="mb-2">
+                  <label>จัดส่ง: </label>
+                  <Select
+                     className="w-[180px] mb-1"
+                     options={[
+                        { label: "กรุณาเลือกที่อยู่จัดส่ง", value: "" },
+                        {
+                           label: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+                           value: "ขนส่งเอกชน(ที่อยู่ ลค.)",
+                        },
+                        { label: "รับเอง พระราม 3", value: "รับเอง พระราม 3" },
+                        { label: "รับเอง ร่มเกล้า", value: "รับเอง ร่มเกล้า" },
+                        { label: "D2U ส่งให้", value: "D2U ส่งให้" },
+                        { label: "ฝากไว้ก่อน", value: "ฝากไว้ก่อน" },
+                     ]}
+                     value={
+                        selectedRow.delivery_type === null
+                           ? ""
+                           : selectedRow.delivery_type
+                     }
+                     onChange={handleChangeDeliveryType}
+                  />
+                  <div className="w-full text-gray-500">
+                     * เลือกบริษัทขนส่งได้ก็ต่อเมื่อเลือก{" "}
+                     <span className="font-semibold underline">
+                        ขนส่งเอกชน(ที่อยู่ ลค.)
+                     </span>
+                  </div>
+               </div>
+               {selectedRow.delivery_type === "ขนส่งเอกชน(ที่อยู่ ลค.)" && (
+                  <div className="mb-2">
+                     <label>บริษัทขนส่ง: </label>
+                     <Select
+                        className="w-[180px] mb-1"
+                        options={[
+                           { label: "กรุณาเลือกบริษัทขนส่ง", value: "" },
+                           { label: "FLASH", value: "FLASH" },
+                           { label: "KERRY", value: "KERRY" },
+                           { label: "J&T", value: "J&T" },
+                           { label: "ปณ.", value: "ปณ." },
+                           { label: "DHL", value: "DHL" },
+                        ]}
+                        value={
+                           selectedRow.delivery_by === null
+                              ? ""
+                              : selectedRow.delivery_by
+                        }
+                        onChange={(value) =>
+                           setSelectedRow((prev) => ({
+                              ...prev,
+                              delivery_by: value,
+                           }))
+                        }
+                     />
+                  </div>
+               )}
+               <div className="mb-2">
+                  <label>ที่อยู่จัดส่ง:</label>
+                  <TextArea
+                     className="mb-1 mt-2"
+                     rows={4}
+                     value={selectedRow?.address}
+                     onChange={(e) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           address: e.target.value,
+                        })
+                     }
+                  />
+               </div>
+               <div className="mb-2">
+                  <label>หมายเหตุ: </label>
+                  <TextArea
+                     className="mb-1 mt-2"
+                     rows={4}
+                     value={selectedRow?.remark}
+                     onChange={(e) =>
+                        setSelectedRow({
+                           ...selectedRow,
+                           remark: e.target.value,
+                        })
+                     }
+                  />
+               </div>
                {/* <select
                   defaultValue={selectedRow?.payment_type}
                   value={selectedRow?.payment_type || ""}
