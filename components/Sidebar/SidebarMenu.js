@@ -1,4 +1,4 @@
-import { DingdingOutlined, PieChartOutlined, ProfileOutlined } from "@ant-design/icons"
+import { CheckSquareOutlined, DingdingOutlined, PieChartOutlined, ProfileOutlined } from "@ant-design/icons"
 import BillingIcon from "../icon/BillingIcon"
 import DashboardIcon from "../icon/DashboardIcon"
 import StoreIcon from "../icon/StoreIcon"
@@ -54,6 +54,17 @@ const sidebarMenuData = [
    { id: 6, name: "ขนส่งเอกชน", icon: <BillingIcon />, to: "/private-transport" },
    { id: 7, name: "ฝากไว้ก่อน", icon: <BillingIcon />, to: "/deposite-first" },
    { id: 8, name: "Cargo", icon: <DingdingOutlined />, to: "/cargo" },
+   {
+      id: 11,
+      name: "การเงิน",
+      icon: <CheckSquareOutlined />,
+      childs: [
+         { id: 1, name: "เงินเข้า", to: "/for-accountant/money-in" },
+         { id: 2, name: "รายการเงินเข้า", to: "/for-accountant/list-money-in" },
+         { id: 3, name: "ตัดยอด", to: "/for-accountant/cut-cost" },
+         // { id: 7, name: "Mart", to: "/tracking/mart" },
+      ],
+   },
    { id: 9, name: "Data Analysis", icon:<PieChartOutlined />, to: "/data-analysis" },
 
 ]
