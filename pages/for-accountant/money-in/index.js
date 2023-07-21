@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useState } from "react"
 import { getSession } from "next-auth/react"
 import { Button, Col, Divider, List, Row, Table, Tag, Typography } from "antd"
 import { FileAddOutlined } from "@ant-design/icons"
+import axios from "axios"
 import Layout from "../../../components/layout/layout"
 import SearchFormAccountant from "../../../components/SearchFormAccountant"
 import LoadingPage from "../../../components/LoadingPage"
@@ -41,6 +42,26 @@ function MoneyInPage() {
    const [selectedRowKeys, setSelectedRowKeys] = useState([])
    const [data, setData] = useState([])
 
+   const handleSearch = async (params) => {
+      setLoading(true)
+      try {
+         const searchData = await axios.get("/api/for-accountant", {
+            params,
+         })
+
+         // Update the data state with the fetched results
+         setData(
+            searchData.data.moneyIns.map((item, index) => ({
+               key: `MoneyIn_key_${index}`,
+               ...item,
+            }))
+         )
+      } catch (error) {
+         console.error("Error fetching data:", error.message)
+      } finally {
+         setLoading(false)
+      }
+   }
    useEffect(() => {
       setLoading(true)
       setLoading(false)
@@ -78,7 +99,7 @@ function MoneyInPage() {
       onChange: onSelectChange,
    }
 
-   const rowSelectionData = mockDatasource.filter((fi) =>
+   const rowSelectionData = data.filter((fi) =>
       selectedRowKeys.includes(fi.key)
    )
 
@@ -98,7 +119,7 @@ function MoneyInPage() {
                   เลือกรายการเงินเข้า
                </div>
                <div>
-                  <SearchFormAccountant />
+                  <SearchFormAccountant onSearch={handleSearch} />
                </div>
                <Divider className="mt-0" />
                <Row gutter={16}>
@@ -106,7 +127,7 @@ function MoneyInPage() {
                      <Table
                         rowSelection={rowSelection}
                         // dataSource={data}
-                        dataSource={mockDatasource}
+                        dataSource={data}
                         columns={columns}
                      />
                   </Col>
