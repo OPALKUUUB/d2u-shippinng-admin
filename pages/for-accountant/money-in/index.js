@@ -1,5 +1,4 @@
 /* eslint-disable import/no-named-as-default */
-/* eslint-disable import/no-unresolved */
 import React, { Fragment, useState } from "react"
 import { getSession } from "next-auth/react"
 import { Col, Divider, List, Row, Table, Tag, Typography, message } from "antd"
@@ -7,7 +6,7 @@ import axios from "axios"
 import Layout from "../../../components/layout/layout"
 import SearchFormAccountant from "../../../components/SearchFormAccountant"
 import LoadingPage from "../../../components/LoadingPage"
-import CreateMoneyInForm from "../../../components/createMoneyInForm"
+import CreateMoneyInForm from "../../../components/CreateMoneyInForm"
 
 function MoneyInPage() {
    const [loading, setLoading] = useState(false)
