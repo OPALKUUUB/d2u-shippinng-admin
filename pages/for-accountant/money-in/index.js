@@ -1,46 +1,19 @@
-import React, { Fragment, useEffect, useState } from "react"
+/* eslint-disable import/no-named-as-default */
+/* eslint-disable import/no-unresolved */
+import React, { Fragment, useState } from "react"
 import { getSession } from "next-auth/react"
-import { Button, Col, Divider, List, Row, Table, Tag, Typography } from "antd"
-import { FileAddOutlined } from "@ant-design/icons"
+import { Col, Divider, List, Row, Table, Tag, Typography, message } from "antd"
 import axios from "axios"
 import Layout from "../../../components/layout/layout"
 import SearchFormAccountant from "../../../components/SearchFormAccountant"
 import LoadingPage from "../../../components/LoadingPage"
+import CreateMoneyInForm from "../../../components/createMoneyInForm"
 
-const mockDatasource = [
-   {
-      key: 1,
-      date: "18/07/2023 11:00:00",
-      username: "opal",
-      channel: "shimizu",
-      price: 12000,
-   },
-   {
-      key: 2,
-      date: "17/07/2023 12:00:00",
-      username: "opal",
-      channel: "yahoo",
-      price: 13000,
-   },
-   {
-      key: 3,
-      date: "19/07/2023 05:00:00",
-      username: "opal",
-      channel: "mercari",
-      price: 12500,
-   },
-   {
-      key: 4,
-      date: "20/07/2023 22:00:00",
-      username: "opal",
-      channel: "fril",
-      price: 11000,
-   },
-]
 function MoneyInPage() {
    const [loading, setLoading] = useState(false)
    const [selectedRowKeys, setSelectedRowKeys] = useState([])
    const [data, setData] = useState([])
+   const [trigger, setTrigger] = useState(false)
 
    const handleSearch = async (params) => {
       setLoading(true)
@@ -48,8 +21,6 @@ function MoneyInPage() {
          const searchData = await axios.get("/api/for-accountant", {
             params,
          })
-
-         // Update the data state with the fetched results
          setData(
             searchData.data.moneyIns.map((item, index) => ({
                key: `MoneyIn_key_${index}`,
@@ -62,10 +33,31 @@ function MoneyInPage() {
          setLoading(false)
       }
    }
-   useEffect(() => {
+
+   const handleAddMoneyIn = async (moneyInForm) => {
       setLoading(true)
-      setLoading(false)
-   }, [])
+      try {
+         const rowSelectionDataList = data.filter((fi) =>
+            selectedRowKeys.includes(fi.key)
+         )
+         const {user_id} = data.filter((fi) =>
+            selectedRowKeys.includes(fi.key)
+         )[0]
+         await axios.post("/api/for-accountant/money-in", {
+            moneyInForm,
+            user_id,
+            rowSelectionDataList,
+         })
+         // console.log(results)
+         message.success("เพิ่มรายการเงินเข้าสำเร็จ")
+      } catch (error) {
+         console.error("Error fetching data:", error.message)
+         message.error("เพิ่มรายการเงินเข้าล้มเหลว")
+      } finally {
+         setTrigger(!trigger)
+         setLoading(false)
+      }
+   }
 
    const columns = [
       {
@@ -118,9 +110,13 @@ function MoneyInPage() {
                <div className="font-bold text-[1.2rem] mb-4">
                   เลือกรายการเงินเข้า
                </div>
-               <div>
-                  <SearchFormAccountant onSearch={handleSearch} />
-               </div>
+
+               {/* Search Form */}
+               <SearchFormAccountant
+                  onSearch={handleSearch}
+                  trigger={trigger}
+               />
+
                <Divider className="mt-0" />
                <Row gutter={16}>
                   <Col span={12}>
@@ -132,13 +128,13 @@ function MoneyInPage() {
                      />
                   </Col>
                   <Col span={12}>
-                     <div className="w-full h-full">
+                     <Col span={24}>
                         <Divider orientation="left">
                            รวมยอดรายการเงินเข้า
                         </Divider>
                         <List
                            className="mb-3"
-                           header={<div>รายการแทรกค์กิ้ง[opal]</div>}
+                           header={<div>รายการแทรกค์กิ้ง</div>}
                            footer={
                               <div className="w-full text-right">
                                  รวมยอด: {THBath.format(sumPrice)}
@@ -171,16 +167,13 @@ function MoneyInPage() {
                               </List.Item>
                            )}
                         />
-                        <div className="w-full flex justify-end">
-                           <Button
-                              disabled={selectedRowKeys.length === 0}
-                              icon={<FileAddOutlined />}
-                              type="primary"
-                           >
-                              สร้างรายการเงินเข้า
-                           </Button>
-                        </div>
-                     </div>
+                     </Col>
+                     <Col span={24}>
+                        <CreateMoneyInForm
+                           selectedRowKeys={selectedRowKeys}
+                           onCreateMoneyInList={handleAddMoneyIn}
+                        />
+                     </Col>
                   </Col>
                </Row>
             </div>
