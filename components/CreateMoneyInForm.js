@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { FileAddOutlined, UploadOutlined } from "@ant-design/icons"
+import { FileAddOutlined} from "@ant-design/icons"
 import {
    Button,
    Col,
@@ -7,7 +7,6 @@ import {
    Form,
    Input,
    Row,
-   Upload,
    message
 } from "antd"
 import dayjs from "dayjs"
