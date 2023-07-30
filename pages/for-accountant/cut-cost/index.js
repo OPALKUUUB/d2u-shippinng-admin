@@ -2,8 +2,9 @@
 /* eslint-disable import/no-unresolved */
 import React, { Fragment, useEffect, useState } from "react"
 import { getSession } from "next-auth/react"
-import { Col, Divider, List, Row, Table, Tag, Typography, message } from "antd"
+import { Col, Divider, Row, Switch, Table, message } from "antd"
 import axios from "axios"
+import Link from "next/link"
 import Layout from "../../../components/layout/layout"
 import LoadingPage from "../../../components/LoadingPage"
 
@@ -11,10 +12,10 @@ function CutCostPage() {
    const [loading, setLoading] = useState(false)
    const [data, setData] = useState([])
 
-   const fetchMoneyInData = async () => {
+   const fetchCutCostData = async () => {
       setLoading(true)
       try {
-         const response = await axios.get("/api/for-accountant/money-in")
+         const response = await axios.get("/api/for-accountant/cut-cost")
          const responseData = await response.data.data
          setData(
             responseData.map((item, index) => ({
@@ -29,15 +30,35 @@ function CutCostPage() {
       }
    }
 
+   const handleCheckCbCutCost = async (checked, row, index) => {
+      setLoading(true)
+      try {
+         axios.put(`/api/for-accountant/cut-cost?tracking_id=${row.id}`, {
+            cb_cutcost: checked ? 1 : 0,
+         })
+      } catch (err) {
+         console.log(err)
+         message.success("อัพเดพข้อมูลล้มเหลว")
+      } finally {
+         setData((prev) => [
+            ...prev.slice(0, index),
+            { ...prev[index], cb_cutcost: checked ? 1 : 0 },
+            ...prev.slice(index + 1),
+         ])
+         message.success("อัพเดพข้อมูลสำเร็จ")
+         setLoading(false)
+      }
+   }
+
    useEffect(() => {
-      fetchMoneyInData()
+      fetchCutCostData()
    }, [])
 
    const columns = [
       {
          title: "วันที่",
-         dataIndex: "datetime",
-         key: "datetime",
+         dataIndex: "date",
+         key: "date",
       },
       {
          title: "username",
@@ -45,24 +66,43 @@ function CutCostPage() {
          key: "username",
       },
       {
-         title: "สลิป",
-         dataIndex: "image",
-         key: "image",
+         title: "ราคา",
+         dataIndex: "price",
+         key: "price",
       },
       {
-         title: "ประเภทการชำระเงิน",
-         dataIndex: "payment_type",
-         key: "payment_type",
+         title: "ช่องทาง",
+         dataIndex: "channel",
+         key: "channel",
       },
       {
-         title: "จำนวนเงิน(บาท)",
-         dataIndex: "total",
-         key: "total",
+         title: "ช่องทางการชำระเงิน",
+         dataIndex: "paid_channel",
+         key: "paid_channel",
+         width: "120px",
       },
       {
-         title: "หมายเหตุ",
-         dataIndex: "remark",
-         key: "remark",
+         title: "ลิ้งค์",
+         dataIndex: "link",
+         key: "link",
+         render: (link) => {
+            if (link === "" || link === null) return "-"
+            return <Link href={link}>Click</Link>
+         },
+      },
+      {
+         title: "เช็กตัดยอด",
+         dataIndex: "cb_cutcost",
+         key: "cb_cutcost",
+         render: (check, row, index) => {
+            const checked = check === 1
+            return (
+               <Switch
+                  checked={checked}
+                  onChange={(value) => handleCheckCbCutCost(value, row, index)}
+               />
+            )
+         },
       },
    ]
 
@@ -71,9 +111,7 @@ function CutCostPage() {
          <LoadingPage loading={loading} />
          <div className="p-4">
             <div className="bg-white rounded-lg p-4">
-               <div className="font-bold text-[1.2rem] mb-4">
-                  รายการตัดยอด
-               </div>
+               <div className="font-bold text-[1.2rem] mb-4">รายการตัดยอด</div>
 
                <Divider className="mt-0" />
                <Row gutter={16}>
