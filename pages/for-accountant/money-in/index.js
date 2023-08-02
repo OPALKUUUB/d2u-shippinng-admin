@@ -39,7 +39,7 @@ function MoneyInPage() {
          const rowSelectionDataList = data.filter((fi) =>
             selectedRowKeys.includes(fi.key)
          )
-         const {user_id} = data.filter((fi) =>
+         const { user_id } = data.filter((fi) =>
             selectedRowKeys.includes(fi.key)
          )[0]
          await axios.post("/api/for-accountant/money-in", {

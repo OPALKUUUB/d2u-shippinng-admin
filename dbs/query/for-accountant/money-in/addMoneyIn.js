@@ -23,13 +23,14 @@ async function addMoneyIn(body) {
       const { insertId } = result
       const queryStringMatch = `
          INSERT INTO mi_match_tracking
-         (mim_mi_id, mim_match_id, mim_status, mim_channel) VALUES ?
+         (mim_mi_id, mim_match_id, mim_status, mim_channel, mim_price) VALUES ?
       `
       const dataMatch = rowSelectionDataList.map((item) => [
          insertId,
          item.id,
          "P",
          item.channel,
+         item.price
       ])
       await query(queryStringMatch, [dataMatch])
       return insertId // Return the ID of the newly inserted record
