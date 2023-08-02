@@ -16,6 +16,7 @@ async function getAllMoneyIn() {
         mi.mi_updated_at AS updated_at
       FROM money_in mi
       JOIN users u ON u.id = mi.mi_user_id
+      WHERE mi.mi_status = 'P'
       ORDER BY mi_created_at
     `
 
