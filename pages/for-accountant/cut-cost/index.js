@@ -1,16 +1,151 @@
 /* eslint-disable import/no-named-as-default */
 /* eslint-disable import/no-unresolved */
-import React, { Fragment, useEffect, useState } from "react"
+import React, { Fragment, useEffect, useRef, useState } from "react"
 import { getSession } from "next-auth/react"
-import { Col, Divider, Row, Switch, Table, message } from "antd"
+import {
+   Button,
+   Col,
+   Divider,
+   Input,
+   Row,
+   Space,
+   Switch,
+   Table,
+   message,
+} from "antd"
 import axios from "axios"
 import Link from "next/link"
+import Highlighter from "react-highlight-words"
+import { SearchOutlined } from "@ant-design/icons"
+import dayjs from "dayjs"
 import Layout from "../../../components/layout/layout"
 import LoadingPage from "../../../components/LoadingPage"
 
 function CutCostPage() {
    const [loading, setLoading] = useState(false)
    const [data, setData] = useState([])
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+
+   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+      confirm()
+      setSearchText(selectedKeys[0])
+      setSearchedColumn(dataIndex)
+   }
+   const handleReset = (clearFilters) => {
+      clearFilters()
+      setSearchText("")
+   }
+
+   const getColumnSearchProps = (dataIndex) => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1677ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) =>
+         // console.log(record, dataIndex)
+         record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+      render: (text) =>
+         searchedColumn === dataIndex ? (
+            <Highlighter
+               highlightStyle={{
+                  backgroundColor: "#ffc069",
+                  padding: 0,
+               }}
+               searchWords={[searchText]}
+               autoEscape
+               textToHighlight={text ? text.toString() : ""}
+            />
+         ) : (
+            text
+         ),
+   })
 
    const fetchCutCostData = async () => {
       setLoading(true)
@@ -59,11 +194,19 @@ function CutCostPage() {
          title: "วันที่",
          dataIndex: "date",
          key: "date",
+         ...getColumnSearchProps("date"),
+         sorter: (a, b) => {
+            const date_a = dayjs(a.date, 'D/M/YYYY').format("YYYYMMDD")
+            const date_b = dayjs(b.date, 'D/M/YYYY').format("YYYYMMDD")
+            return date_a-date_b
+         },
+         
       },
       {
          title: "username",
          dataIndex: "username",
          key: "username",
+         ...getColumnSearchProps("username"),
       },
       {
          title: "ราคา",
@@ -74,12 +217,30 @@ function CutCostPage() {
          title: "ช่องทาง",
          dataIndex: "channel",
          key: "channel",
+         filters: [
+            { text: "yahoo", value: "yahoo" },
+            { text: "shimizu", value: "shimizu" },
+            { text: "mercari", value: "mercari" },
+            { text: "fril", value: "fril" },
+            { text: "web123", value: "123" },
+         ],
+         onFilter: (value, record) => record.channel === value,
       },
       {
          title: "ช่องทางการชำระเงิน",
          dataIndex: "paid_channel",
          key: "paid_channel",
          width: "120px",
+         filters: [
+            { text: "9980", value: "9980" },
+            { text: "3493", value: "3493" },
+            { text: "บัตรญี่ปุ่น", value: "บัตรญี่ปุ่น" },
+            { text: "MERPAY", value: "MERPAY" },
+            { text: "PAYPAY", value: "PAYPAY" },
+            { text: "COMBINI", value: "COMBINI" },
+            { text: "โอนเงิน", value: "โอนเงิน" },
+         ],
+         onFilter: (value, record) => record.paid_channel === value,
       },
       {
          title: "ลิ้งค์",
