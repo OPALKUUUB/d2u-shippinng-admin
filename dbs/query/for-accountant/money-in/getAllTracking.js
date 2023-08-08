@@ -19,6 +19,7 @@ async function getAllTracking(parameters) {
     WHERE t.channel = ?
       AND t.user_id = ?
       AND t.date LIKE ?
+      AND t.channel = 'yahoo'
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
     UNION
     SELECT

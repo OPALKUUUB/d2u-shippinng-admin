@@ -901,16 +901,14 @@ function TrackingPage() {
    ]
    useEffect(() => {
       ;(async () => {
+         const response = await axios.get("/api/tracking")
+         const responseData = await response.data
+         setData(responseData.trackings)
+      })()
+      ;(async () => {
          const response = await fetch("/api/user")
          const responseJson = await response.json()
          setUsers(responseJson.users)
-      })()
-      ;(async () => {
-         const response = await fetch("/api/tracking")
-         const responseJson = await response.json()
-         // console.log(responseJson)
-         // console.log(responseJson.trackings.filter(ft => ft.voyage === null))
-         setData(responseJson.trackings)
       })()
    }, [])
    return (
