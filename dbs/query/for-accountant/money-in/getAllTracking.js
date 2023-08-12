@@ -52,11 +52,11 @@ async function getAllTracking(parameters) {
       u.username,
       SUBSTRING_INDEX(sb.created_at, ' ', 1) AS date,
       CASE
-        WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)', 'ฝากไว้ก่อน') THEN COALESCE(sb.cost_delivery, 0)
+        WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)', 'ฝากไว้ก่อน') THEN COALESCE(sb.delivery_cost, 0)
         ELSE COALESCE(sb.voyage_price, 0)
       END AS price,
       CASE
-        WHEN sb.delivery_type NOT IN ('ขนส่งเอกชน(ที่อยู่ ลค.)') THEN 'ขนส่งเอกชน(ที่อยู่ ลค.)'
+        WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)') THEN 'ขนส่งเอกชน(ที่อยู่ ลค.)'
         ELSE 'ship_billing'
       END AS channel,
       sb.created_at,
