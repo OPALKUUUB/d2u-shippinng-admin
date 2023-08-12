@@ -32,6 +32,7 @@ async function getAllCutCost2() {
       FROM trackings t
       JOIN users u ON u.id = t.user_id
       WHERE t.channel != 'shimizu'
+      AND t.paid_channel != 'PAYPAY'
       ORDER BY 
          STR_TO_DATE(t.created_at, '%d/%m/%Y %H:%i:%s') DESC;
     `
