@@ -26,7 +26,7 @@ const sidebarMenuData = [
       name: "Tracking",
       icon: <TrackingPackageIcon />,
       childs: [
-         { id: 1, name: "All Tracking", to: "/tracking" },
+         { id: 1, name: "All Tracking", to: "/tracking/all" },
          { id: 2, name: "Shimizu", to: "/tracking/shimizu" },
          { id: 3, name: "Mercari", to: "/tracking/mercari" },
          { id: 4, name: "Web123", to: "/tracking/web123" },
