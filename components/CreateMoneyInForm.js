@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { FileAddOutlined} from "@ant-design/icons"
+import { FileAddOutlined, UploadOutlined } from "@ant-design/icons"
 import {
    Button,
    Col,
@@ -7,8 +7,10 @@ import {
    Form,
    Input,
    Row,
-   message
+   Upload,
+   message,
 } from "antd"
+import axios from "axios"
 import dayjs from "dayjs"
 import { useState } from "react"
 
@@ -24,8 +26,28 @@ const MoneyInModel = {
 
 function CreateMoneyInForm({ onCreateMoneyInList, selectedRowKeys }) {
    const [moneyInForm, setMoneyInForm] = useState(MoneyInModel)
+   const [fileList, setFileList] = useState([])
    const [form] = Form.useForm()
+   const [loadings, setLoadings] = useState(false)
 
+   const onPreview = async (file) => {
+      // let src = file.url
+      let src = file.url || file.thumbUrl
+      if (!src) {
+         src = await new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.readAsDataURL(file.originFileObj)
+            reader.onload = () => resolve(reader.result)
+         })
+      }
+      const image = new Image()
+      image.src = src
+      const imgWindow = window.open(src)
+      imgWindow?.document.write(image.outerHTML)
+   }
+   const handleChangeFileList = (event) => {
+      setFileList(event.fileList)
+   }
    const handleInputChange = (fieldName, value) => {
       const formattedValue =
          fieldName === "datetime"
@@ -41,11 +63,30 @@ function CreateMoneyInForm({ onCreateMoneyInList, selectedRowKeys }) {
    const onFinish = async () => {
       const body = moneyInForm
       try {
+         setLoadings(true)
+         if (fileList.length > 0) {
+            const images = await Promise.all(
+               fileList.map(async (curr) => {
+                  const src = await new Promise((resolve) => {
+                     const reader = new FileReader()
+                     reader.readAsDataURL(curr.originFileObj)
+                     reader.onload = () => resolve(reader.result)
+                  })
+                  const image = new Image()
+                  image.src = src
+                  return image.src
+               })
+            )
+            const response = await axios.post("/api/upload", { images })
+            body.image = response.data.imageURL
+         }
          await onCreateMoneyInList(body)
       } catch (err) {
          console.log(err)
       } finally {
          form.resetFields()
+         setFileList([])
+         setLoadings(false)
       }
    }
    const onFinishFailed = (errorInfo) => {
@@ -102,17 +143,24 @@ function CreateMoneyInForm({ onCreateMoneyInList, selectedRowKeys }) {
                onChange={(e) => handleInputChange("remark", e.target.value)}
             />
          </Form.Item>
-         {/* <Form.Item name="image">
-            <Upload>
+         <Form.Item name="image">
+            <Upload
+               className="cursor-pointer"
+               onPreview={onPreview}
+               fileList={fileList}
+               onChange={handleChangeFileList}
+               maxCount={1}
+            >
                <Button icon={<UploadOutlined />}>เลือกรูปภาพ</Button>
             </Upload>
-         </Form.Item> */}
+         </Form.Item>
          <Form.Item>
             <Button
                disabled={selectedRowKeys.length === 0}
                htmlType="submit"
                icon={<FileAddOutlined />}
                type="primary"
+               loading={loadings}
             >
                สร้างรายการเงินเข้า
             </Button>

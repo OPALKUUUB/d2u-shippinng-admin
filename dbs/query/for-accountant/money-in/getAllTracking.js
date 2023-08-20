@@ -50,7 +50,8 @@ async function getAllTracking(parameters) {
     SELECT
       sb.id,
       u.username,
-      SUBSTRING_INDEX(sb.created_at, ' ', 1) AS date,
+      -- SUBSTRING_INDEX(sb.created_at, ' ', 1) AS date,
+      sb.voyage AS date,
       CASE
         WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)', 'ฝากไว้ก่อน') THEN COALESCE(sb.delivery_cost, 0)
         ELSE COALESCE(sb.voyage_price, 0)
@@ -66,7 +67,7 @@ async function getAllTracking(parameters) {
     LEFT JOIN mi_match_tracking mimt ON sb.id = mimt.mim_match_id 
       AND (mimt.mim_channel IN ('ship_billing', 'ขนส่งเอกชน(ที่อยู่ ลค.)'))
     WHERE sb.user_id = ?
-      AND sb.created_at LIKE ?
+      AND sb.voyage LIKE ?
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
     ORDER BY STR_TO_DATE(date, '%d/%m/%Y') DESC
    `
