@@ -5,6 +5,7 @@ import { getSession } from "next-auth/react"
 import { Button, Col, Divider, Row, Table } from "antd"
 import axios from "axios"
 import dayjs from "dayjs"
+import Link from "next/link"
 import Layout from "../../../components/layout/layout"
 import LoadingPage from "../../../components/LoadingPage"
 import ListMoneyInModal from "../../../components/ListMoneyInModal"
@@ -48,18 +49,26 @@ function ListMoneyInPage() {
          title: "วันที่",
          dataIndex: "created_at",
          key: "created_at",
-         render: (datetime) => dayjs(datetime).format("DD/MM/YYYY")
+         render: (datetime) => dayjs(datetime).format("DD/MM/YYYY"),
       },
       {
          title: "username",
          dataIndex: "username",
          key: "username",
       },
-      // {
-      //    title: "สลิป",
-      //    dataIndex: "image",
-      //    key: "image",
-      // },
+      {
+         title: "สลิป",
+         dataIndex: "image",
+         key: "image",
+         render: (url) =>
+            url === "" || url === null ? (
+               "-"
+            ) : (
+               <Link href={url} target="_blank">
+                  <img src={url} alt={url} height={100} />
+               </Link>
+            ),
+      },
       {
          title: "ประเภทการชำระเงิน",
          dataIndex: "payment_type",

@@ -36,6 +36,7 @@ function MoneyInPage() {
    const handleAddMoneyIn = async (moneyInForm) => {
       setLoading(true)
       try {
+         console.log(moneyInForm)
          const rowSelectionDataList = data.filter((fi) =>
             selectedRowKeys.includes(fi.key)
          )
