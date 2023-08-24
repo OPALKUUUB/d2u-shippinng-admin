@@ -13,6 +13,7 @@ import {
 import axios from "axios"
 import dayjs from "dayjs"
 import { useState } from "react"
+import PasteImage from "./PasteImage"
 
 const { TextArea } = Input
 
@@ -29,6 +30,36 @@ function CreateMoneyInForm({ onCreateMoneyInList, selectedRowKeys }) {
    const [fileList, setFileList] = useState([])
    const [form] = Form.useForm()
    const [loadings, setLoadings] = useState(false)
+
+   const handlePasteImage = async (e) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      // Look for an image among the pasted items
+      const blob = Array.from(items)
+         .filter((item) => item.type.indexOf("image") !== -1)
+         .map((item) => item.getAsFile())[0]
+
+      // If an image is found, read it as a data URL and add it to the file list
+      if (blob) {
+         const reader = new FileReader()
+         reader.readAsDataURL(blob)
+         reader.onload = () => {
+            const newFileList = [
+               {
+                  uid: `paste-${Date.now()}`,
+                  name: blob.name,
+                  type: blob.type,
+                  size: blob.size,
+                  originFileObj: blob,
+                  url: reader.result,
+                  status: "done",
+               },
+            ]
+            setFileList(newFileList)
+         }
+      }
+   }
 
    const onPreview = async (file) => {
       // let src = file.url
@@ -144,14 +175,23 @@ function CreateMoneyInForm({ onCreateMoneyInList, selectedRowKeys }) {
             />
          </Form.Item>
          <Form.Item name="image">
+            <PasteImage
+               handlePasteImage={handlePasteImage}
+               width="100%"
+               height="120px"
+            />
+         </Form.Item>
+         <Form.Item name="image">
             <Upload
-               className="cursor-pointer"
+               className="cursor-pointer mt-2"
                onPreview={onPreview}
                fileList={fileList}
                onChange={handleChangeFileList}
                maxCount={1}
             >
-               <Button icon={<UploadOutlined />}>เลือกรูปภาพ</Button>
+               <Button className="w-[100%]" icon={<UploadOutlined />}>
+                  เลือกรูปภาพ
+               </Button>
             </Upload>
          </Form.Item>
          <Form.Item>
