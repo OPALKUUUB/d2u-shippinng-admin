@@ -16,11 +16,11 @@ async function getAllTracking(parameters) {
     JOIN users u ON u.id = t.user_id
     LEFT JOIN \`yahoo-auction-payment\` yap ON yap.tracking_id = t.id
     LEFT JOIN mi_match_tracking mimt ON t.id = mimt.mim_match_id AND mimt.mim_channel = 'yahoo'
-    WHERE t.channel = ?
-      AND t.user_id = ?
+    WHERE  t.user_id = ?
       AND t.date LIKE ?
       AND t.channel = 'yahoo'
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
+      AND STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
     UNION
     SELECT
       t.id,
@@ -46,11 +46,11 @@ async function getAllTracking(parameters) {
       AND (t.channel LIKE ? OR t.airbilling = 1)
       AND t.date LIKE ?
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
+      AND STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
     UNION
     SELECT
       sb.id,
       u.username,
-      -- SUBSTRING_INDEX(sb.created_at, ' ', 1) AS date,
       sb.voyage AS date,
       CASE
         WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)', 'ฝากไว้ก่อน') THEN COALESCE(sb.delivery_cost, 0)
@@ -69,11 +69,11 @@ async function getAllTracking(parameters) {
     WHERE sb.user_id = ?
       AND sb.voyage LIKE ?
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
+      AND STR_TO_DATE(sb.voyage, '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
     ORDER BY STR_TO_DATE(date, '%d/%m/%Y') DESC
    `
 
    const data = [
-      channel,
       user_id,
       `${date}%`,
       user_id,
