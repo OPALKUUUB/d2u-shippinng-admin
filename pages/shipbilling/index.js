@@ -29,7 +29,6 @@ import React, { Fragment, useEffect, useState, useRef } from "react"
 import { useRouter } from "next/router"
 import {
    DownOutlined,
-   PlusCircleFilled,
    SearchOutlined,
    CheckOutlined,
 } from "@ant-design/icons"
@@ -75,7 +74,7 @@ function ShipBilling() {
       try {
          const response = await axios.get(`/api/shipbilling?voyage=${value}`)
          const responseJson = await response.data
-         console.log(responseJson)
+         // console.log(responseJson)
          setDataTemp(responseJson.trackings)
          setData(
             responseJson.trackings
@@ -269,6 +268,45 @@ function ShipBilling() {
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
             check_2: status ? 0 : 1,
+         }),
+      })
+      const responseJson = await response.json()
+      const { billing } = responseJson
+      setData((prev) => {
+         const index = prev.findIndex(
+            (f) => f.user_id === billing.user_id && f.voyage === billing.voyage
+         )
+         console.log(index)
+         return [
+            ...prev.slice(0, index),
+            { ...billing },
+            ...prev.slice(index + 1),
+         ]
+      })
+      message.success("success!")
+   }
+   const handleChangeCheck3 = async (status, bill) => {
+      // eslint-disable-next-line prefer-destructuring
+      let shipbilling_id = bill.shipbilling_id
+      if (bill.shipbilling_id === null) {
+         const response1 = await fetch(`/api/shipbilling`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               user_id: bill.user_id,
+               voyage: voyageSelect,
+            }),
+         })
+         const responseJson1 = await response1.json()
+         shipbilling_id = responseJson1.billing.id
+      }
+      const response = await fetch(`/api/shipbilling?id=${shipbilling_id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            check_3: status ? 0 : 1,
          }),
       })
       const responseJson = await response.json()
@@ -604,7 +642,7 @@ function ShipBilling() {
       //    },
       // },
       {
-         title: "done",
+         title: "รับของเสร็จ",
          dataIndex: "user_id",
          width: "60px",
          key: "check_2",
@@ -644,38 +682,78 @@ function ShipBilling() {
          },
       },
       {
-         title: "สลิป",
-         dataIndex: "slip_image",
+         title: "จ่ายแล้ว",
+         dataIndex: "user_id",
          width: "60px",
-         key: "slip_image",
-         render: (image, item) => {
-            if (image) {
-               return (
-                  <img
-                     src={image}
-                     alt=""
-                     className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
-                     onClick={() => {
-                        setSelectedRow(item)
-                        setOpenEditSlipModal(true)
-                     }}
+         key: "check_3",
+         align: "center",
+         filters: [
+            {
+               text: "จ่ายแล้ว",
+               value: 1,
+            },
+            {
+               text: "ยังไม่จ่าย",
+               value: 0,
+            },
+         ],
+         onFilter: (value, record) => record.check_3 === value,
+         render: (user_id) => {
+            const billings = data.filter((ft) => ft.user_id === user_id)
+            const billing = billings[0]
+            const check = billing.check_3 === 1
+            return check ? (
+               <div className="flex flex-col items-center">
+                  <Switch
+                     checked={check}
+                     onClick={() => handleChangeCheck3(check, billing)}
                   />
-               )
-            }
-            return (
-               <Button
-                  type="primary"
-                  onClick={() => {
-                     setSelectedRow(item)
-                     setOpenEditSlipModal(true)
-                  }}
-                  icon={<PlusCircleFilled />}
-               >
-                  เพิ่ม
-               </Button>
+                  <div style={{ color: "green" }}>จ่ายแล้ว</div>
+               </div>
+            ) : (
+               <div className="flex flex-col items-center">
+                  <Switch
+                     checked={check}
+                     onClick={() => handleChangeCheck3(check, billing)}
+                  />
+                  <div style={{ color: "red" }}>ยังไม่จ่าย</div>
+               </div>
             )
          },
       },
+      // {
+      //    title: "สลิป",
+      //    dataIndex: "slip_image",
+      //    width: "60px",
+      //    key: "slip_image",
+      //    render: (image, item) => {
+      //       if (image) {
+      //          return (
+      //             <img
+      //                src={image}
+      //                alt=""
+      //                className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+      //                onClick={() => {
+      //                   setSelectedRow(item)
+      //                   setOpenEditSlipModal(true)
+      //                }}
+      //             />
+      //          )
+      //       }
+      //       return (
+      //          <Button
+      //             type="primary"
+      //             onClick={() => {
+      //                setSelectedRow(item)
+      //                setOpenEditSlipModal(true)
+      //             }}
+      //             icon={<PlusCircleFilled />}
+      //          >
+      //             เพิ่ม
+      //          </Button>
+      //       )
+      //    },
+      // },
       {
          title: "remark",
          dataIndex: "remark",

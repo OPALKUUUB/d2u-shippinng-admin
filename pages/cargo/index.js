@@ -15,6 +15,7 @@ import {
    Spin,
    Switch,
    Table,
+   Tag,
    message,
 } from "antd"
 import { DownOutlined, PlusCircleOutlined } from "@ant-design/icons"
@@ -105,6 +106,19 @@ function CargoPage() {
          key: "username",
       },
       {
+         title: "ช่องทางเดิม",
+         dataIndex: "channel",
+         width: "150px",
+         key: "channel",
+         render: (text) => {
+            const channelList = ['123', 'mercari', 'fril', 'shimizu', 'yahoo']
+            const channelColorList = ['magenta', 'red', 'volcano', 'orange', 'gold']
+            const chIdx = channelList.findIndex(ch => ch === text)
+            const color = channelColorList[chIdx]
+            return <Tag color={color}>{text}</Tag>
+         }
+      },
+      {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          width: "150px",
@@ -155,19 +169,20 @@ function CargoPage() {
          width: "120px",
          render: (text) => (isValid(text) ? text : "-"),
       },
-      {
-         title: "น้ำหนักขนาด",
-         dataIndex: "weight_size",
-         key: "weight_size",
-         width: "120px",
-         render: (text) => (isValid(text) ? text : "-"),
-      },
+      // {
+      //    title: "น้ำหนักขนาด",
+      //    dataIndex: "weight_size",
+      //    key: "weight_size",
+      //    width: "120px",
+      //    render: (text) => (isValid(text) ? text : "-"),
+      // },
       {
          title: "ราคา",
          dataIndex: "price",
          key: "price",
          width: "100px",
-         render: (text) => (isValid(text) ? text : "-"),
+         // eslint-disable-next-line no-nested-ternary
+         render: (text, row) => (isValid(text) ? text + (row.delivery_type === 'EMS' ? '¥' : (row.delivery_type === 'AIR CARGO' ? '฿' : '𐄹')) : "-"),
       },
       {
          title: "แจ้งเก็บเงิน",

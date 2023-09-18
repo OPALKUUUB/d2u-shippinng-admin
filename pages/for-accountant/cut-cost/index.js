@@ -120,12 +120,13 @@ function CutCostPage() {
             }}
          />
       ),
-      onFilter: (value, record) =>
-         // console.log(record, dataIndex)
-         record[dataIndex]
+      onFilter: (value, record) =>{
+         const text = record[dataIndex] === null ? '' : record[dataIndex]
+         return text
             .toString()
             .toLowerCase()
-            .includes(value.toLowerCase()),
+            .includes(value.toLowerCase())
+      },
       onFilterDropdownOpenChange: (visible) => {
          if (visible) {
             setTimeout(() => searchInput.current?.select(), 100)
@@ -212,6 +213,7 @@ function CutCostPage() {
          title: "ราคา",
          dataIndex: "price",
          key: "price",
+         ...getColumnSearchProps("price"),
       },
       {
          title: "ช่องทาง",
