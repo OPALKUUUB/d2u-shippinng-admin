@@ -732,37 +732,37 @@ function Web123Page() {
                </Space>
             ),
       },
-      {
-         title: "slip",
-         dataIndex: "tracking_slip_image",
-         width: "120px",
-         key: "tracking_slip_image",
-         render: (image, item) => {
-            if (image) {
-               return (
-                  <img
-                     src={image}
-                     alt=""
-                     className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
-                     onClick={() => {
-                        setSelectedRow(item)
-                        setOpenEditSlipModal(true)
-                     }}
-                  />
-               )
-            }
-            return (
-               <Button
-                  onClick={() => {
-                     setSelectedRow(item)
-                     setOpenEditSlipModal(true)
-                  }}
-               >
-                  Add Slip
-               </Button>
-            )
-         },
-      },
+      // {
+      //    title: "slip",
+      //    dataIndex: "tracking_slip_image",
+      //    width: "120px",
+      //    key: "tracking_slip_image",
+      //    render: (image, item) => {
+      //       if (image) {
+      //          return (
+      //             <img
+      //                src={image}
+      //                alt=""
+      //                className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+      //                onClick={() => {
+      //                   setSelectedRow(item)
+      //                   setOpenEditSlipModal(true)
+      //                }}
+      //             />
+      //          )
+      //       }
+      //       return (
+      //          <Button
+      //             onClick={() => {
+      //                setSelectedRow(item)
+      //                setOpenEditSlipModal(true)
+      //             }}
+      //          >
+      //             Add Slip
+      //          </Button>
+      //       )
+      //    },
+      // },
       {
          title: "ช่องทางจ่ายออก",
          dataIndex: "paid_channel",
