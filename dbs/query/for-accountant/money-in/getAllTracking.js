@@ -52,20 +52,31 @@ async function getAllTracking(parameters) {
       sb.id,
       u.username,
       sb.voyage AS date,
-      CASE
-        WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)', 'ฝากไว้ก่อน') THEN COALESCE(sb.delivery_cost, 0)
-        ELSE COALESCE(sb.voyage_price, 0)
-      END AS price,
-      CASE
-        WHEN sb.delivery_type IN ('ขนส่งเอกชน(ที่อยู่ ลค.)') THEN 'ขนส่งเอกชน(ที่อยู่ ลค.)'
-        ELSE 'ship_billing'
-      END AS channel,
+      COALESCE(sb.voyage_price, 0) AS price,
+      'ship_billing' AS channel,
       sb.created_at,
       u.id AS user_id
     FROM ship_billing sb
     JOIN users u ON u.id = sb.user_id
     LEFT JOIN mi_match_tracking mimt ON sb.id = mimt.mim_match_id 
-      AND (mimt.mim_channel IN ('ship_billing', 'ขนส่งเอกชน(ที่อยู่ ลค.)'))
+      AND (mimt.mim_channel IN ('ship_billing'))
+    WHERE sb.user_id = ?
+      AND sb.voyage LIKE ?
+      AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
+      AND STR_TO_DATE(sb.voyage, '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
+    UNION
+    SELECT
+      sb.id,
+      u.username,
+      sb.voyage AS date,
+      COALESCE(sb.delivery_cost, 0) AS price,
+      'ขนส่งเอกชน(ที่อยู่ ลค.)' AS channel,
+      sb.created_at,
+      u.id AS user_id
+    FROM ship_billing sb
+    JOIN users u ON u.id = sb.user_id
+    LEFT JOIN mi_match_tracking mimt ON sb.id = mimt.mim_match_id 
+      AND (mimt.mim_channel IN ('ขนส่งเอกชน(ที่อยู่ ลค.)'))
     WHERE sb.user_id = ?
       AND sb.voyage LIKE ?
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
@@ -78,6 +89,8 @@ async function getAllTracking(parameters) {
       `${date}%`,
       user_id,
       `%${channel}%`,
+      `${date}%`,
+      user_id,
       `${date}%`,
       user_id,
       `${date}%`,
