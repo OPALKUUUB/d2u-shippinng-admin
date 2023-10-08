@@ -75,7 +75,7 @@ async function getAllTracking(parameters) {
     FROM ship_billing sb
     JOIN users u ON u.id = sb.user_id
     LEFT JOIN mi_match_tracking mimt ON sb.id = mimt.mim_match_id 
-      AND (mimt.mim_channel IN ('ขนส่งเอกชน(ที่อยู่ ลค.)'))
+      AND (mimt.mim_channel IN ('ship_billing', 'ขนส่งเอกชน(ที่อยู่ ลค.)'))
     WHERE sb.user_id = ?
       AND sb.voyage LIKE ?
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
