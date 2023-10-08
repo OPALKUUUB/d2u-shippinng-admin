@@ -40,10 +40,9 @@ async function getAllTracking(parameters) {
     JOIN users u ON u.id = t.user_id
     LEFT JOIN mi_match_tracking mimt ON t.id = mimt.mim_match_id 
       AND mimt.mim_channel IN ('mercari', 'fril', '123')
-    WHERE t.channel != 'shimizu'
-      AND t.channel != 'yahoo'
+    WHERE t.channel not in ('shimizu', 'yahoo')
       AND t.user_id = ?
-      AND (t.channel LIKE ? OR t.airbilling = 1)
+      AND t.airbilling = 1
       AND t.date LIKE ?
       AND mimt.mim_match_id IS NULL AND mimt.mim_channel IS NULL AND mimt.mim_status IS NULL
       AND STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
@@ -105,7 +104,7 @@ async function getAllTracking(parameters) {
          channel === "yahoo" ||
          channel === "123" ||
          channel === "mercari" ||
-         channel === "fril" 
+         channel === "fril"
       ) {
          return results.filter((fi) => fi.channel === channel)
       }

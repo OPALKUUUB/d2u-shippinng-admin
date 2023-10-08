@@ -30,6 +30,7 @@ function MoneyInPage() {
          console.error("Error fetching data:", error.message)
       } finally {
          setLoading(false)
+         setSelectedRowKeys([])
       }
    }
 
