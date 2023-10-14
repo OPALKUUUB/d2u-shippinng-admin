@@ -1,8 +1,16 @@
 import query from "../../../mysql/connection"
 
+const CHANNEL_TYPE = {
+   MERCARI: "mercari",
+   FRIL: "fril",
+   WEB123:  "123",
+   YAHOO: "yahoo",
+   SHIPBILLING: "ship_billing",
+   PRIVATE_TRANS: "ขนส่งเอกชน(ที่อยู่ ลค.)" 
+}
 async function getAllTracking(parameters) {
    const { user_id, channel, date } = parameters
-
+   LogFilter(user_id, channel, date)
    try {
       const qs1 = `SELECT * FROM mi_match_tracking`
       const rs_qs1 = await query(qs1, [])
@@ -54,6 +62,10 @@ async function getAllTracking(parameters) {
          qs_tracking += "    AND t.user_id = ?"
          data_qs_tracking = [...data_qs_tracking, user_id]
       }
+      if (channel !== "" && channel !== null && channel !== undefined) {
+         qs_tracking += "    AND t.channel = ?"
+         data_qs_tracking = [...data_qs_tracking, channel]
+      }
       if (date !== "" && date !== null && date !== undefined) {
          qs_tracking += "    AND t.date = ?"
          data_qs_tracking = [...data_qs_tracking, date]
@@ -85,6 +97,10 @@ async function getAllTracking(parameters) {
          qs_yahoo += "    AND t.user_id = ?"
          data_qs_yahoo = [...data_qs_yahoo, user_id]
       }
+      if (channel !== "" && channel !== null && channel !== undefined) {
+         qs_yahoo += "    AND t.channel = ?"
+         data_qs_yahoo = [...data_qs_yahoo, channel]
+      }
       if (date !== "" && date !== null && date !== undefined) {
          qs_yahoo += "    AND t.date = ?"
          data_qs_yahoo = [...data_qs_yahoo, date]
@@ -115,8 +131,12 @@ async function getAllTracking(parameters) {
          qs_shipbilling += "    AND sb.user_id = ?"
          data_qs_shipbilling = [...data_qs_shipbilling, user_id]
       }
+      if (channel !== "" && channel !== null && channel !== undefined) {
+         qs_shipbilling += "    AND sb.delivery_type = ?"
+         data_qs_shipbilling = [...data_qs_shipbilling, channel]
+      }
       if (date !== "" && date !== null && date !== undefined) {
-         qs_shipbilling += "    AND sb.date = ?"
+         qs_shipbilling += "    AND sb.voyage = ?"
          data_qs_shipbilling = [...data_qs_shipbilling, date]
       }
       const rs_qs_shipbilling = await query(qs_shipbilling, data_qs_shipbilling)
@@ -145,8 +165,12 @@ async function getAllTracking(parameters) {
          qs_delivery_in += "    AND sb.user_id = ?"
          data_qs_delivery_in = [...data_qs_delivery_in, user_id]
       }
+      if (channel !== "" && channel !== null && channel !== undefined) {
+         qs_delivery_in += "    AND sb.delivery_type = ?"
+         data_qs_delivery_in = [...data_qs_delivery_in, channel]
+      }
       if (date !== "" && date !== null && date !== undefined) {
-         qs_delivery_in += "    AND sb.date = ?"
+         qs_delivery_in += "    AND sb.voyage = ?"
          data_qs_delivery_in = [...data_qs_delivery_in, date]
       }
       const rs_qs_delivery_in = await query(qs_delivery_in, data_qs_delivery_in)
@@ -278,6 +302,15 @@ async function getAllTracking(parameters) {
    //       "An error occurred while fetching data from getAllTracking(for-accountant/cut-cost)."
    //    )
    // }
+}
+
+function LogFilter(user_id, channel, date) {
+   console.log("Filter By: ");
+   console.log("----------------------------------------");
+   console.log("|   user_id   |   channel   |   date   |");
+   console.log("----------------------------------------");
+   console.log(`|   ${user_id}   |   ${channel}   |   ${date}   |`);
+   console.log("----------------------------------------");
 }
 
 export default getAllTracking
