@@ -3,7 +3,7 @@ import query from "../../../mysql/connection"
 const CHANNEL_TYPE = {
    MERCARI: "mercari",
    FRIL: "fril",
-   WEB123:  "123",
+   WEB123: "123",
    YAHOO: "yahoo",
    SHIPBILLING: "ship_billing",
    PRIVATE_TRANS: "ขนส่งเอกชน(ที่อยู่ ลค.)",
@@ -23,7 +23,7 @@ async function getAllTracking(parameters) {
             fi.mim_channel === 'cargo'
       )
       const rs_qs1_yahoo = rs_qs1.filter(
-         (fi) => 
+         (fi) =>
             fi.mim_channel === 'yahoo'
       )
       const rs_qs1_shipbilling = rs_qs1.filter(
@@ -31,7 +31,7 @@ async function getAllTracking(parameters) {
             fi.mim_channel === "ship_billing"
       )
       const rs_qs1_private_trans = rs_qs1.filter(
-         (fi) => 
+         (fi) =>
             fi.mim_channel === "ขนส่งเอกชน(ที่อยู่ ลค.)"
       )
       const rs_qs1_tracking_id = rs_qs1_tracking.map(item => item.mim_match_id)
@@ -60,7 +60,7 @@ async function getAllTracking(parameters) {
          AND t.channel != 'shimizu' AND t.channel != 'yahoo'
       `
       let data_qs_tracking = []
-      if(rs_qs1_tracking_id.length) {
+      if (rs_qs1_tracking_id.length) {
          qs_tracking += "    AND t.id NOT IN (?)"
          data_qs_tracking = [...data_qs_tracking, rs_qs1_tracking_id]
       }
@@ -79,7 +79,7 @@ async function getAllTracking(parameters) {
       qs_tracking += "     ORDER BY t.channel DESC"
       const rs_qs_tracking = await query(qs_tracking, data_qs_tracking)
       // console.log("rs_qs_tracking: ", rs_qs_tracking);
-      
+
       let qs_yahoo = `
          SELECT 
             t.id,
@@ -95,7 +95,7 @@ async function getAllTracking(parameters) {
          WHERE STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
       `
       let data_qs_yahoo = []
-      if(rs_qs1_yahoo_id.length) {
+      if (rs_qs1_yahoo_id.length) {
          qs_yahoo += "    AND t.id NOT IN (?)"
          data_qs_yahoo = [...data_qs_yahoo, rs_qs1_yahoo_id]
       }
@@ -129,7 +129,7 @@ async function getAllTracking(parameters) {
       AND sb.delivery_type IS NOT NULL
       `
       let data_qs_shipbilling = []
-      if(rs_qs1_shipbilling_id.length) {
+      if (rs_qs1_shipbilling_id.length) {
          qs_shipbilling += "    AND sb.id NOT IN (?)"
          data_qs_shipbilling = [...data_qs_shipbilling, rs_qs1_shipbilling_id]
       }
@@ -153,7 +153,7 @@ async function getAllTracking(parameters) {
          sb.id,
          u.username,
          sb.voyage AS date,
-         COALESCE(sb.voyage_price, 0) AS price,
+         COALESCE(sb.delivery_cost, 0) AS price,
          'ขนส่งเอกชน(ที่อยู่ ลค.)' AS channel,
          sb.created_at,
          u.id AS user_id 
@@ -163,7 +163,7 @@ async function getAllTracking(parameters) {
       AND sb.delivery_type = 'ขนส่งเอกชน(ที่อยู่ ลค.)'
       `
       let data_qs_delivery_in = []
-      if(rs_qs1_shipbilling_id.length) {
+      if (rs_qs1_shipbilling_id.length) {
          qs_delivery_in += "    AND sb.id NOT IN (?)"
          data_qs_delivery_in = [...data_qs_delivery_in, rs_qs1_private_trans_id]
       }
@@ -182,18 +182,18 @@ async function getAllTracking(parameters) {
       const rs_qs_delivery_in = await query(qs_delivery_in, data_qs_delivery_in)
 
       const result = [
-         ...rs_qs_tracking, 
-         ...rs_qs_yahoo, 
-         ...rs_qs_shipbilling, 
+         ...rs_qs_tracking,
+         ...rs_qs_yahoo,
+         ...rs_qs_shipbilling,
          ...rs_qs_delivery_in
       ]
-      .sort(function(a, b){
-         let aa = a.date.split('/').reverse().join(),
-            bb = b.date.split('/').reverse().join();
-         return aa < bb ? -1 : (aa > bb ? 1 : 0);
-      });
+         .sort(function (a, b) {
+            let aa = a.date.split('/').reverse().join(),
+               bb = b.date.split('/').reverse().join();
+            return aa < bb ? -1 : (aa > bb ? 1 : 0);
+         });
 
-      
+
       return result
 
    } catch (error) {
