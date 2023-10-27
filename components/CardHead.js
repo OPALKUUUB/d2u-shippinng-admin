@@ -1,8 +1,8 @@
-function CardHead({name, description}) {
+function CardHead({ name, description }) {
    return (
       <div className="card-head">
          <h3>{name}</h3>
-         <p>{description}</p>
+         <p>*{description}</p>
          <style jsx>
             {`
                .card-head {
@@ -18,6 +18,8 @@ function CardHead({name, description}) {
                }
                .card-head p {
                   margin: 10px 0;
+                  font-size: 0.75rem;
+                  color: gray;
                }
             `}
          </style>

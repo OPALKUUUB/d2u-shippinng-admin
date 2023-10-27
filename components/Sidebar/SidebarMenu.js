@@ -32,6 +32,7 @@ const sidebarMenuData = [
          { id: 4, name: "Web123", to: "/tracking/web123" },
          { id: 5, name: "Frill", to: "/tracking/frill" },
          { id: 6, name: "Yahoo", to: "/tracking/yahoo" },
+         { id: 6, name: "ประวัติการลบรายการ", to: "/tracking/contentDelete" },
          // { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
@@ -65,7 +66,7 @@ const sidebarMenuData = [
          // { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
-   { id: 9, name: "Data Analysis", icon:<PieChartOutlined />, to: "/data-analysis" },
+   { id: 9, name: "Data Analysis", icon: <PieChartOutlined />, to: "/data-analysis" },
 
 ]
 

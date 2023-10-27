@@ -34,10 +34,12 @@ async function getShimizu() {
          \`tracking-image\`
       ON 
          \`tracking-image\`.tracking_id = trackings.id
+      WHERE
+         trackings.cont_status != 99
       GROUP BY
          trackings.id
-      HAVING
-         trackings.channel = 'shimizu'
+      HAVING 1=1
+         AND trackings.channel = 'shimizu'
       ORDER BY 
          STR_TO_DATE(trackings.created_at, '%d/%m/%Y %H:%i:%s') DESC;
    `)
@@ -75,7 +77,7 @@ async function handler(req, res) {
       })
    }
    if (req.method === "PUT") {
-      const {id} = req.query
+      const { id } = req.query
       const keys = Object.keys(req.body)
       const values = Object.values(req.body)
       await query(`
@@ -84,7 +86,7 @@ async function handler(req, res) {
          WHERE id = ?
       `, [values[0], id])
       const trackings = await getShimizu()
-      res.status(200).json({message: "success!", trackings})
+      res.status(200).json({ message: "success!", trackings })
    }
    if (req.method === "POST") {
       const {
@@ -166,7 +168,8 @@ async function handler(req, res) {
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
       await mysql.connect()
-      await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      // await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      await mysql.query("UPDATE trackings SET cont_status = 99 where id = ? ", [id])
       const trackings = await getShimizu()
       await mysql.end()
       res.status(200).json({

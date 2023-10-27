@@ -127,7 +127,8 @@ async function handler(req, res) {
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
       await mysql.connect()
-      await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      // await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      await mysql.query("UPDATE trackings SET cont_status = 99 where id = ? ", [id])
       await mysql.end()
       const trackings = await getTrackings("123")
       res.status(200).json({

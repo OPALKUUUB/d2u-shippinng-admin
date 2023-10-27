@@ -57,7 +57,7 @@ async function handler(req, res) {
          trackings,
       })
    } else if (req.method === "PUT") {
-      const {id} = req.query
+      const { id } = req.query
       const keys = Object.keys(req.body)
       const values = Object.values(req.body)
       console.log(keys[0], values[0])
@@ -115,7 +115,8 @@ async function handler(req, res) {
    } else if (req.method === "DELETE") {
       const id = parseInt(req.query.id, 10)
       await mysql.connect()
-      await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      // await mysql.query("DELETE FROM trackings WHERE id = ?", [id])
+      await mysql.query("UPDATE trackings SET cont_status = 99 where id = ? ", [id])
       await mysql.end()
       const trackings = await getTrackings("fril")
       res.status(200).json({
