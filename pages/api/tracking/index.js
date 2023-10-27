@@ -6,7 +6,7 @@ async function handler(req, res) {
    if (req.method === "GET") {
       await mysql.connect()
       const trackings = await mysql.query(
-         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ? OR channel = ? OR channel = ? OR channel = ? OR channel = ?",
+         "SELECT trackings.*,users.username  FROM trackings JOIN users on users.id = trackings.user_id WHERE channel = ? OR channel = ? OR channel = ? OR channel = ? OR channel = ? AND trackings.cont_status != 99",
          ["shimizu", "mercari", "123", "fril", "yahoo"]
       )
       await mysql.end()
@@ -93,7 +93,7 @@ async function handler(req, res) {
             cod,
             id,
          ])
-         res.status(200).json({message: "success!"})
+         res.status(200).json({ message: "success!" })
          return
       }
       const trackings = await mysql.query(

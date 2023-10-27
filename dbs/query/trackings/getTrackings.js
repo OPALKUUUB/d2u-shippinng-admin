@@ -17,10 +17,12 @@ async function getTrackings(channel) {
        \`tracking-image\`
     ON 
        \`tracking-image\`.tracking_id = trackings.id
+    WHERE
+       trackings.cont_status != 99
     GROUP BY
        trackings.id
-    HAVING
-       trackings.channel = ?
+    HAVING 1=1
+       AND trackings.channel = ?
     ORDER BY 
        STR_TO_DATE(trackings.created_at, '%d/%m/%Y %H:%i:%s') DESC;
  `, [channel])
