@@ -5,12 +5,11 @@
     },
     "extends": [
         "airbnb",
-        "plugin:react/recommended", 
+        "plugin:react/recommended",
         "plugin:@next/next/recommended",
         "prettier"
     ],
-    "overrides": [
-    ],
+    "overrides": [],
     "parserOptions": {
         "ecmaFeatures": {
             "jsx": true
@@ -26,8 +25,10 @@
     ],
     "rules": {
         // useful rules below
-        "semi": ["error", "never"],
-        "indent": ["error", 3, {"offsetTernaryExpressions": true}],
+        "semi": [
+            "error",
+            "never"
+        ],
         // useless rules below
         "camelcase": "off",
         "no-alert": "off",
@@ -40,7 +41,15 @@
         "react/jsx-props-no-spreading": "off",
         "react/react-in-jsx-scope": "off",
         "react/destructuring-assignment": "off",
-        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+        "react/jsx-filename-extension": [
+            1,
+            {
+                "extensions": [
+                    ".js",
+                    ".jsx"
+                ]
+            }
+        ],
         "react/jsx-fragments": "off",
         "react/jsx-no-comment-textnodes": "off",
         "jsx-a11y/label-has-associated-control": "off",
@@ -48,7 +57,15 @@
         "jsx-a11y/no-static-element-interactions": "off",
         "jsx-a11y/no-noninteractive-element-interactions": "off",
         "jsx-a11y/control-has-associated-label": "off",
-        "react/no-unknown-property": ["error", { "ignore": ["jsx", "global"] }],
+        "react/no-unknown-property": [
+            "error",
+            {
+                "ignore": [
+                    "jsx",
+                    "global"
+                ]
+            }
+        ],
         "react/self-closing-comp": "off",
         "react/function-component-definition": "off",
         "react/no-unstable-nested-components": "off",
