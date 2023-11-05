@@ -15,6 +15,7 @@ import {
    Select,
    Space,
    Spin,
+   Tabs,
 } from "antd"
 import {
    AppstoreAddOutlined,
@@ -26,10 +27,28 @@ import moment from "moment/moment"
 import dayjs from "dayjs"
 import { getSession } from "next-auth/react"
 import Layout from "../components/layout/layout"
-// import TextArea from "antd/es/input/TextArea"
 const { TextArea } = Input
 
 function DashboardPage() {
+   return <div>
+
+      <div className="w-full h-full p-5">
+         <div className="w-full h-full bg-white rounded-md p-3 flex">
+            <Tabs
+               defaultActiveKey="1"
+               type="card"
+               size="lg"
+               items={[
+                  { label: "รายการติดตาม", key: 1, children: <TrackingTasks /> },
+                  { label: "ประวัตการลบรายการ", key: 2, children: <DeletedTasks /> },
+               ]}
+            />
+         </div>
+      </div>
+   </div>
+}
+
+function TrackingTasks() {
    const [todolist, setTodolist] = useState([])
    const [trigger, setTrigger] = useState(0)
    const [loading, setLoading] = useState(false)
@@ -72,6 +91,52 @@ function DashboardPage() {
                </div>
                <div className="overflow-y-scroll h-[98%] w-full">
                   <TodolistList tasks={todolist} stik={tik} />
+               </div>
+            </div>
+         </div>
+      </>
+   )
+}
+
+function DeletedTasks() {
+   const [todolist, setTodolist] = useState([])
+   const [trigger, setTrigger] = useState(0)
+   const [loading, setLoading] = useState(false)
+
+   function tik() {
+      setTrigger((prev) => prev + 1)
+   }
+
+   useEffect(() => {
+      setLoading(true)
+      const fetchTasks = async () => {
+         try {
+            const response = await axios.get("/api/tasks/contentDelete")
+            const { tasks } = response.data
+            setTodolist(tasks)
+         } catch (error) {
+            console.error(error)
+         } finally {
+            setLoading(false)
+         }
+      }
+
+      fetchTasks()
+   }, [trigger])
+
+   return (
+      <>
+         {loading && (
+            <div className="fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.5)] z-10">
+               <div className="fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                  <Spin size="large" />
+               </div>
+            </div>
+         )}
+         <div className="w-full h-full p-5">
+            <div className="w-full h-full bg-white rounded-md p-3 flex">
+               <div className="overflow-y-scroll w-full">
+                  <TodolistList tasks={todolist} stik={tik} mode={"contentDelete"} />
                </div>
             </div>
          </div>
@@ -239,17 +304,17 @@ function TodolistForm({ stik }) {
    )
 }
 
-function TodolistList({ tasks, stik }) {
+function TodolistList({ tasks, stik, mode = 'tracking' }) {
    return (
       <div className="flex flex-wrap w-full justify-center">
          {tasks.map((task) => (
-            <TodolistItem key={task.id} task={task} stik={stik} />
+            <TodolistItem key={task.id} task={task} stik={stik} mode={mode} />
          ))}
       </div>
    )
 }
 
-function TodolistItem({ task, stik }) {
+function TodolistItem({ task, stik, mode }) {
    const TodoListForm_model = {
       id: "",
       start_date: "",
@@ -280,17 +345,17 @@ function TodolistItem({ task, stik }) {
    // eslint-disable-next-line no-nested-ternary
    const classNameColor =
       task.team === "ADMIN"
-            ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-            : task.team === "DELIVER"
+         ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+         : task.team === "DELIVER"
             ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
             : task.team === "ACCOUNT"
-            ? "relative bg-blue-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-            : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-      // differenceInDays > 1
-      //    ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-      //    : differenceInDays >= 0
-      //    ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
-      //    : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+               ? "relative bg-blue-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+               : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+   // differenceInDays > 1
+   //    ? "relative bg-green-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+   //    : differenceInDays >= 0
+   //    ? "relative bg-red-700 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
+   //    : "relative bg-gray-500 w-[290px] h-[310px] text-white rounded-md p-2 mx-2 my-5"
 
    const handleShowEditModal = (task) => {
       if (task.end_date === null) {
@@ -386,14 +451,14 @@ function TodolistItem({ task, stik }) {
                <Space className="mb-[10px]">
                   <label>ทีมที่ดูแล: </label>
                   <Select
-                  className="w-[150px]"
+                     className="w-[150px]"
                      options={[
-                        { value: "", label: "เลือกทีมดูแล"},
+                        { value: "", label: "เลือกทีมดูแล" },
                         { value: "ADMIN", label: "ทีม ADMIN" },
                         { value: "DELIVER", label: "ทีม DELIVER" },
                         { value: "ACCOUNT", label: "ทีมบัญชี" },
                      ]}
-                     value={selectedRow.team === null ? "": selectedRow.team}
+                     value={selectedRow.team === null ? "" : selectedRow.team}
                      onChange={(value) =>
                         setSelectedRow({
                            ...selectedRow,
@@ -442,16 +507,16 @@ function TodolistItem({ task, stik }) {
          </Modal>
 
          <div className={classNameColor}>
-            <Button
+            {mode === "tracking" && <Button
                className="float-right bg-white hover:border-white"
                icon={<DeleteOutlined />}
                onClick={() => handleDeleteTodoList(task.id)}
-            />
-            <Button
+            />}
+            {mode === "tracking" && <Button
                className="float-right bg-white mr-1"
                icon={<EditOutlined />}
                onClick={() => handleShowEditModal(task)}
-            />
+            />}
             <div className="text-lg">วันที่จบรายการ</div>
             <div>{task.end_date}</div>
 
