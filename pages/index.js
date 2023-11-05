@@ -27,6 +27,7 @@ import moment from "moment/moment"
 import dayjs from "dayjs"
 import { getSession } from "next-auth/react"
 import Layout from "../components/layout/layout"
+
 const { TextArea } = Input
 
 function DashboardPage() {
@@ -136,7 +137,7 @@ function DeletedTasks() {
          <div className="w-full h-full p-5">
             <div className="w-full h-full bg-white rounded-md p-3 flex">
                <div className="overflow-y-scroll w-full">
-                  <TodolistList tasks={todolist} stik={tik} mode={"contentDelete"} />
+                  <TodolistList tasks={todolist} stik={tik} mode="contentDelete" />
                </div>
             </div>
          </div>
