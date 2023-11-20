@@ -57,6 +57,7 @@ async function getAllTracking(parameters) {
          FROM trackings t 
          JOIN users u ON u.id = t.user_id
          WHERE STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y') 
+         AND t.cont_status != 99
          AND t.channel != 'shimizu' AND t.channel != 'yahoo'
       `
       let data_qs_tracking = []
@@ -93,6 +94,7 @@ async function getAllTracking(parameters) {
          JOIN users u ON u.id = t.user_id
          JOIN \`yahoo-auction-payment\` yap ON yap.tracking_id = t.id
          WHERE STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') > STR_TO_DATE('30/6/2023', '%d/%m/%Y')
+         AND t.cont_status != 99
       `
       let data_qs_yahoo = []
       if (rs_qs1_yahoo_id.length) {

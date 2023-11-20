@@ -1,8 +1,8 @@
 import query from "../../mysql/connection"
 
 async function getAllTrackings() {
-   try {
-      const trackings = await query(`
+    try {
+        const trackings = await query(`
         SELECT
             CONCAT('Tracking_key_', t.id) AS \`key\`,
             t.id,
@@ -38,16 +38,18 @@ async function getAllTrackings() {
             \`yahoo-auction-payment\` yap ON t.id = yap.tracking_id AND t.channel = 'yahoo'
         LEFT JOIN
             \`yahoo-auction-order\` yao ON yao.payment_id = yap.id AND t.channel = 'yahoo'
+        WHERE
+            t.cont_status != 99
         ORDER BY
             STR_TO_DATE(SUBSTRING_INDEX(t.date, ' ', 1), '%d/%m/%Y') DESC;
     `)
 
-      return trackings
-   } catch (error) {
-      // Properly handle errors here
-      console.error("Error while fetching trackings:", error)
-      throw error
-   }
+        return trackings
+    } catch (error) {
+        // Properly handle errors here
+        console.error("Error while fetching trackings:", error)
+        throw error
+    }
 }
 
 export default getAllTrackings

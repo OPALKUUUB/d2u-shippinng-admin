@@ -25,41 +25,53 @@ function TrackingContentDelete() {
       getDataTable()
    }, [])
 
-   const columns = [
-      {
-         title: "วันที่",
-         dataIndex: "date",
-         key: "date"
-      },
-      {
-         title: "ชื่อลูกค้า",
-         dataIndex: "username",
-         key: "username",
-      },
-      {
-         title: "URL",
-         dataIndex: "link",
-         key: "link",
-         render: (text) => text === "" || text === null ? "-" : <Link href={text}>{text.slice(0, 10)}...</Link>
-      },
-      {
-         title: "หมายเหตุ",
-         dataIndex: "remark_admin",
-         key: "remark_admin",
-      },
-      {
-         title: "created_at",
-         dataIndex: "created_at",
-         key: "created_at",
-      },
-   ]
-   return (
-      <Table
-         columns={columns}
-         dataSource={data}
-         loading={loading}
-      />
-   )
+    const columns = [
+        {
+            title: "วันที่",
+            dataIndex: "date",
+            key: "date"
+        },
+        {
+            title: "ชื่อลูกค้า",
+            dataIndex: "username",
+            key: "username",
+        },
+        {
+            title: "รอบเรือ",
+            dataIndex: "voyage",
+            key: "voyage",
+            render: (text) => text === "" || text === null ? "-" : text
+        },
+        {
+            title: "ช่องทาง",
+            dataIndex: "channel",
+            key: "channel",
+            render: (text) => text === "" || text === null ? "-" : text
+        },
+        {
+            title: "URL",
+            dataIndex: "link",
+            key: "link",
+            render: (text) => text === "" || text === null ? "-" : <Link href={text}>{text.slice(0, 10)}...</Link>
+        },
+        {
+            title: "หมายเหตุ",
+            dataIndex: "remark_admin",
+            key: "remark_admin",
+        },
+        {
+            title: "วันที่สร้าง",
+            dataIndex: "created_at",
+            key: "created_at",
+        },
+    ]
+    return (
+        <Table
+            columns={columns}
+            dataSource={data}
+            loading={loading}
+        />
+    )
 }
 
 export default TrackingContentDelete
