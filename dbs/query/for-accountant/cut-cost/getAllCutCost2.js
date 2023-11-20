@@ -33,6 +33,7 @@ async function getAllCutCost2() {
       JOIN users u ON u.id = t.user_id
       WHERE t.channel != 'shimizu'
       AND t.paid_channel != 'PAYPAY'
+      AND t.cont_status != 99
       ORDER BY 
          STR_TO_DATE(t.created_at, '%d/%m/%Y %H:%i:%s') DESC;
     `

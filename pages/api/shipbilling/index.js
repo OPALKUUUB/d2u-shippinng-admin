@@ -67,7 +67,8 @@ async function handler(req, res) {
             users.id = trackings.user_id 
          WHERE 
             trackings.voyage = ?
-            AND trackings.airbilling = 0`,
+            AND trackings.airbilling = 0
+            AND trackings.cont_status != 99`,
          [voyage]
       )
       // console.log( trackings_by_voyage.length)
@@ -156,6 +157,7 @@ async function handler(req, res) {
             AND channel NOT LIKE 'yahoo'
             and voyage like ?
             AND airbilling = 0
+            AND trackings.cont_status != 99
          `,
          [user_id, voyage]
       )
@@ -170,6 +172,7 @@ async function handler(req, res) {
             AND trackings.channel LIKE ? 
             AND trackings.voyage like ? 
             AND trackings.airbilling = 0
+            AND trackings.cont_status != 99
          `,
          [user_id, "yahoo", voyage]
       )

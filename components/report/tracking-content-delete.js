@@ -37,6 +37,18 @@ function TrackingContentDelete() {
             key: "username",
         },
         {
+            title: "รอบเรือ",
+            dataIndex: "voyage",
+            key: "voyage",
+            render: (text) => text === "" || text === null ? "-" : text
+        },
+        {
+            title: "ช่องทาง",
+            dataIndex: "channel",
+            key: "channel",
+            render: (text) => text === "" || text === null ? "-" : text
+        },
+        {
             title: "URL",
             dataIndex: "link",
             key: "link",
@@ -48,7 +60,7 @@ function TrackingContentDelete() {
             key: "remark_admin",
         },
         {
-            title: "created_at",
+            title: "วันที่สร้าง",
             dataIndex: "created_at",
             key: "created_at",
         },

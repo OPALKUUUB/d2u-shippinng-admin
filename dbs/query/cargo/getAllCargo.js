@@ -1,7 +1,7 @@
 import query from "../../mysql/connection"
 
 async function getAllCargo() {
-   const trackings = await query(`
+    const trackings = await query(`
          SELECT
             t.id,
             DATE_FORMAT(STR_TO_DATE(t.date, '%d/%m/%Y %H:%i:%s'), '%d/%m/%Y') AS date,
@@ -39,6 +39,8 @@ async function getAllCargo() {
             \`tracking-image\` ti
         ON 
             ti.tracking_id = t.id
+        WHERE
+            t.cont_status != 99
         GROUP BY
             t.id
         HAVING
@@ -46,39 +48,39 @@ async function getAllCargo() {
         ORDER BY 
             STR_TO_DATE(t.created_at, '%d/%m/%Y %H:%i:%s') DESC
    `)
-   const trackingObjects = trackings.map((tracking, index) => {
-      const images = tracking.images ? tracking.images.split("|") : []
-      return {
-         username: tracking.username,
-         created_at: tracking.created_at,
-         key: index,
-         id: tracking.id,
-         user_id: tracking.user_id,
-         date: tracking.date,
-         track_no: tracking.track_no,
-         box_no: tracking.box_no,
-         weight: tracking.weight,
-         voyage: tracking.voyage,
-         price: tracking.price,
-         rate_yen: tracking.price,
-         remark_admin: tracking.remark_admin,
-         remark_user: tracking.remark_user,
-         updated_at: tracking.updated_at,
-         channel: tracking.channel,
-         tracking_slip_image: tracking.tracking_slip_image,
-         paid_channel: tracking.paid_channel,
-         delivery_type: tracking.delivery_type,
-         weight_true: tracking.weight_true,
-         weight_size: tracking.weight_size,
-         is_notified: tracking.is_notified,
-         is_invoiced: tracking.is_invoiced,
-         payment_type: tracking.payment_type,
-         address: tracking.address,
-         round_closed: tracking.round_closed,
-         images,
-      }
-   })
-   return trackingObjects
+    const trackingObjects = trackings.map((tracking, index) => {
+        const images = tracking.images ? tracking.images.split("|") : []
+        return {
+            username: tracking.username,
+            created_at: tracking.created_at,
+            key: index,
+            id: tracking.id,
+            user_id: tracking.user_id,
+            date: tracking.date,
+            track_no: tracking.track_no,
+            box_no: tracking.box_no,
+            weight: tracking.weight,
+            voyage: tracking.voyage,
+            price: tracking.price,
+            rate_yen: tracking.price,
+            remark_admin: tracking.remark_admin,
+            remark_user: tracking.remark_user,
+            updated_at: tracking.updated_at,
+            channel: tracking.channel,
+            tracking_slip_image: tracking.tracking_slip_image,
+            paid_channel: tracking.paid_channel,
+            delivery_type: tracking.delivery_type,
+            weight_true: tracking.weight_true,
+            weight_size: tracking.weight_size,
+            is_notified: tracking.is_notified,
+            is_invoiced: tracking.is_invoiced,
+            payment_type: tracking.payment_type,
+            address: tracking.address,
+            round_closed: tracking.round_closed,
+            images,
+        }
+    })
+    return trackingObjects
 }
 
 export default getAllCargo
