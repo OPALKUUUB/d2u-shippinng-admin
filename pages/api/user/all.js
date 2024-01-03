@@ -30,6 +30,16 @@ async function handler(req, res) {
       const users = await mysql.query("select * from users")
       await mysql.end()
       res.status(200).json({ message: "patch user success!", users })
+   } else if (req.method === "PUT") {
+      const { id, point_last } = req.body
+      await mysql.connect()
+      await mysql.query(
+         "update users set point_last = ? where id = ?",
+         [point_last, id]
+      )
+      // const users = await mysql.query("select * from users")
+      await mysql.end()
+      res.status(200).json({ message: "update point_last user success!" })
    }
 }
 
