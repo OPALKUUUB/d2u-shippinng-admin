@@ -4,7 +4,7 @@ import ckCbCutCost from "../../../../dbs/query/for-accountant/cut-cost/ckCbCutCo
 import getAllCutCost2 from "../../../../dbs/query/for-accountant/cut-cost/getAllCutCost2"
 
 async function handlers(req, res) {
-   const { method,body, query } = req
+   const { method, body, query } = req
 
    switch (method) {
       case "GET":
@@ -15,7 +15,7 @@ async function handlers(req, res) {
          console.log(
             `PUT::/api/for-accountant/cut-cost?tracking_id=${query.tracking_id}`
          )
-         handlePostRequest(res,body, query)
+         handlePostRequest(res, body, query)
          break
       default:
          res.status(405).json({ code: 405, message: "Method Not Allowed" })
@@ -38,7 +38,7 @@ async function handleGetRequest(res) {
       })
    }
 }
-async function handlePostRequest(res,body, query) {
+async function handlePostRequest(res, body, query) {
    try {
       const result = await ckCbCutCost(query.tracking_id, body.cb_cutcost)
       res.status(200).json({
