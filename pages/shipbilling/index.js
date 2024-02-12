@@ -67,6 +67,7 @@ function ShipBilling() {
 
    const handleChangeSelect = async (value) => {
       message.info(`voyage ${value}`)
+      setLoading(true)
       setVoyageSelect(value)
       if (router.query.voyage !== value) {
          router.push({ query: { voyage: value } })
@@ -91,10 +92,13 @@ function ShipBilling() {
          )
       } catch (err) {
          console.log(err)
+      }finally {
+         setLoading(false)
       }
    }
    const handleOkEditModal = async () => {
       let { shipbilling_id } = selectedRow
+      setLoading(true)
       try {
          if (selectedRow.shipbilling_id === null) {
             const response1 = await fetch(`/api/shipbilling`, {
@@ -123,7 +127,7 @@ function ShipBilling() {
             }),
          })
          const responseJson = await response.json()
-         const { billing } = responseJson
+         const { billing } = await responseJson
          setData((prev) => {
             const index = prev.findIndex(
                (f) =>
@@ -142,6 +146,7 @@ function ShipBilling() {
       } finally {
          setSelectedRow(ShipBillingModel)
          setShowEditModal(false)
+         setLoading(false)
       }
    }
 

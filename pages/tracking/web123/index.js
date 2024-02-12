@@ -59,6 +59,23 @@ function Web123Page() {
    const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
    const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
+   const handleChangeAccountCheck = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ accountCheck: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const handleChangeAirBilling = async (status, id) => {
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
@@ -728,6 +745,41 @@ function Web123Page() {
                   <Switch
                      checked={finished}
                      onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "บัญชี",
+         dataIndex: "account_check",
+         key: "accountCheck",
+         filters: [
+            {
+               text: "check",
+               value: 1,
+            },
+            {
+               text: "not check",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.account_check === value,
+         render: (accountCheck, record) =>
+            accountCheck ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>check</span>
+                  <Switch
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not check</span>
+                  <Switch
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
                   />
                </Space>
             ),

@@ -53,6 +53,7 @@ async function handler(req, res) {
          remark_user,
          received,
          finished,
+         accountCheck,
          airbilling
       } = req.body
       const { id } = req.query
@@ -72,7 +73,13 @@ async function handler(req, res) {
             airbilling,
             id,
          ])
-      } else {
+      } else if (accountCheck !== undefined) {
+         await mysql.query("update trackings set account_check = ? where id = ?", [
+            accountCheck,
+            id,
+         ])
+      } 
+      else {
          await mysql.query(
             "UPDATE trackings SET date = ?, track_no = ?, box_no = ?, weight = ?, voyage = ?, remark_admin = ?, remark_user = ? WHERE id = ?",
             [

@@ -61,6 +61,23 @@ function MercariTrackingsPage() {
    const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
    const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
+   const handleChangeAccountCheck = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/mercari?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ accountCheck: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const handleChangeReceived = async (status, id) => {
       try {
          const response = await fetch(`/api/tracking/mercari?id=${id}`, {
@@ -179,37 +196,6 @@ function MercariTrackingsPage() {
    }
    const handleCancelImagesModal = () => {
       setShowImagesModal(false)
-   }
-   const handleShowImages = async (id) => {
-      // set images by fetch id tracking
-      try {
-         const response = await fetch(`/api/tracking/images?id=${id}`)
-         const responseJson = await response.json()
-         const { tracking_image } = responseJson
-         const new_tracking_image = tracking_image.reduce(
-            (accumulator, currentValue, index) => {
-               if (currentValue.image !== null) {
-                  return [
-                     ...accumulator,
-                     {
-                        uid: index,
-                        name: `image${index}.png`,
-                        status: "done",
-                        url: currentValue.image,
-                        id: currentValue.id,
-                     },
-                  ]
-               }
-               return accumulator
-            },
-            []
-         )
-         setTrackingId(id)
-         setFileList(new_tracking_image)
-      } catch (err) {
-         console.log(err)
-      }
-      setShowImagesModal(true)
    }
    const handleCancelEditModal = () => {
       setshowEditModal(false)
@@ -710,6 +696,41 @@ function MercariTrackingsPage() {
                   <Switch
                      checked={finished}
                      onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "บัญชี",
+         dataIndex: "account_check",
+         key: "accountCheck",
+         filters: [
+            {
+               text: "check",
+               value: 1,
+            },
+            {
+               text: "not check",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.account_check === value,
+         render: (accountCheck, record) =>
+            accountCheck ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>check</span>
+                  <Switch
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not check</span>
+                  <Switch
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
                   />
                </Space>
             ),

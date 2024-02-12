@@ -61,7 +61,7 @@ async function handler(req, res) {
    } else if (req.method === "PUT") {
       console.log("put::mercari")
       const id = parseInt(req.query.id, 10)
-      const { received, finished, airbilling } = req.body
+      const { received, finished, airbilling, accountCheck } = req.body
       await mysql.connect()
       if (received !== undefined) {
          await mysql.query("update trackings set received = ? where id = ?", [
@@ -76,6 +76,11 @@ async function handler(req, res) {
       } else if (airbilling !== undefined) {
          await mysql.query("update trackings set airbilling = ? where id = ?", [
             airbilling,
+            id,
+         ])
+      } else if (accountCheck !== undefined) {
+         await mysql.query("update trackings set account_check = ? where id = ?", [
+            accountCheck,
             id,
          ])
       }

@@ -59,6 +59,23 @@ function FrillPage() {
    const [tricker, setTricker] = useState(false)
    const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
    const searchInput = useRef(null)
+   const handleChangeAccountCheck = async (status, id) => {
+      try {
+         const response = await fetch(`/api/tracking/fril?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ account_check: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }
+   }
    const handleChangeReceived = async (status, id) => {
       try {
          const response = await fetch(`/api/tracking/fril?id=${id}`, {
@@ -709,6 +726,41 @@ function FrillPage() {
                   <Switch
                      checked={finished}
                      onClick={() => handleChangeFinished(finished, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "บัญชี",
+         dataIndex: "account_check",
+         key: "accountCheck",
+         filters: [
+            {
+               text: "check",
+               value: 1,
+            },
+            {
+               text: "not check",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.account_check === value,
+         render: (accountCheck, record) =>
+            accountCheck ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>check</span>
+                  <Switch
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not check</span>
+                  <Switch
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
                   />
                </Space>
             ),
