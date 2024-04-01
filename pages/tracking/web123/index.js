@@ -3,6 +3,7 @@
 import {
    AppstoreAddOutlined,
    DownOutlined,
+   EyeFilled,
    SearchOutlined,
 } from "@ant-design/icons"
 import {
@@ -36,6 +37,7 @@ import PasteImage from "../../../components/PasteImage"
 import EditTrackingSlipImageModal from "../../../components/Modal/EditTrackingSlipImageModal"
 import SelectPaidChannel from "../../../components/Select/SelectChannelPaid"
 import EditImageModal from "../../../components/EditImageModal/EditImageModal"
+import LoadingPage from "../../../components/LoadingPage"
 
 const { TextArea } = Input
 dayjs.extend(customParseFormat)
@@ -59,7 +61,10 @@ function Web123Page() {
    const [tricker, setTricker] = useState(false)
    const searchInput = useRef(null)
    const [openEditSlipModal, setOpenEditSlipModal] = useState(false)
+   const [viewMode, setViewMode] = useState(false)
+   const [loading, setLoading] = useState(false)
    const handleChangeAccountCheck = async (status, id) => {
+      setLoading(true)
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
             method: "PUT",
@@ -74,9 +79,12 @@ function Web123Page() {
       } catch (err) {
          console.log(err)
          message.error("fail!")
+      } finally {
+         setLoading(false)
       }
    }
    const handleChangeAirBilling = async (status, id) => {
+      setLoading(true)
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
             method: "PUT",
@@ -91,9 +99,12 @@ function Web123Page() {
       } catch (err) {
          console.log(err)
          message.error("fail!")
+      } finally {
+         setLoading(false)
       }
    }
    const handleChangeReceived = async (status, id) => {
+      setLoading(true)
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
             method: "PUT",
@@ -108,6 +119,68 @@ function Web123Page() {
       } catch (err) {
          console.log(err)
          message.error("fail!")
+      } finally {
+         setLoading(false)
+      }
+   }
+   const handleChangeMnyInCheck = async (status, id) => {
+      setLoading(true)
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mnyInCheck: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      } finally {
+         setLoading(false)
+      }
+   }
+   const handleChangeMnyOutCheck = async (status, id) => {
+      setLoading(true)
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mnyOutCheck: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      }finally {
+         setLoading(false)
+      }
+   }
+   const handleChangeCancelRefundCheck = async (status, id) => {
+      setLoading(true)
+      try {
+         const response = await fetch(`/api/tracking/web123?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ cancelRefundCheck: status ? 0 : 1 }),
+         })
+         const responseJson = await response.json()
+         setData(responseJson.trackings)
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      } finally {
+         setLoading(false)
       }
    }
    const handleChangeFinished = async (status, id) => {
@@ -138,6 +211,7 @@ function Web123Page() {
       const file = e.clipboardData.files[0]
 
       const image = await toBase64(file)
+      setLoading(true)
       try {
          const response = await fetch(`/api/tracking/images?id=${trackingId}`, {
             method: "PUT",
@@ -166,9 +240,12 @@ function Web123Page() {
       } catch (err) {
          console.log(err)
          message.error("add image fail")
+      } finally {
+         setLoading(false)
       }
    }
    const handleOkUploadImages = async () => {
+      setLoading(true)
       try {
          const doneImage =
             fileList.map((file, index) => ({
@@ -189,6 +266,8 @@ function Web123Page() {
       } catch (err) {
          message.error("เพิ่มรูปภาพผิดพลาด!")
          console.log(err)
+      } finally {
+         setLoading(false)
       }
    }
 
@@ -251,6 +330,7 @@ function Web123Page() {
    }
 
    const handleOkEditModal = async () => {
+      setLoading(true)
       const body = {
          date: selectedRow.date,
          user_id: selectedRow.user_id,
@@ -286,6 +366,8 @@ function Web123Page() {
       } catch (err) {
          message.error("แก้ไขข้อมูลผิดพลาด!")
          console.log(err)
+      } finally {
+         setLoading(false)
       }
    }
    const handleShowEditModal = (id) => {
@@ -317,6 +399,7 @@ function Web123Page() {
          message.warning("เลือกลูกค้าก่อนทำการเพิ่มข้อมูล!")
          return
       }
+      setLoading(true)
       const body = {
          date: addForm.date,
          user_id: addForm.user_id,
@@ -350,6 +433,8 @@ function Web123Page() {
       } catch (err) {
          console.log(err)
          message.error("เพิ่มข้อมูลผิดพลาด!")
+      } finally {
+         setLoading(false)
       }
    }
 
@@ -357,6 +442,7 @@ function Web123Page() {
       if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
          return 
       }
+      setLoading(true)
       try {
          const response = await fetch(`/api/tracking/web123?id=${id}`, {
             method: "DELETE",
@@ -367,6 +453,8 @@ function Web123Page() {
       } catch (err) {
          console.log(err)
          message.error("ลบข้อมูลผิดพลาด!")
+      } finally {
+         setLoading(false)
       }
    }
 
@@ -901,6 +989,399 @@ function Web123Page() {
          },
       },
    ]
+   const columnsViewMode = [
+      {
+         title: "วันที่",
+         dataIndex: "date",
+         width: "120px",
+         key: "date",
+         sorter: (a, b) => sortDate(a.date, b.date),
+         ...getColumnSearchProps("date"),
+      },
+      {
+         title: "รูปภาพ",
+         dataIndex: "id",
+         width: "120px",
+         key: "id",
+         render: (id, item) => (
+            <EditImageModal
+               tracking={item}
+               images={item.images}
+               setTrigger={setTricker}
+            />
+         ),
+      },
+      {
+         title: "ชื่อลูกค้า",
+         dataIndex: "username",
+         width: "120px",
+         key: "username",
+         ...getColumnSearchProps("username"),
+      },
+      // {
+      //    title: "ลิ้งค์",
+      //    dataIndex: "link",
+      //    key: "link",
+      //    width: "125px",
+      //    render: (text) => {
+      //       let link_code = text
+      //       if (text === null || text === "") {
+      //          link_code = "-"
+      //       } else if (text.includes("https://")) {
+      //          // eslint-disable-next-line prefer-destructuring
+      //          link_code = text.split("https://")[1].split("/")[0]
+      //       }
+      //       return (
+      //          <a href={text} target="_blank" rel="noreferrer">
+      //             {link_code}
+      //          </a>
+      //       )
+      //    },
+      //    ellipsis: false,
+      // },
+      // {
+      //    title: "Cargo",
+      //    dataIndex: "airbilling",
+      //    key: "airbilling",
+      //    render: (ck, item) =>
+      //       ck ? (
+      //          <Switch
+      //             checked={ck}
+      //             onChange={() => handleChangeAirBilling(ck, item.id)}
+      //          />
+      //       ) : (
+      //          <Switch
+      //             checked={ck}
+      //             onChange={() => handleChangeAirBilling(ck, item.id)}
+      //          />
+      //       ),
+      // },
+      // {
+      //    title: "pre-order",
+      //    dataIndex: "received",
+      //    key: "received",
+      //    filters: [
+      //       {
+      //          text: "pre order",
+      //          value: 1,
+      //       },
+      //       {
+      //          text: "not pre order",
+      //          value: 0,
+      //       },
+      //    ],
+      //    width: 120,
+      //    onFilter: (value, record) => record.received === value,
+      //    render: (received, record) =>
+      //       received ? (
+      //          <Space direction="vertical">
+      //             <span style={{ color: "green" }}>pre order</span>
+      //             <Switch
+      //                disabled
+      //                checked={received}
+      //                onClick={() => handleChangeReceived(received, record.id)}
+      //             />
+      //          </Space>
+      //       ) : (
+      //          <Space direction="vertical">
+      //             <span style={{ color: "red" }}>not pre order</span>
+      //             <Switch
+      //                disabled
+      //                checked={received}
+      //                onClick={() => handleChangeReceived(received, record.id)}
+      //             />
+      //          </Space>
+      //       ),
+      // },
+      // {
+      //    title: "done",
+      //    dataIndex: "finished",
+      //    key: "finished",
+      //    filters: [
+      //       {
+      //          text: "done",
+      //          value: 1,
+      //       },
+      //       {
+      //          text: "not done",
+      //          value: 0,
+      //       },
+      //    ],
+      //    width: 120,
+      //    onFilter: (value, record) => record.finished === value,
+      //    render: (finished, record) =>
+      //       finished ? (
+      //          <Space direction="vertical">
+      //             <span style={{ color: "green" }}>done</span>
+      //             <Switch
+      //                checked={finished}
+      //                onClick={() => handleChangeFinished(finished, record.id)}
+      //             />
+      //          </Space>
+      //       ) : (
+      //          <Space direction="vertical">
+      //             <span style={{ color: "red" }}>not done</span>
+      //             <Switch
+      //                checked={finished}
+      //                onClick={() => handleChangeFinished(finished, record.id)}
+      //             />
+      //          </Space>
+      //       ),
+      // },
+      {
+         title: "บัญชี",
+         dataIndex: "account_check",
+         key: "accountCheck",
+         filters: [
+            {
+               text: "check",
+               value: 1,
+            },
+            {
+               text: "not check",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.account_check === value,
+         render: (accountCheck, record) =>
+            accountCheck ? (
+               <Space direction="vertical">
+                  <span style={{ color: "green" }}>check</span>
+                  <Switch
+                     disabled
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <span style={{ color: "red" }}>not check</span>
+                  <Switch
+                     disabled
+                     checked={accountCheck}
+                     onClick={() => handleChangeAccountCheck(accountCheck, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      // {
+      //    title: "slip",
+      //    dataIndex: "tracking_slip_image",
+      //    width: "120px",
+      //    key: "tracking_slip_image",
+      //    render: (image, item) => {
+      //       if (image) {
+      //          return (
+      //             <img
+      //                src={image}
+      //                alt=""
+      //                className="w-[100px] h-[100px] object-cover object-center cursor-pointer hover:opacity-50"
+      //                onClick={() => {
+      //                   setSelectedRow(item)
+      //                   setOpenEditSlipModal(true)
+      //                }}
+      //             />
+      //          )
+      //       }
+      //       return (
+      //          <Button
+      //             onClick={() => {
+      //                setSelectedRow(item)
+      //                setOpenEditSlipModal(true)
+      //             }}
+      //          >
+      //             Add Slip
+      //          </Button>
+      //       )
+      //    },
+      // },
+      {
+         title: "ช่องทางจ่ายออก",
+         dataIndex: "paid_channel",
+         key: "paid_channel",
+         render: (paid_channel, item) => (
+            <SelectPaidChannel
+               disabled={true}
+               // eslint-disable-next-line react/jsx-no-bind
+               onOk={handleSelectPaidChannel}
+               defaultValue={paid_channel}
+               id={item.id}
+            />
+         ),
+      },
+      // {
+      //    title: "เลขแทรกกิงค์",
+      //    dataIndex: "track_no",
+      //    key: "track_no",
+      //    ...getColumnSearchProps("track_no"),
+      // },
+      // {
+      //    title: "เลขกล่อง",
+      //    dataIndex: "box_no",
+      //    key: "box_no",
+      //    ...getColumnSearchProps("box_no"),
+      // },
+      // {
+      //    title: "น้ำหนัก",
+      //    dataIndex: "weight",
+      //    key: "weight",
+      //    render: (text) => (text === null ? "-" : text),
+      // },
+      {
+         title: "เช็คเงินออก",
+         dataIndex: "mny_out_check",
+         key: "mny_out_check",
+         filters: [
+            {
+               text: "รับของแล้ว",
+               value: 1,
+            },
+            {
+               text: "รอรับของ",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.mny_out_check === value,
+         render: (value, record) =>
+            value ? (
+               <Space direction="vertical">
+                  <Switch
+                     checked={value}
+                     onClick={() => handleChangeMnyOutCheck(value, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <Switch
+                     checked={value}
+                     onClick={() => handleChangeMnyOutCheck(value, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "ราคา",
+         dataIndex: "price",
+         key: "price",
+         render: (text) =>
+            text === null
+               ? "-"
+               : new Intl.NumberFormat("ja-JP", {
+                    currency: "JPY",
+                    style: "currency",
+                 }).format(text),
+      },
+      {
+         title: "เช็คเงินเช้า",
+         dataIndex: "mny_in_check",
+         key: "mny_in_check",
+         filters: [
+            {
+               text: "รับของแล้ว",
+               value: 1,
+            },
+            {
+               text: "รอรับของ",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.mny_in_check === value,
+         render: (value, record) =>
+            value ? (
+               <Space direction="vertical">
+                  <Switch
+                     checked={value}
+                     onClick={() => handleChangeMnyInCheck(value, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <Switch
+                     checked={value}
+                     onClick={() => handleChangeMnyInCheck(value, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      {
+         title: "ยกเลิก/refund",
+         dataIndex: "cancel_refund_check",
+         key: "cancel_refund_check",
+         filters: [
+            {
+               text: "รับของแล้ว",
+               value: 1,
+            },
+            {
+               text: "รอรับของ",
+               value: 0,
+            },
+         ],
+         width: 120,
+         onFilter: (value, record) => record.cancel_refund_check === value,
+         render: (value, record) =>
+            value ? (
+               <Space direction="vertical">
+                  <Switch
+                     checked={value}
+                     onClick={() => handleChangeCancelRefundCheck(value, record.id)}
+                  />
+               </Space>
+            ) : (
+               <Space direction="vertical">
+                  <Switch
+                     checked={value}
+                     onClick={() => handleChangeCancelRefundCheck(value, record.id)}
+                  />
+               </Space>
+            ),
+      },
+      // {
+      //    title: "รอบเรือ",
+      //    dataIndex: "voyage",
+      //    key: "voyage",
+      //    ...getColumnDateProps(),
+      // },
+      // {
+      //    title: "หมายเหตุ",
+      //    dataIndex: "remark_admin",
+      //    key: "remark_admin",
+      //    render: (text) => (text === null || text === "" ? "-" : text),
+      // },
+      // {
+      //    title: "จัดการ",
+      //    dataIndex: "id",
+      //    key: "manage",
+      //    width: "90px",
+      //    fixed: "right",
+      //    render: (id) => {
+      //       const items = [
+      //          {
+      //             key: "1",
+      //             label: "แก้ไข",
+      //             onClick: () => handleShowEditModal(id),
+      //          },
+      //          {
+      //             key: "2",
+      //             label: "ลบ",
+      //             onClick: () => handleDeleteRow(id),
+      //          },
+      //       ]
+      //       return (
+      //          <Space>
+      //             <Dropdown menu={{ items }}>
+      //                <span className="cursor-pointer">
+      //                   จัดการ <DownOutlined />
+      //                </span>
+      //             </Dropdown>
+      //          </Space>
+      //       )
+      //    },
+      // },
+   ]
    useEffect(() => {
       ;(async () => {
          const response = await fetch("/api/user")
@@ -910,29 +1391,41 @@ function Web123Page() {
    }, [])
    useEffect(() => {
       ;(async () => {
-         const response = await fetch("/api/tracking/web123")
-         const responseJson = await response.json()
-         setData(responseJson.trackings)
+         setLoading(true)
+         try {
+            const response = await fetch("/api/tracking/web123")
+            const responseJson = await response.json()
+            setData(responseJson.trackings)
+         } catch(error) {
+            console.log(error);
+         } finally {
+            setLoading(false)
+         }
       })()
    }, [tricker])
    return (
       <Fragment>
+         <LoadingPage loading={loading} />
          <CardHead name="Web123 Trackings Page" />
          <div className="container-table">
-            <div style={{ marginBottom: "10px" }}>
+            <div style={{ marginBottom: "10px", display: "flex", gap: "10px" }}>
                <Button
                   icon={<AppstoreAddOutlined />}
                   onClick={handleOpenAddModal}
                >
                   เพิ่มรายการ
                </Button>
+               <Button icon={<EyeFilled/>} type={viewMode ? "primary" : "default"} onClick={() => setViewMode(prev => !prev)}>view mode</Button>
             </div>
             <Table
                dataSource={data}
-               columns={columns}
-               scroll={{
-                  x: 1500,
-                  y: 450,
+               columns={viewMode ? columnsViewMode : columns}
+               scroll={viewMode ? {
+                  x: 1000,
+                  y: 700,
+               } : {
+                  x: 2000,
+                  y: 700,
                }}
             />
          </div>

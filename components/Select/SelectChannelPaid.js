@@ -1,9 +1,10 @@
 import { Select, Space } from "antd"
 
-export default function SelectPaidChannel({ id, defaultValue, onOk }) {
+export default function SelectPaidChannel({ id, defaultValue, onOk, disabled = false }) {
    return (
       <Space>
          <Select
+            disabled={disabled}
             defaultValue={defaultValue}
             value={defaultValue}
             onChange={(value) => onOk(id, value)}

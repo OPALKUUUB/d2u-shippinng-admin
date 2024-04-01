@@ -12,9 +12,9 @@ async function handler(req, res) {
             ${"`yahoo-auction-payment`"}.tranfer_fee,
             ${"`yahoo-auction-payment`"}.delivery_fee,
             ${"`yahoo-auction-payment`"}.rate_yen,
+            ${"`yahoo-auction-payment`"}.slip_id,
             ${"`yahoo-auction-order`"}.image,
             ${"`yahoo-auction-order`"}.link,
-            ${"`yahoo-auction-payment`"}.rate_yen,
             users.username 
          FROM 
             trackings
@@ -54,7 +54,8 @@ async function handler(req, res) {
          received,
          finished,
          accountCheck,
-         airbilling
+         airbilling,
+         mnyInCheck, mnyOutCheck, cancelRefundCheck, payAuctionCheck, PayCostDeliveryCheck
       } = req.body
       const { id } = req.query
       await mysql.connect()
@@ -78,7 +79,32 @@ async function handler(req, res) {
             accountCheck,
             id,
          ])
-      } 
+      } else if (mnyInCheck !== undefined) {
+         await mysql.query("update trackings set mny_in_check = ? where id = ?", [
+            mnyInCheck,
+            id,
+         ])
+      } else if (mnyOutCheck !== undefined) {
+         await mysql.query("update trackings set mny_out_check = ? where id = ?", [
+            mnyOutCheck,
+            id,
+         ])
+      } else if (cancelRefundCheck !== undefined) {
+         await mysql.query("update trackings set cancel_refund_check = ? where id = ?", [
+            cancelRefundCheck,
+            id,
+         ])
+      } else if (payAuctionCheck !== undefined) {
+         await mysql.query("update trackings set pay_auction_check = ? where id = ?", [
+            payAuctionCheck,
+            id,
+         ])
+      }else if (PayCostDeliveryCheck !== undefined) {
+         await mysql.query("update trackings set pay_cost_delivery_check = ? where id = ?", [
+            PayCostDeliveryCheck,
+            id,
+         ])
+      }
       else {
          await mysql.query(
             "UPDATE trackings SET date = ?, track_no = ?, box_no = ?, weight = ?, voyage = ?, remark_admin = ?, remark_user = ? WHERE id = ?",
@@ -101,9 +127,9 @@ async function handler(req, res) {
          ${"`yahoo-auction-payment`"}.tranfer_fee,
          ${"`yahoo-auction-payment`"}.delivery_fee,
          ${"`yahoo-auction-payment`"}.rate_yen,
+         ${"`yahoo-auction-payment`"}.slip_id,
          ${"`yahoo-auction-order`"}.image,
          ${"`yahoo-auction-order`"}.link,
-         ${"`yahoo-auction-payment`"}.rate_yen,
          users.username 
       FROM 
          trackings 
@@ -140,9 +166,9 @@ async function handler(req, res) {
             ${"`yahoo-auction-payment`"}.tranfer_fee,
             ${"`yahoo-auction-payment`"}.delivery_fee,
             ${"`yahoo-auction-payment`"}.rate_yen,
+            ${"`yahoo-auction-payment`"}.slip_id,
             ${"`yahoo-auction-order`"}.image,
             ${"`yahoo-auction-order`"}.link,
-            ${"`yahoo-auction-payment`"}.rate_yen,
             users.username 
          FROM 
             trackings
