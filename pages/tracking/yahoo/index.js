@@ -1148,7 +1148,7 @@ function YahooTrackingsPage(props) {
                responseJson.trackings
             )
          } catch(error) {
-            console.log(error);
+            console.log(error)
          } finally {
             setLoading(false)
          }

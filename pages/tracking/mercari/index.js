@@ -1156,7 +1156,7 @@ function MercariTrackingsPage() {
          key: "paid_channel",
          render: (paid_channel, item) => (
             <SelectPaidChannel
-               disabled={true}
+               disabled
                // eslint-disable-next-line react/jsx-no-bind
                onOk={handleSelectPaidChannel}
                defaultValue={paid_channel}
@@ -1356,7 +1356,7 @@ function MercariTrackingsPage() {
             const responseJson = await response.json()
             setData(responseJson.trackings)
          } catch(error) {
-            console.log(error);
+            console.log(error)
          } finally {
             setLoading(false)
          }
