@@ -3,8 +3,8 @@ import { Button, Table } from "antd"
 import Link from "next/link"
 import dayjs from "dayjs"
 import { FileTextOutlined } from "@ant-design/icons"
-import { ListMoneyInManualContext } from "../ListMoneyInManualContext"
-import { isEmpty } from "../../../../utils/validate"
+import { isEmpty } from "../../../utils/validate"
+import ListMoneyInManualContext from "../../../context/ListMoneyInManualContext"
 
 function ListMoneyInManualTable() {
    const { listMoneyInData, handleSearchListMoneyInData, pagination } =
@@ -53,7 +53,8 @@ function ListMoneyInManualTable() {
       {
          title: "ยอดชำระ",
          key: "totalPrice",
-         render: (_, record, _index) => record?.moneyInItems
+         render: (_, record, _index) =>
+            record?.moneyInItems
                ?.reduce(
                   (sum, value) => sum + (parseFloat(value?.price) || 0),
                   0
@@ -69,12 +70,12 @@ function ListMoneyInManualTable() {
          fixed: "right",
          align: "center",
          render: () => (
-               <Button
-                  type="primary"
-                  title="รายละเอียด"
-                  icon={<FileTextOutlined />}
-               />
-            ),
+            <Button
+               type="primary"
+               title="รายละเอียด"
+               icon={<FileTextOutlined />}
+            />
+         ),
       },
    ]
    const columns = defaultColumns.map((column, _index) => column)

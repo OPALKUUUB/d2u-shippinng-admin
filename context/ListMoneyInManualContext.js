@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react"
 import axios from "axios"
 import { message } from "antd"
-import LoadingPage from "../../../components/LoadingPage"
+import LoadingPage from "../components/LoadingPage"
 
 const ListMoneyInManualContext = React.createContext(null)
 
-const ListMoneyInManualProvider = ({ children }) => {
+export const ListMoneyInManualProvider = ({ children }) => {
    const [listMoneyInData, setListMoneyInData] = useState([])
    const [pagination, setPagination] = useState({
       current: 1,
@@ -31,10 +31,10 @@ const ListMoneyInManualProvider = ({ children }) => {
             const { data } = responseData
             if (data && data?.results && data?.results?.length >= 0) {
                const dataList = data?.results?.map((item, _index) => ({
-                     key: `MoneyInManualList-${item.mny_id}`,
-                     ...item,
-                     ...JSON.parse(item.content_data),
-                  }))
+                  key: `MoneyInManualList-${item.mny_id}`,
+                  ...item,
+                  ...JSON.parse(item.content_data),
+               }))
                setListMoneyInData(dataList)
                setPagination((prev) => ({
                   ...prev,
@@ -70,4 +70,4 @@ const ListMoneyInManualProvider = ({ children }) => {
    )
 }
 
-export { ListMoneyInManualProvider, ListMoneyInManualContext }
+export default ListMoneyInManualContext

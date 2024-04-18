@@ -1,8 +1,8 @@
 import { Form } from "antd"
 import React, { useState } from "react"
-import LoadingPage from "../../../../components/LoadingPage"
+import LoadingPage from "../components/LoadingPage"
 
-export const MoneyInManualContext = React.createContext(null)
+const MoneyInManualContext = React.createContext(null)
 
 export const MoneyInManualProvider = ({ children }) => {
    const [form] = Form.useForm()
@@ -34,3 +34,5 @@ export const MoneyInManualProvider = ({ children }) => {
       </MoneyInManualContext.Provider>
    )
 }
+
+export default MoneyInManualContext

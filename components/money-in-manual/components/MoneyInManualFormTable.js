@@ -17,7 +17,7 @@ import {
    PlusCircleOutlined,
 } from "@ant-design/icons"
 import css from "./MoneyInManual.module.css"
-import { MoneyInManualContext } from "../context/MoneyInManualContext"
+import MoneyInManualContext from "../../../context/MoneyInManualContext"
 
 const { Text } = Typography
 const { TextArea } = Input
@@ -265,7 +265,7 @@ function MoneyInManualFormTable() {
          dataIndex: "date",
          width: 180,
          editable: true,
-         render: (text) => (text || "-"),
+         render: (text) => text || "-",
       },
       {
          title: "ชื่อลูกค้า",
@@ -366,18 +366,18 @@ function MoneyInManualFormTable() {
       )
       return (
          <Table.Summary.Row>
-               <Table.Summary.Cell colSpan={4} className="text-right">
-                  <Text className="font-black">ราคารวม</Text>
-               </Table.Summary.Cell>
-               <Table.Summary.Cell className="text-right">
-                  <Text>
-                     {parseFloat(summaryPrice).toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                     })}
-                  </Text>
-               </Table.Summary.Cell>
-            </Table.Summary.Row>
+            <Table.Summary.Cell colSpan={4} className="text-right">
+               <Text className="font-black">ราคารวม</Text>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell className="text-right">
+               <Text>
+                  {parseFloat(summaryPrice).toLocaleString("en-US", {
+                     minimumFractionDigits: 2,
+                     maximumFractionDigits: 2,
+                  })}
+               </Text>
+            </Table.Summary.Cell>
+         </Table.Summary.Row>
       )
    }
 

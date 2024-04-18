@@ -1,12 +1,14 @@
 import React from "react"
 import Layout from "../../../components/layout/layout"
-import MoneyInManualForm from "./components/MoneyInManualForm"
-import { MoneyInManualProvider } from "./context/MoneyInManualContext"
+import MoneyInManualForm from "../../../components/money-in-manual/components/MoneyInManualForm"
+import { MoneyInManualProvider } from "../../../context/MoneyInManualContext"
 
 const title = "เลือกรายการเงินเข้า manual"
 
 function MoneyInManualPage() {
-   const renderTitle = () => <div className="font-bold text-[1.2rem] mb-4">{title}</div>
+   const renderTitle = () => (
+      <div className="font-bold text-[1.2rem] mb-4">{title}</div>
+   )
 
    return (
       <MoneyInManualProvider>

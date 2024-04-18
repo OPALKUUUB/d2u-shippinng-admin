@@ -8,9 +8,9 @@ import { useContext, useRef, useState } from "react"
 import axios from "axios"
 import SelectCustomerFormItem from "./SelectCustomerFormItem"
 import MoneyInManualFormTable from "./MoneyInManualFormTable"
-import PasteImage from "../../../../components/PasteImage"
-import { MoneyInManualContext } from "../context/MoneyInManualContext"
-import PreviewImage from "../../../../components/PreviewImage/PreviewImage"
+import PasteImage from "../../PasteImage"
+import PreviewImage from "../../PreviewImage/PreviewImage"
+import MoneyInManualContext from "../../../context/MoneyInManualContext"
 
 function MoneyInManualForm() {
    const { form, dataSource, resetDataSource, setLoading, user } =
