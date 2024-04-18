@@ -26,7 +26,7 @@ function SignInForm() {
          if (response.ok) {
             message.success("Login Success!")
             message.success(`Welcome Back Admin ${usernameRef.current.value}`)
-            router.push("/")
+            router.replace("/")
          } else {
             throw new Error(response.error)
          }
@@ -63,7 +63,7 @@ function SignInForm() {
                   <input name="password" type="password" ref={passwordRef} />
                </div>
             </div>
-            <button type="submit">Sign In</button>
+            <button type="submit">SIGN IN</button>
          </form>
          <style jsx>
             {`
@@ -80,12 +80,13 @@ function SignInForm() {
                   display: inline-block;
                   height: fit-content;
                   position: absolute;
-                  top: 65%;
+                  top: 50%;
                   left: 5px;
-                  transform: translate(0, -50%);
+                  transform: translate(0, -42%);
                }
                .input-icon > input {
                   width: 100%;
+                  height: 35px;
                   padding-left: 30px;
                   border: 1px solid rgba(0, 0, 0, 0.5);
                   border-radius: 2px;
@@ -104,9 +105,10 @@ function SignInForm() {
                   border: 1px solid rgba(0, 0, 0, 0.1);
                   border-radius: 2px;
                   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-                  font-weight: 600;
+                  font-weight: 900;
                   text-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
                   transition: all 0.2s ease;
+                  padding: 10px 15px;
                }
                button:hover {
                   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;

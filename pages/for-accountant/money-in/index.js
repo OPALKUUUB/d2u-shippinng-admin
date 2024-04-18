@@ -49,7 +49,6 @@ function MoneyInPage() {
             user_id,
             rowSelectionDataList,
          })
-         // console.log(results)
          message.success("เพิ่มรายการเงินเข้าสำเร็จ")
       } catch (error) {
          console.error("Error fetching data:", error.message)
@@ -123,7 +122,6 @@ function MoneyInPage() {
                   <Col span={12}>
                      <Table
                         rowSelection={rowSelection}
-                        // dataSource={data}
                         dataSource={data}
                         columns={columns}
                      />

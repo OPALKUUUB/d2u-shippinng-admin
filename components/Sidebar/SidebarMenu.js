@@ -60,9 +60,11 @@ const sidebarMenuData = [
       name: "การเงิน",
       icon: <CheckSquareOutlined />,
       childs: [
-         { id: 1, name: "เงินเข้า", to: "/for-accountant/money-in" },
+         { id: 1, name: "เงินเข้า manual", to: "/for-accountant/money-in-manual" },
+         { id: 2, name: "รายการเงินเข้า", to: "/for-accountant/list-money-in-manual" },
+         // { id: 1, name: "เงินเข้า", to: "/for-accountant/money-in" },
          { id: 2, name: "รายการเงินเข้า", to: "/for-accountant/list-money-in" },
-         { id: 3, name: "ตัดยอด", to: "/for-accountant/cut-cost" },
+         // { id: 3, name: "ตัดยอด", to: "/for-accountant/cut-cost" },
          // { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
