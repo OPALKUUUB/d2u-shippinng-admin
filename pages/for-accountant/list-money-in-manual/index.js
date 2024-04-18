@@ -1,19 +1,17 @@
 import Layout from "../../../components/layout/layout"
-import ListMoneyInManualTable from "./component/ListMoneyInManualTable";
-import { ListMoneyInManualProvider } from "./ListMoneyInManualContext";
+import ListMoneyInManualTable from "./component/ListMoneyInManualTable"
+import { ListMoneyInManualProvider } from "./ListMoneyInManualContext"
 
 const title = "รายการเงินเข้า"
 
 function ListMoneyInManualPage() {
     
 
-    const renderTitle = () => {
-        return (
+    const renderTitle = () => (
             <div className="font-bold text-[1.2rem] mb-4">
                 {title}
             </div>
-        );
-    }
+        )
     
     return (
         <ListMoneyInManualProvider>
@@ -24,11 +22,11 @@ function ListMoneyInManualPage() {
                 </div>
             </div>
         </ListMoneyInManualProvider>
-    );
+    )
 }
 
 ListMoneyInManualPage.getLayout = function getLayout(page) {
     return <Layout>{page}</Layout>
  }
 
-export default ListMoneyInManualPage;
+export default ListMoneyInManualPage

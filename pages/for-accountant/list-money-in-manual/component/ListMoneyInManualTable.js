@@ -1,9 +1,9 @@
 import { useContext } from "react"
 import { Button, Table } from "antd"
-import { ListMoneyInManualContext } from "../ListMoneyInManualContext"
 import Link from "next/link"
 import dayjs from "dayjs"
 import { FileTextOutlined } from "@ant-design/icons"
+import { ListMoneyInManualContext } from "../ListMoneyInManualContext"
 import { isEmpty } from "../../../../utils/validate"
 
 function ListMoneyInManualTable() {
@@ -30,9 +30,7 @@ function ListMoneyInManualTable() {
          dataIndex: "created_at",
          key: "createdAt",
          width: 120,
-         render: (date) => {
-            return dayjs(date).format("DD/MM/YYYY")
-         },
+         render: (date) => dayjs(date).format("DD/MM/YYYY"),
       },
       {
          title: "ใบเสร็จ",
@@ -55,8 +53,7 @@ function ListMoneyInManualTable() {
       {
          title: "ยอดชำระ",
          key: "totalPrice",
-         render: (_, record, _index) => {
-            return record?.moneyInItems
+         render: (_, record, _index) => record?.moneyInItems
                ?.reduce(
                   (sum, value) => sum + (parseFloat(value?.price) || 0),
                   0
@@ -64,23 +61,20 @@ function ListMoneyInManualTable() {
                ?.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-               })
-         },
+               }),
       },
       {
          key: "operation",
          width: 60,
          fixed: "right",
          align: "center",
-         render: () => {
-            return (
+         render: () => (
                <Button
                   type="primary"
                   title="รายละเอียด"
                   icon={<FileTextOutlined />}
                />
-            )
-         },
+            ),
       },
    ]
    const columns = defaultColumns.map((column, _index) => column)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import axios from "axios"
-import LoadingPage from "../../../components/LoadingPage"
 import { message } from "antd"
+import LoadingPage from "../../../components/LoadingPage"
 
 const ListMoneyInManualContext = React.createContext(null)
 
@@ -30,17 +30,15 @@ const ListMoneyInManualProvider = ({ children }) => {
          if (responseData.code === 200) {
             const { data } = responseData
             if (data && data?.results && data?.results?.length >= 0) {
-               const dataList = data?.results?.map((item, _index) => {
-                  return {
+               const dataList = data?.results?.map((item, _index) => ({
                      key: `MoneyInManualList-${item.mny_id}`,
                      ...item,
                      ...JSON.parse(item.content_data),
-                  }
-               })
+                  }))
                setListMoneyInData(dataList)
                setPagination((prev) => ({
                   ...prev,
-                  current: data?.current + 1,
+                  current: (data?.current || 0) + 1,
                   pageSize: data?.pageSize,
                   total: data?.total,
                }))

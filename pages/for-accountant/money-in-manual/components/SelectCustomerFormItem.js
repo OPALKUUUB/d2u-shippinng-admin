@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import axios from "axios"
 import { Form, Select, message } from "antd"
-import { MoneyInManualContext } from ".."
+import { MoneyInManualContext } from "../context/MoneyInManualContext"
 
 function SelectCustomerFormItem() {
    const { form, setUser, setLoading } = useContext(MoneyInManualContext)

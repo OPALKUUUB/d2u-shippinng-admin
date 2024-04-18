@@ -16,8 +16,8 @@ import {
    ExclamationCircleFilled,
    PlusCircleOutlined,
 } from "@ant-design/icons"
-import { MoneyInManualContext } from ".."
 import css from "./MoneyInManual.module.css"
+import { MoneyInManualContext } from "../context/MoneyInManualContext"
 
 const { Text } = Typography
 const { TextArea } = Input
@@ -207,7 +207,7 @@ function MoneyInManualFormTable() {
       setDataSource((prev) => {
          const lastItemNo = prev.length
          if (lastItemNo === 0 && user?.username) {
-            return [{ ...DATASOURCE_ITEM, user: user }]
+            return [{ ...DATASOURCE_ITEM, user }]
          }
          const newItem = {
             ...prev[lastItemNo - 1],
@@ -265,13 +265,13 @@ function MoneyInManualFormTable() {
          dataIndex: "date",
          width: 180,
          editable: true,
-         render: (text) => (text ? text : "-"),
+         render: (text) => (text || "-"),
       },
       {
          title: "ชื่อลูกค้า",
          dataIndex: "user",
          width: 200,
-         render: (user, _record) => user?.username,
+         render: (userObj, _record) => userObj?.username,
       },
       {
          title: "ช่องทาง",
@@ -365,8 +365,7 @@ function MoneyInManualFormTable() {
          0
       )
       return (
-         <>
-            <Table.Summary.Row>
+         <Table.Summary.Row>
                <Table.Summary.Cell colSpan={4} className="text-right">
                   <Text className="font-black">ราคารวม</Text>
                </Table.Summary.Cell>
@@ -379,19 +378,18 @@ function MoneyInManualFormTable() {
                   </Text>
                </Table.Summary.Cell>
             </Table.Summary.Row>
-         </>
       )
    }
 
    useEffect(() => {
       if (form.getFieldValue("userId")) {
          if (dataSource.length === 0) {
-            setDataSource([{ ...DATASOURCE_ITEM, user: user }])
+            setDataSource([{ ...DATASOURCE_ITEM, user }])
          } else {
             setDataSource((prev) => [
                ...prev.map((item, index) => ({
                   ...item,
-                  user: user,
+                  user,
                   index: index + 1,
                   key: `${keyDatasourceItem}${index + 1}`,
                })),
