@@ -7,6 +7,13 @@ const ListMoneyInManualContext = React.createContext(null)
 
 export const ListMoneyInManualProvider = ({ children }) => {
    const [listMoneyInData, setListMoneyInData] = useState([])
+   const [searchListMoneyInDataPayload, setSearchListMoneyInDataPayload] =
+      useState({
+         startDate: "",
+         endDate: "",
+         username: "",
+         moneyInStatus: "",
+      })
    const [pagination, setPagination] = useState({
       current: 1,
       pageSize: 10,
@@ -24,7 +31,13 @@ export const ListMoneyInManualProvider = ({ children }) => {
       try {
          const response = await axios.get(
             "/api/for-accountant/money-in-manual",
-            { params: { ...filter, current: filter.current - 1 } }
+            {
+               params: {
+                  ...searchListMoneyInDataPayload,
+                  pageSize: filter.pageSize,
+                  current: filter.current - 1,
+               },
+            }
          )
          const responseData = await response.data
          if (responseData.code === 200) {
@@ -54,14 +67,19 @@ export const ListMoneyInManualProvider = ({ children }) => {
 
    useEffect(() => {
       handleSearchListMoneyInData()
-   }, [])
+   }, [searchListMoneyInDataPayload])
 
    return (
       <ListMoneyInManualContext.Provider
          value={{
             listMoneyInData,
-            pagination,
             handleSearchListMoneyInData,
+            pagination,
+            loading,
+            setLoading,
+            // Filter Payload
+            searchListMoneyInDataPayload,
+            setSearchListMoneyInDataPayload
          }}
       >
          <LoadingPage loading={loading} />

@@ -435,13 +435,13 @@ function MoneyInManualFormTable() {
          >
             เพิ่มรายการเงินเข้า
          </Button>
-         <InputNumber
+         {/* <InputNumber
             className="ms-2 w-[190px]"
             addonBefore="RATE 1 ¥"
             addonAfter="฿"
             value={rateYenToBath}
             onChange={setRateYenToBath}
-         />
+         /> */}
          <Table
             size="small"
             components={components}
@@ -451,7 +451,7 @@ function MoneyInManualFormTable() {
             scroll={{ x: 600 }}
             pagination={false}
             bordered
-            summary={renderSummaryTable}
+            // summary={renderSummaryTable}
             className="mb-3"
          />
       </div>

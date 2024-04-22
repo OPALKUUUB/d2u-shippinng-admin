@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons"
 import { useContext, useRef, useState } from "react"
 import axios from "axios"
-import SelectCustomerFormItem from "./SelectCustomerFormItem"
+import SelectCustomerFormItem from "../../SelectCustomerFormItem"
 import MoneyInManualFormTable from "./MoneyInManualFormTable"
 import PasteImage from "../../PasteImage"
 import PreviewImage from "../../PreviewImage/PreviewImage"
@@ -19,6 +19,7 @@ function MoneyInManualForm() {
       resetDataSource,
       setLoading,
       user,
+      setUser,
       rateYenToBath,
    } = useContext(MoneyInManualContext)
    const [fileList, setFileList] = useState([])
@@ -253,7 +254,18 @@ function MoneyInManualForm() {
 
    return (
       <Form form={form}>
-         <SelectCustomerFormItem />
+         <SelectCustomerFormItem
+            className="w-[300px] mb-0"
+            form={form}
+            setuser={setUser}
+            setisloadcustomer={setLoading}
+            rules={[
+               {
+                  required: true,
+                  message: "กรุณาเลือกชื่อลูกค้า",
+               },
+            ]}
+         />
          <Divider className="m-3" />
          <MoneyInManualFormTable />
          <div className="flex justify-end">

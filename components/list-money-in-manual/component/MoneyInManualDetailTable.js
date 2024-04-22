@@ -63,7 +63,7 @@ function MoneyInManualDetailTable({ dataSource }) {
       },
    ]
    const columns = defaultColumns.map((column, _index) => column)
-   return <Table columns={columns} dataSource={moneyInItems} pagination={false} />
+   return <Table columns={columns} dataSource={moneyInItems} pagination={false} bordered />
 }
 
 export default MoneyInManualDetailTable

@@ -1,10 +1,9 @@
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 import { Form, Select, message } from "antd"
-import MoneyInManualContext from "../../../context/MoneyInManualContext"
 
-function SelectCustomerFormItem() {
-   const { form, setUser, setLoading } = useContext(MoneyInManualContext)
+function SelectCustomerFormItem(props) {
+   const { form, setuser, setisloadcustomer } = props
    const [customerOptions, setCustomerOptions] = useState(null)
 
    const getCustomerOptions = async () => {
@@ -30,35 +29,29 @@ function SelectCustomerFormItem() {
 
    const onSelectCustomerChange = (value, option) => {
       form.setFieldsValue({ userId: value })
-      setUser({ userId: value, username: option.label })
+      setuser({ userId: value, username: option.label })
    }
 
    useEffect(() => {
       ;(async () => {
          try {
-            setLoading(true)
+            setisloadcustomer(true)
             setCustomerOptions(await getCustomerOptions())
          } catch (err) {
             console.error(err)
             message.error("ดึงข้อมูลลูกค้าไม่สำเร็จ!")
             setCustomerOptions([])
          } finally {
-            setLoading(false)
+            setisloadcustomer(false)
          }
       })()
    }, [])
 
    return (
       <Form.Item
-         className="w-[300px] mb-0"
+         {...props}
          label="ชื่อลูกค้า"
          name="userId"
-         rules={[
-            {
-               required: true,
-               message: "กรุณาเลือกชื่อลูกค้า",
-            },
-         ]}
       >
          <Select
             showSearch

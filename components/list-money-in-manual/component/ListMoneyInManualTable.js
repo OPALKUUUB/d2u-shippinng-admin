@@ -1,11 +1,30 @@
 import { Fragment, useContext, useState } from "react"
-import { Button, Modal, Table } from "antd"
+import {
+   Button,
+   Card,
+   Col,
+   Divider,
+   Modal,
+   Row,
+   Space,
+   Table,
+   Tag,
+   Tooltip,
+   message,
+} from "antd"
 import dayjs from "dayjs"
-import { ExclamationCircleOutlined, FileTextOutlined } from "@ant-design/icons"
+import {
+   CheckCircleOutlined,
+   ExclamationCircleOutlined,
+   FileTextOutlined,
+   SyncOutlined,
+} from "@ant-design/icons"
+import axios from "axios"
 import { isEmpty } from "../../../utils/validate"
 import ListMoneyInManualContext from "../../../context/ListMoneyInManualContext"
 import MoneyInManualDetailTable from "./MoneyInManualDetailTable"
 import PreviewImage from "../../PreviewImage/PreviewImage"
+import { MONEY_IN_STATUS_OPTIONS } from "./ListMoneyInManualFilter"
 
 function ListMoneyInManualTable() {
    const { listMoneyInData, handleSearchListMoneyInData, pagination } =
@@ -38,7 +57,7 @@ function ListMoneyInManualTable() {
          title: "วันที่",
          dataIndex: "created_at",
          key: "createdAt",
-         width: 120,
+         // width: 120,
          render: (date) => dayjs(date).format("DD/MM/YYYY"),
       },
       {
@@ -59,31 +78,56 @@ function ListMoneyInManualTable() {
          key: "username",
       },
       {
-         title: "ยอดชำระรวม(บาท)",
-         key: "totalPrice",
-         render: (_, record, _index) =>
-            record?.moneyInItems
-               ?.reduce(
-                  (sum, value) => sum + (parseFloat(value?.price) || 0),
-                  0
+         title: "สถานะ",
+         dataIndex: "money_in_status",
+         key: "money_in_status",
+         render: (text) => {
+            const statusOption = MONEY_IN_STATUS_OPTIONS.find(
+               (option) => option.value === text
+            )
+            if (statusOption?.value === "SUCCESS") {
+               return (
+                  <Tag icon={<CheckCircleOutlined />} color="success">
+                     {statusOption?.label}
+                  </Tag>
                )
-               ?.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-               }),
+            } if (statusOption?.value === "WAITING") {
+               return (
+                  <Tag icon={<SyncOutlined spin />} color="processing">
+                     {statusOption?.label}
+                  </Tag>
+               )
+            }
+         },
       },
+      // {
+      //    title: "ยอดชำระรวม(บาท)",
+      //    key: "totalPrice",
+      //    render: (_, record, _index) =>
+      //       record?.moneyInItems
+      //          ?.reduce(
+      //             (sum, value) => sum + (parseFloat(value?.price) || 0),
+      //             0
+      //          )
+      //          ?.toLocaleString("en-US", {
+      //             minimumFractionDigits: 2,
+      //             maximumFractionDigits: 2,
+      //          }),
+      // },
       {
          key: "operation",
          width: 60,
          fixed: "right",
          align: "center",
          render: (_, record) => (
-            <Button
-               onClick={() => handleClickMoneyInDetail(record)}
-               type="primary"
-               title="รายละเอียด"
-               icon={<FileTextOutlined />}
-            />
+            <Tooltip title="รายละเอียดรายการเงินเข้า">
+               <Button
+                  onClick={() => handleClickMoneyInDetail(record)}
+                  type="primary"
+                  title="รายละเอียด"
+                  icon={<FileTextOutlined />}
+               />
+            </Tooltip>
          ),
       },
    ]
@@ -91,8 +135,16 @@ function ListMoneyInManualTable() {
    const columns = defaultColumns.map((column, _index) => column)
 
    const renderMoneyInManualDialog = () => {
-      const handleOkDialog = () => {
-         console.log(moneyInData)
+      const handleOkDialog = async (mnyId) => {
+         try {
+            if (!mnyId) return
+            return await axios.put(
+               `/api/for-accountant/money-in-manual/${mnyId}`,
+               { money_in_status: "SUCCESS" }
+            )
+         } catch (error) {
+            console.error(error)
+         }
       }
       const handleConfirmMoneyInManual = () => {
          Modal.confirm({
@@ -100,9 +152,19 @@ function ListMoneyInManualTable() {
             icon: <ExclamationCircleOutlined />,
             okText: "ยืนยัน",
             cancelText: "ยกเลิก",
-            onOk() {
-               handleOkDialog()
-               setShowMoneyInManualDialog(false)
+            async onOk() {
+               try {
+                  const response = await handleOkDialog(moneyInData?.mny_id)
+                  if (response.data?.code === 200) {
+                     message.success("เปลี่ยนสถานะการตรวจสอบสำเร็จ")
+                     await handleSearchListMoneyInData(pagination)
+                  }
+               } catch (error) {
+                  console.error(error)
+                  message.error("เปลี่ยนสถานะการตรวจสอบล้มเหลว")
+               } finally {
+                  setShowMoneyInManualDialog(false)
+               }
             },
          })
       }
@@ -114,9 +176,23 @@ function ListMoneyInManualTable() {
             onOk={handleConfirmMoneyInManual}
             okText="ยืนยันรายการเงินเข้า"
             cancelText="ยกเลิก"
-            width={800}
+            width={1200}
+            style={{ top: 15 }}
          >
-            <MoneyInManualDetailTable dataSource={moneyInData} />
+            <Divider/>
+            <Space align="start">
+               <PreviewImage
+                  width={300}
+                  fileList={[{ url: moneyInData?.imageSlipUrl }]}
+               />
+               <Divider type="vertical" className="h-[500px]" />
+               <Space direction="vertical">
+                  <Card title="รายละเอียดรายการเงินเข้า" className="min-h-[500px]">
+                     <MoneyInManualDetailTable dataSource={moneyInData} />
+                  </Card>
+               </Space>
+            </Space>
+            <Divider/>
          </Modal>
       )
    }
@@ -129,7 +205,8 @@ function ListMoneyInManualTable() {
             dataSource={listMoneyInData || []}
             columns={columns}
             scroll={{
-               x: 1000,
+               x: 800,
+               y: 500,
             }}
          />
          {renderMoneyInManualDialog()}
