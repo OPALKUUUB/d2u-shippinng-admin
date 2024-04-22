@@ -1,6 +1,6 @@
 import { Image } from "antd"
 
-function PreviewImage({fileList, width}) {
+function PreviewImage({ fileList, width,}) {
    return (
       <Image
          width={width}

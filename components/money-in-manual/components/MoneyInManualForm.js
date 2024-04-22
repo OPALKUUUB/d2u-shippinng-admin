@@ -13,8 +13,14 @@ import PreviewImage from "../../PreviewImage/PreviewImage"
 import MoneyInManualContext from "../../../context/MoneyInManualContext"
 
 function MoneyInManualForm() {
-   const { form, dataSource, resetDataSource, setLoading, user } =
-      useContext(MoneyInManualContext)
+   const {
+      form,
+      dataSource,
+      resetDataSource,
+      setLoading,
+      user,
+      rateYenToBath,
+   } = useContext(MoneyInManualContext)
    const [fileList, setFileList] = useState([])
    const fileInputRef = useRef(null)
 
@@ -74,6 +80,7 @@ function MoneyInManualForm() {
          userId: user?.userId,
          moneyInItems: dataSource,
          imageSlipUrl: "",
+         rateYenToBath,
       }
       try {
          if (!body?.userId) {

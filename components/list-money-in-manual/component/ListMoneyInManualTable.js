@@ -1,14 +1,17 @@
-import { useContext } from "react"
-import { Button, Table } from "antd"
-import Link from "next/link"
+import { Fragment, useContext, useState } from "react"
+import { Button, Modal, Table } from "antd"
 import dayjs from "dayjs"
-import { FileTextOutlined } from "@ant-design/icons"
+import { ExclamationCircleOutlined, FileTextOutlined } from "@ant-design/icons"
 import { isEmpty } from "../../../utils/validate"
 import ListMoneyInManualContext from "../../../context/ListMoneyInManualContext"
+import MoneyInManualDetailTable from "./MoneyInManualDetailTable"
+import PreviewImage from "../../PreviewImage/PreviewImage"
 
 function ListMoneyInManualTable() {
    const { listMoneyInData, handleSearchListMoneyInData, pagination } =
       useContext(ListMoneyInManualContext)
+   const [showMoneyInManualDialog, setShowMoneyInManualDialog] = useState(false)
+   const [moneyInData, setMoneyInData] = useState()
 
    const onChangePaginate = async (paginate) => {
       await handleSearchListMoneyInData({
@@ -16,6 +19,12 @@ function ListMoneyInManualTable() {
          current: paginate.current,
       })
    }
+
+   const handleClickMoneyInDetail = (record) => {
+      setMoneyInData(record)
+      setShowMoneyInManualDialog(true)
+   }
+
    const defaultColumns = [
       {
          title: "ลำดับ",
@@ -36,13 +45,12 @@ function ListMoneyInManualTable() {
          title: "ใบเสร็จ",
          dataIndex: "imageSlipUrl",
          key: "imageSlipUrl",
+         width: 120,
          render: (url) =>
             isEmpty(url) ? (
                "-"
             ) : (
-               <Link href={url} target="_blank">
-                  <img src={url} alt={url} height={100} />
-               </Link>
+               <PreviewImage width={100} fileList={[{ url }]} />
             ),
       },
       {
@@ -51,7 +59,7 @@ function ListMoneyInManualTable() {
          key: "username",
       },
       {
-         title: "ยอดชำระ",
+         title: "ยอดชำระรวม(บาท)",
          key: "totalPrice",
          render: (_, record, _index) =>
             record?.moneyInItems
@@ -69,8 +77,9 @@ function ListMoneyInManualTable() {
          width: 60,
          fixed: "right",
          align: "center",
-         render: () => (
+         render: (_, record) => (
             <Button
+               onClick={() => handleClickMoneyInDetail(record)}
                type="primary"
                title="รายละเอียด"
                icon={<FileTextOutlined />}
@@ -78,17 +87,53 @@ function ListMoneyInManualTable() {
          ),
       },
    ]
+
    const columns = defaultColumns.map((column, _index) => column)
+
+   const renderMoneyInManualDialog = () => {
+      const handleOkDialog = () => {
+         console.log(moneyInData)
+      }
+      const handleConfirmMoneyInManual = () => {
+         Modal.confirm({
+            title: "ยืนยันการบันทึกรายการเงินเข้า",
+            icon: <ExclamationCircleOutlined />,
+            okText: "ยืนยัน",
+            cancelText: "ยกเลิก",
+            onOk() {
+               handleOkDialog()
+               setShowMoneyInManualDialog(false)
+            },
+         })
+      }
+      return (
+         <Modal
+            title="รายละเอียดรายการเงินเข้า"
+            open={showMoneyInManualDialog}
+            onCancel={() => setShowMoneyInManualDialog(false)}
+            onOk={handleConfirmMoneyInManual}
+            okText="ยืนยันรายการเงินเข้า"
+            cancelText="ยกเลิก"
+            width={800}
+         >
+            <MoneyInManualDetailTable dataSource={moneyInData} />
+         </Modal>
+      )
+   }
+
    return (
-      <Table
-         pagination={pagination}
-         onChange={onChangePaginate}
-         dataSource={listMoneyInData || []}
-         columns={columns}
-         scroll={{
-            x: 1000,
-         }}
-      />
+      <Fragment>
+         <Table
+            pagination={pagination}
+            onChange={onChangePaginate}
+            dataSource={listMoneyInData || []}
+            columns={columns}
+            scroll={{
+               x: 1000,
+            }}
+         />
+         {renderMoneyInManualDialog()}
+      </Fragment>
    )
 }
 

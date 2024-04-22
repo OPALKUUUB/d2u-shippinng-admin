@@ -10,6 +10,7 @@ import {
    message,
    DatePicker,
    Modal,
+   InputNumber,
 } from "antd"
 import {
    DeleteOutlined,
@@ -18,6 +19,7 @@ import {
 } from "@ant-design/icons"
 import css from "./MoneyInManual.module.css"
 import MoneyInManualContext from "../../../context/MoneyInManualContext"
+import { renderUnitFromChannel } from "../../../utils/validate"
 
 const { Text } = Typography
 const { TextArea } = Input
@@ -33,6 +35,7 @@ const DATASOURCE_ITEM = {
    },
    channel: "",
    price: "",
+   rateYenToBath: 0.24,
    remark: "",
 }
 
@@ -132,7 +135,8 @@ const EditableCell = ({
                   className="m-0"
                   name={dataIndex}
                >
-                  <Input
+                  <InputNumber
+                     className="w-full"
                      type="number"
                      placeholder="กรอกจำนวนเงิน"
                      ref={inputRef}
@@ -148,7 +152,6 @@ const EditableCell = ({
                      format="DD/MM/YYYY"
                      placeholder="กรอกวันที่และเวลา"
                      ref={inputRef}
-                     // onPressEnter={save}
                      onBlur={save}
                   />
                </Form.Item>
@@ -186,7 +189,7 @@ const EditableCell = ({
 }
 
 function MoneyInManualFormTable() {
-   const { form, user, dataSource, setDataSource } =
+   const { form, user, dataSource, setDataSource, rateYenToBath, setRateYenToBath } =
       useContext(MoneyInManualContext)
    const userIdWatch = Form.useWatch("userId", form)
 
@@ -306,9 +309,19 @@ function MoneyInManualFormTable() {
             ),
       },
       {
+         title: "หน่วย",
+         width: 50,
+         align: "center",
+         render: (_, record) => (
+            <span className="font-extrabold">
+               {renderUnitFromChannel(record?.channel)}
+            </span>
+         ),
+      },
+      {
          title: "หมายเหตุ",
          dataIndex: "remark",
-         align: "right",
+         align: "center",
          editable: true,
          render: (text) =>
             text !== "" ? (
@@ -359,11 +372,17 @@ function MoneyInManualFormTable() {
 
    const renderSummaryTable = (pageData) => {
       if (pageData.length === 0) return
-      const summaryPrice = pageData.reduce(
-         (acc, curr) =>
-            curr.price !== "" ? acc + parseFloat(curr.price) : acc,
-         0
-      )
+      const summaryPrice = pageData.reduce((acc, curr) => {
+         if (
+            ["mercari", "123", "fril"].some((channelItem) =>
+               channelItem.includes(curr.channel)
+            )
+         )
+            return curr.price !== ""
+               ? acc + parseFloat(curr.price * rateYenToBath)
+               : acc
+         return curr.price !== "" ? acc + parseFloat(curr.price) : acc
+      }, 0)
       return (
          <Table.Summary.Row>
             <Table.Summary.Cell colSpan={4} className="text-right">
@@ -376,6 +395,9 @@ function MoneyInManualFormTable() {
                      maximumFractionDigits: 2,
                   })}
                </Text>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell className="text-right">
+               <Text className="font-black">บาท</Text>
             </Table.Summary.Cell>
          </Table.Summary.Row>
       )
@@ -413,6 +435,13 @@ function MoneyInManualFormTable() {
          >
             เพิ่มรายการเงินเข้า
          </Button>
+         <InputNumber
+            className="ms-2 w-[190px]"
+            addonBefore="RATE 1 ¥"
+            addonAfter="฿"
+            value={rateYenToBath}
+            onChange={setRateYenToBath}
+         />
          <Table
             size="small"
             components={components}

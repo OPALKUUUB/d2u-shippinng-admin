@@ -7,6 +7,7 @@ const MoneyInManualContext = React.createContext(null)
 export const MoneyInManualProvider = ({ children }) => {
    const [form] = Form.useForm()
    const [dataSource, setDataSource] = useState([])
+   const [rateYenToBath, setRateYenToBath] = useState(0.24)
    const [user, setUser] = useState({
       userId: "",
       username: "",
@@ -27,6 +28,8 @@ export const MoneyInManualProvider = ({ children }) => {
             setLoading,
             user,
             setUser,
+            rateYenToBath,
+            setRateYenToBath
          }}
       >
          <LoadingPage loading={loading} />
