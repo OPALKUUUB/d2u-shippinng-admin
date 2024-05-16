@@ -27,11 +27,7 @@ import {
 import { getSession } from "next-auth/react"
 import React, { Fragment, useEffect, useState, useRef } from "react"
 import { useRouter } from "next/router"
-import {
-   DownOutlined,
-   SearchOutlined,
-   CheckOutlined,
-} from "@ant-design/icons"
+import { DownOutlined, SearchOutlined, CheckOutlined } from "@ant-design/icons"
 import Highlighter from "react-highlight-words"
 import axios from "axios"
 import CardHead from "../../components/CardHead"
@@ -92,7 +88,7 @@ function ShipBilling() {
          )
       } catch (err) {
          console.log(err)
-      }finally {
+      } finally {
          setLoading(false)
       }
    }
@@ -538,6 +534,21 @@ function ShipBilling() {
                currency: "THB",
                style: "currency",
             }).format(num)
+         },
+      },
+      {
+         title: "link",
+         key: "link",
+         width: "60px",
+         render: (_text, record, index) => {
+            const handleClick = () => {
+               console.log(record)
+            }
+            return (
+               <Button id={`Link_${index}`} onClick={handleClick}>
+                  เลือก
+               </Button>
+            )
          },
       },
       {

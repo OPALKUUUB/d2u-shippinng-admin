@@ -209,14 +209,12 @@ async function handler(req, res) {
             "SELECT * FROM ship_billing WHERE voyage = ? and user_id = ?",
             [voyage, user_id]
          )
-         // console.log(result)
          shipbilling_id = result[0].id
       }
       const billings = await mysql.query(
          "SELECT * FROM ship_billing WHERE id = ? ",
          [shipbilling_id]
       )
-      // console.log(billings)
       await mysql.end()
       const user = { ...users[0], point_current }
       const baseRate1 = CalBaseRate(user?.point_last, user)
