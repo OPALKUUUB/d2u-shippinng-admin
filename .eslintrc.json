@@ -76,6 +76,7 @@
         "react/jsx-no-useless-fragment": "off",
         "no-use-before-define": "off",
         "default-case": "off",
-        "no-case-declarations": "off"
+        "no-case-declarations": "off",
+        "arrow-body-style": "off"
     }
 }
