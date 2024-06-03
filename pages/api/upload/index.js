@@ -26,6 +26,7 @@ async function uploadBase64Image(base64Image, channel) {
       const result = await cloudinary.uploader.upload(base64Image, {
          folder: "Assets/trackings",
          public_id: filename,
+         timeout: 240000
       })
       console.log(result.secure_url)
       return result.secure_url // Return the secure URL of the uploaded image
