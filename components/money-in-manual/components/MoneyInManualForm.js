@@ -1,3 +1,4 @@
+import imageCompression from "browser-image-compression"
 import { Form, Button, Divider, Upload, message, Modal } from "antd"
 import {
    CheckCircleOutlined,
@@ -11,7 +12,6 @@ import MoneyInManualFormTable from "./MoneyInManualFormTable"
 import PasteImage from "../../PasteImage"
 import PreviewImage from "../../PreviewImage/PreviewImage"
 import MoneyInManualContext from "../../../context/MoneyInManualContext"
-import imageCompression from "browser-image-compression"
 
 function MoneyInManualForm() {
    const {
