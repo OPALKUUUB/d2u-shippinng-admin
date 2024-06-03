@@ -211,7 +211,7 @@ function MoneyInManualForm() {
                            1920, // Max width
                            1920, // Max height
                            'JPEG', // Output format (JPEG, PNG, WEBP)
-                           30, // Image quality (0-100)
+                           10, // Image quality (0-100)
                            0, // Rotation (0 = no rotation)
                            (uri) => {
                                // uri is the resized image as a Blob
