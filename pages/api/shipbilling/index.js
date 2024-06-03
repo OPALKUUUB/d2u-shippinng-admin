@@ -1,7 +1,7 @@
 import mysql from "../../../lib/db"
 import genDate from "../../../utils/genDate"
 
-function CalBaseRate(point, user) {
+export function CalBaseRate(point, user) {
    if (user?.username === "April") {
       return { rate: 160, min: false }
    }

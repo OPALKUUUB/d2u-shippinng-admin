@@ -541,12 +541,21 @@ function ShipBilling() {
          key: "link",
          width: "60px",
          render: (_text, record, index) => {
-            const handleClick = () => {
-               console.log(record)
+            const handleClick = async () => {
+               try {
+                  await axios
+                     .post("/api/shipbilling/invoice", record)
+                     .then((res) => res.data)
+                     .then((data) => {
+                        window.open(data.link)
+                     })
+               } catch (error) {
+                  console.log(error)
+               }
             }
             return (
                <Button id={`Link_${index}`} onClick={handleClick}>
-                  เลือก
+                  เลือก ship
                </Button>
             )
          },

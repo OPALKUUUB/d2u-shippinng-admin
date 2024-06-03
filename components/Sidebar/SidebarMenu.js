@@ -68,7 +68,8 @@ const sidebarMenuData = [
          // { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
-   { id: 9, name: "Data Analysis", icon: <PieChartOutlined />, to: "/data-analysis" },
+   { id: 9, name: "รายการวางบิล", icon: <CheckSquareOutlined />, to: "/invoice-ship-billing" },
+   { id: 10, name: "Data Analysis", icon: <PieChartOutlined />, to: "/data-analysis" },
 
 ]
 

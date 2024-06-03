@@ -3,15 +3,12 @@ import "../styles/globals.css"
 import "../styles/ibm.css"
 import "antd/dist/reset.css"
 import dayjs from "dayjs"
-import { useRouter } from "next/router"
-
 import advancedFormat from "dayjs/plugin/advancedFormat"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 import localeData from "dayjs/plugin/localeData"
 import weekday from "dayjs/plugin/weekday"
 import weekOfYear from "dayjs/plugin/weekOfYear"
 import weekYear from "dayjs/plugin/weekYear"
-import { useEffect } from "react"
 
 dayjs.extend(customParseFormat)
 dayjs.extend(advancedFormat)
@@ -21,7 +18,6 @@ dayjs.extend(weekOfYear)
 dayjs.extend(weekYear)
 
 function MyApp({ Component, pageProps }) {
-   const router = useRouter()
    const getLayout = Component.getLayout || ((page) => page)
 
    return (
