@@ -138,22 +138,49 @@ function MoneyInManualForm() {
          .map((item) => item.getAsFile())[0]
 
       if (blob) {
-         const reader = new FileReader()
-         reader.readAsDataURL(blob)
-         reader.onload = () => {
-            const newFileList = [
-               {
-                  uid: `paste-${Date.now()}`,
-                  name: blob.name,
-                  type: blob.type,
-                  size: blob.size,
-                  originFileObj: blob,
-                  url: reader.result,
-                  status: "done",
-               },
-            ]
-            setFileList(newFileList)
-         }
+         Resizer.imageFileResizer(
+            blob, // Input image file
+            1920, // Max width
+            1920, // Max height
+            'JPEG', // Output format (JPEG, PNG, WEBP)
+            10, // Image quality (0-100)
+            0, // Rotation (0 = no rotation)
+            (uri) => {
+                // uri is the resized image as a Blob
+                const resizedFile = new File([uri], blob.name, { type: blob.type });
+
+                const newFileList = [
+                    ...fileList,
+                    {
+                        uid: `paste-${Date.now()}`,
+                        name: resizedFile.name,
+                        type: resizedFile.type,
+                        size: resizedFile.size,
+                        originFileObj: resizedFile,
+                        url: URL.createObjectURL(resizedFile),
+                        status: "done",
+                    },
+                ];
+                setFileList(newFileList);
+            },
+            'blob' // Output type (blob, base64)
+        );
+         // const reader = new FileReader()
+         // reader.readAsDataURL(blob)
+         // reader.onload = () => {
+         //    const newFileList = [
+         //       {
+         //          uid: `paste-${Date.now()}`,
+         //          name: blob.name,
+         //          type: blob.type,
+         //          size: blob.size,
+         //          originFileObj: blob,
+         //          url: reader.result,
+         //          status: "done",
+         //       },
+         //    ]
+         //    setFileList(newFileList)
+         // }
       }
    }
 
