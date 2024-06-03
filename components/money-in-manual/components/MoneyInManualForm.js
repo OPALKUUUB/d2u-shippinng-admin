@@ -147,7 +147,7 @@ function MoneyInManualForm() {
             0, // Rotation (0 = no rotation)
             (uri) => {
                 // uri is the resized image as a Blob
-                const resizedFile = new File([uri], blob.name, { type: blob.type });
+                const resizedFile = new File([uri], blob.name, { type: blob.type })
 
                 const newFileList = [
                     ...fileList,
@@ -160,11 +160,11 @@ function MoneyInManualForm() {
                         url: URL.createObjectURL(resizedFile),
                         status: "done",
                     },
-                ];
-                setFileList(newFileList);
+                ]
+                setFileList(newFileList)
             },
             'blob' // Output type (blob, base64)
-        );
+        )
          // const reader = new FileReader()
          // reader.readAsDataURL(blob)
          // reader.onload = () => {
