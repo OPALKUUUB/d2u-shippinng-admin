@@ -1,4 +1,5 @@
-import imageCompression from "browser-image-compression"
+// import imageCompression from "browser-image-compression"
+import Resizer from 'react-image-file-resizer'
 import { Form, Button, Divider, Upload, message, Modal } from "antd"
 import {
    CheckCircleOutlined,
@@ -205,32 +206,58 @@ function MoneyInManualForm() {
                   onChange={async (e) => {
                      if (e.target?.files) {
                         const file = e.target.files[0]
-                        try {
-                           const options = {
-                              maxSizeMB: 1,
-                              maxWidthOrHeight: 1920,
-                              useWebWorker: true,
-                            }
-                           const compressedFile = await imageCompression(
-                              file,
-                              options
-                           )
+                        Resizer.imageFileResizer(
+                           file, // Input image file
+                           1920, // Max width
+                           1920, // Max height
+                           'JPEG', // Output format (JPEG, PNG, WEBP)
+                           30, // Image quality (0-100)
+                           0, // Rotation (0 = no rotation)
+                           (uri) => {
+                               // uri is the resized image as a Blob
+                               const compressedFile = new File([uri], file.name, { type: file.type })
+                               
+                               const newFileList = [
+                                   {
+                                       uid: `FileList-${Date.now()}`,
+                                       name: compressedFile.name,
+                                       type: compressedFile.type,
+                                       size: compressedFile.size,
+                                       originFileObj: compressedFile,
+                                       url: URL.createObjectURL(compressedFile),
+                                       status: "done",
+                                   },
+                               ]
+                               setFileList(newFileList)
+                           },
+                           'blob' // Output type (blob, base64)
+                       )
+                        // try {
+                        //    const options = {
+                        //       maxSizeMB: 1,
+                        //       maxWidthOrHeight: 1920,
+                        //       useWebWorker: true,
+                        //     }
+                        //    const compressedFile = await imageCompression(
+                        //       file,
+                        //       options
+                        //    )
 
-                           const newFileList = [
-                              {
-                                 uid: `FileList-${Date.now()}`,
-                                 name: compressedFile.name,
-                                 type: compressedFile.type,
-                                 size: compressedFile.size,
-                                 originFileObj: compressedFile,
-                                 url: URL.createObjectURL(compressedFile),
-                                 status: "done",
-                              },
-                           ]
-                           setFileList(newFileList)
-                        } catch (error) {
-                           console.error("Image compression error:", error)
-                        }
+                        //    const newFileList = [
+                        //       {
+                        //          uid: `FileList-${Date.now()}`,
+                        //          name: compressedFile.name,
+                        //          type: compressedFile.type,
+                        //          size: compressedFile.size,
+                        //          originFileObj: compressedFile,
+                        //          url: URL.createObjectURL(compressedFile),
+                        //          status: "done",
+                        //       },
+                        //    ]
+                        //    setFileList(newFileList)
+                        // } catch (error) {
+                        //    console.error("Image compression error:", error)
+                        // }
                      }
 
                      // if (e.target?.files) {

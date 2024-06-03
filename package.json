@@ -37,6 +37,7 @@
     "react-datepicker": "^4.8.0",
     "react-dom": "18.2.0",
     "react-highlight-words": "^0.18.0",
+    "react-image-file-resizer": "^0.4.8",
     "serverless-mysql": "^1.5.4",
     "styled-components": "^5.3.6",
     "styled-jsx": "^5.1.0",
