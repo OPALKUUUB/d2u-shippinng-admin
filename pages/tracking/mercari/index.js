@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable indent */
+import Resizer from 'react-image-file-resizer';
 import {
    AppstoreAddOutlined,
    DownOutlined,
@@ -229,32 +230,80 @@ function MercariTrackingsPage() {
          setLoading(false)
       }
    }
+   // const handleOkUploadImages = async () => {
+   //    setLoading(true)
+   //    try {
+   //       const doneImage =
+   //          fileList.map((file, index) => ({
+   //             id: index,
+   //             name: file.name,
+   //             status: file.status,
+   //             uid: file.uid,
+   //             url: file.url ? file.url : file.thumbUrl,
+   //          })) || []
+   //       await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
+   //          method: "PATCH",
+   //          headers: { "Content-Type": "application/json" },
+   //          body: JSON.stringify({ doneImage }),
+   //       })
+   //       message.success("เพิ่มรูปภาพสำเร็จ!")
+   //       setTricker(true)
+   //       setShowImagesModal(false)
+   //    } catch (err) {
+   //       console.log(err)
+   //       message.error("เพิ่มรูปภาพผิดพลาด!")
+   //    }finally {
+   //       setLoading(false)
+   //    }
+   // }
    const handleOkUploadImages = async () => {
-      setLoading(true)
+      console.log("handleOkUploadImages...");
+      setLoading(true);
       try {
-         const doneImage =
-            fileList.map((file, index) => ({
-               id: index,
-               name: file.name,
-               status: file.status,
-               uid: file.uid,
-               url: file.url ? file.url : file.thumbUrl,
-            })) || []
-         await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ doneImage }),
-         })
-         message.success("เพิ่มรูปภาพสำเร็จ!")
-         setTricker(true)
-         setShowImagesModal(false)
+          const resizedFilesPromises = fileList.map((file) => {
+              return new Promise((resolve, reject) => {
+                  Resizer.imageFileResizer(
+                      file.originFileObj,
+                      1920, // Max width
+                      1920, // Max height
+                      'JPEG', // Output format (JPEG, PNG, WEBP)
+                      10, // Image quality (0-100)
+                      0, // Rotation (0 = no rotation)
+                      (uri) => {
+                          const resizedFile = new File([uri], file.name, { type: file.type });
+                          resolve(resizedFile);
+                      },
+                      'blob' // Output type (blob, base64)
+                  );
+              });
+          });
+  
+          const resizedFiles = await Promise.all(resizedFilesPromises);
+  
+          const doneImage = resizedFiles.map((file, index) => ({
+              id: index,
+              name: file.name,
+              status: "done",
+              uid: `resized-${index}`,
+              url: URL.createObjectURL(file),
+          }));
+  
+          await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ doneImage }),
+          });
+  
+          message.success("เพิ่มรูปภาพสำเร็จ!");
+          setTricker(true);
+          setShowImagesModal(false);
       } catch (err) {
-         console.log(err)
-         message.error("เพิ่มรูปภาพผิดพลาด!")
-      }finally {
-         setLoading(false)
+          console.error(err);
+          message.error("เพิ่มรูปภาพผิดพลาด!");
+      } finally {
+          setLoading(false);
       }
-   }
+  };
    const onChange = ({ fileList: newFileList }) => {
       setFileList(newFileList)
    }
