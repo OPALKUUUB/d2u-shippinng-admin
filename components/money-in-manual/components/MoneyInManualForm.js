@@ -11,6 +11,7 @@ import MoneyInManualFormTable from "./MoneyInManualFormTable"
 import PasteImage from "../../PasteImage"
 import PreviewImage from "../../PreviewImage/PreviewImage"
 import MoneyInManualContext from "../../../context/MoneyInManualContext"
+import imageCompression from "browser-image-compression"
 
 function MoneyInManualForm() {
    const {
@@ -201,22 +202,56 @@ function MoneyInManualForm() {
                   ref={fileInputRef}
                   accept="image/png, image/jpg, image/jpeg"
                   className="w-0 h-0"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                      if (e.target?.files) {
                         const file = e.target.files[0]
-                        const newFileList = [
-                           {
-                              uid: `FileList-${Date.now()}`,
-                              name: file.name,
-                              type: file.type,
-                              size: file.size,
-                              originFileObj: file,
-                              url: URL.createObjectURL(file),
-                              status: "done",
-                           },
-                        ]
-                        setFileList(newFileList)
+                        try {
+                           const options = {
+                              maxSizeMB: 1,
+                              maxWidthOrHeight: 1920,
+                              useWebWorker: true,
+                            }
+                           const compressedFile = await imageCompression(
+                              file,
+                              options
+                           )
+
+                           const newFileList = [
+                              {
+                                 uid: `FileList-${Date.now()}`,
+                                 name: compressedFile.name,
+                                 type: compressedFile.type,
+                                 size: compressedFile.size,
+                                 originFileObj: compressedFile,
+                                 url: URL.createObjectURL(compressedFile),
+                                 status: "done",
+                              },
+                           ]
+                           setFileList(newFileList)
+                        } catch (error) {
+                           console.error("Image compression error:", error)
+                        }
                      }
+
+                     // if (e.target?.files) {
+                     //    const file = e.target.files[0]
+                     //    const options = {
+                     //       maxSizeMB: 4, // Maximum size in MB
+                     //       maxWidthOrHeight: 1920, // Maximum width or height
+                     //    };
+                     //    const newFileList = [
+                     //       {
+                     //          uid: `FileList-${Date.now()}`,
+                     //          name: file.name,
+                     //          type: file.type,
+                     //          size: file.size,
+                     //          originFileObj: file,
+                     //          url: URL.createObjectURL(file),
+                     //          status: "done",
+                     //       },
+                     //    ]
+                     //    setFileList(newFileList)
+                     // }
                   }}
                />
                <p
