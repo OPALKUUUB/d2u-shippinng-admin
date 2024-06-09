@@ -185,7 +185,8 @@ function CargoPage() {
          render: (text, row) => (isValid(text) ? text + (row.delivery_type === 'EMS' ? '¥' : (row.delivery_type === 'AIR CARGO' ? '฿' : '𐄹')) : "-"),
       },
       {
-         title: "แจ้งเก็บเงิน",
+         // title: "แจ้งเก็บเงิน",
+         title: "ชำระเงินแล้ว",
          dataIndex: "is_notified",
          key: "is_notified",
          width: "120px",

@@ -69,7 +69,7 @@ const sidebarMenuData = [
       ],
    },
    { id: 9, name: "รายการวางบิล", icon: <CheckSquareOutlined />, to: "/invoice-ship-billing" },
-   { id: 10, name: "Data Analysis", icon: <PieChartOutlined />, to: "/data-analysis" },
+   { id: 11, name: "Data Analysis", icon: <PieChartOutlined />, to: "/data-analysis" },
 
 ]
 

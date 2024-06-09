@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable indent */
-import Resizer from 'react-image-file-resizer';
+import Resizer from 'react-image-file-resizer'
 import {
    AppstoreAddOutlined,
    DownOutlined,
@@ -257,8 +257,8 @@ function MercariTrackingsPage() {
    //    }
    // }
    const handleOkUploadImages = async () => {
-      console.log("handleOkUploadImages...");
-      setLoading(true);
+      console.log("handleOkUploadImages...")
+      setLoading(true)
       try {
           const resizedFilesPromises = fileList.map((file) => {
               return new Promise((resolve, reject) => {
@@ -270,15 +270,15 @@ function MercariTrackingsPage() {
                       10, // Image quality (0-100)
                       0, // Rotation (0 = no rotation)
                       (uri) => {
-                          const resizedFile = new File([uri], file.name, { type: file.type });
-                          resolve(resizedFile);
+                          const resizedFile = new File([uri], file.name, { type: file.type })
+                          resolve(resizedFile)
                       },
                       'blob' // Output type (blob, base64)
-                  );
-              });
-          });
+                  )
+              })
+          })
   
-          const resizedFiles = await Promise.all(resizedFilesPromises);
+          const resizedFiles = await Promise.all(resizedFilesPromises)
   
           const doneImage = resizedFiles.map((file, index) => ({
               id: index,
@@ -286,24 +286,24 @@ function MercariTrackingsPage() {
               status: "done",
               uid: `resized-${index}`,
               url: URL.createObjectURL(file),
-          }));
+          }))
   
           await fetch(`/api/tracking/images?tracking_id=${trackingId}`, {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ doneImage }),
-          });
+          })
   
-          message.success("เพิ่มรูปภาพสำเร็จ!");
-          setTricker(true);
-          setShowImagesModal(false);
+          message.success("เพิ่มรูปภาพสำเร็จ!")
+          setTricker(true)
+          setShowImagesModal(false)
       } catch (err) {
-          console.error(err);
-          message.error("เพิ่มรูปภาพผิดพลาด!");
+          console.error(err)
+          message.error("เพิ่มรูปภาพผิดพลาด!")
       } finally {
-          setLoading(false);
+          setLoading(false)
       }
-  };
+  }
    const onChange = ({ fileList: newFileList }) => {
       setFileList(newFileList)
    }

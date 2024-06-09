@@ -2,6 +2,7 @@ import { getSession } from "next-auth/react"
 import Layout from "../../components/layout/layout"
 import InvoiceShipBillingFilter from "../../components/invoice-ship-billing/InvoiceShipBillingFilter"
 import InvoiceShipBillingResult from "../../components/invoice-ship-billing/InvoiceShipBillingResult"
+import { InvoiceShipBillingProvider } from "../../context/InvoiceShipBillingContext"
 
 const Container = ({ children }) => {
    return (
@@ -12,10 +13,12 @@ const Container = ({ children }) => {
 }
 function InvoiceShipBillingPage() {
    return (
-      <Container>
-         <InvoiceShipBillingFilter/>
-         <InvoiceShipBillingResult/>
-      </Container>
+      <InvoiceShipBillingProvider>
+         <Container>
+            <InvoiceShipBillingFilter />
+            <InvoiceShipBillingResult />
+         </Container>
+      </InvoiceShipBillingProvider>
    )
 }
 
