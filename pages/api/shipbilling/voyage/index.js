@@ -7,6 +7,7 @@ async function handler(req, res) {
          `SELECT voyage
          FROM trackings
          WHERE voyage IS NOT NULL AND voyage != ''
+         AND airbilling <> 1
          AND cont_status != 99
          GROUP BY voyage
          ORDER BY STR_TO_DATE(voyage, '%d/%m/%Y') DESC
