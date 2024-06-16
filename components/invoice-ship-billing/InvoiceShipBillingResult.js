@@ -19,6 +19,7 @@ import {
 
 const SHIP_BILLING_STATUS_OPTIONS = [
    { label: "unpaid", value: "unpaid" },
+   { label: "keep", value: "keep" },
    { label: "toship", value: "toship" },
    { label: "pickup", value: "pickup" },
    { label: "ship", value: "ship" },
@@ -100,12 +101,38 @@ export default function InvoiceShipBillingResult() {
             return text || "-"
          },
       },
+      // {
+      //    title: "วิธีจัดส่ง",
+      //    key: "deliveryType",
+      //    dataIndex: "deliveryType",
+      //    render: (text) => {
+      //       return text || "-"
+      //    },
+      // },
       {
-         title: "วิธีจัดส่ง",
-         key: "deliveryType",
-         dataIndex: "deliveryType",
+         title: "ที่อยู่",
+         key: "contentData",
+         dataIndex: "contentData",
          render: (text) => {
-            return text || "-"
+            if (!text) return "-"
+            const contentData = JSON.parse(text)
+            console.log(contentData)
+            return (
+               <div>
+                  <p>
+                     <span className="mr-2 font-bold">ประเภทที่อยู่:</span>
+                     {contentData.addressType || '-'}
+                  </p>
+                  <p>
+                     <span className="mr-2 font-bold">ที่อยู่:</span>
+                     {contentData.address || '-'}
+                  </p>
+                  <p>
+                     <span className="mr-2 font-bold">ที่อยู่ 2:</span>
+                     {contentData.addAddress || '-'}
+                  </p>
+               </div>
+            )
          },
       },
       {
@@ -123,12 +150,16 @@ export default function InvoiceShipBillingResult() {
                   record.shipBillingStatus === "ship"
                ) {
                   try {
+                     if (record?.shipbillingId === null) {
+                        return message.warning(
+                           "ไม่สามารถสร้างใบวางบิลได้ เนื่องจากรายนี้ยังไม่ถูกสร้างใน shipbilling"
+                        )
+                     }
                      const payload = {
                         shipBillingId: record.shipbillingId,
                         shipBillingStatus: record.shipBillingStatus,
                         userId: record.userId,
                      }
-                     console.log(payload)
                      await axios
                         .post("/api/shipbilling/invoice", payload)
                         .then((res) => res.data)
