@@ -1,7 +1,8 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable consistent-return */
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
+   Button,
    Col,
    DatePicker,
    Dropdown,
@@ -18,11 +19,12 @@ import {
    Tag,
    message,
 } from "antd"
-import { DownOutlined, PlusCircleOutlined } from "@ant-design/icons"
+import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import axios from "axios"
 import dayjs from "dayjs"
 import Layout from "../../components/layout/layout"
 import EditImageModal from "../../components/EditImageModal/EditImageModal"
+import Highlighter from "react-highlight-words"
 
 function CargoPage() {
    const [trigger, setTrigger] = useState(false)
@@ -79,6 +81,241 @@ function CargoPage() {
       await editCargo({ ...item, is_invoiced: check })
       setLoading(false)
    }
+   const [searchText, setSearchText] = useState("")
+   const [searchedColumn, setSearchedColumn] = useState("")
+   const searchInput = useRef(null)
+   const handleSearch = (selectedKeys, confirm, dataIndex) => {
+      confirm()
+      setSearchText(selectedKeys[0])
+      setSearchedColumn(dataIndex)
+   }
+   const handleReset = (clearFilters) => {
+      clearFilters()
+      setSearchText("")
+   }
+   const getColumnSearchProps = (dataIndex) => ({
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1677ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) => {
+         return record[dataIndex]
+            ?.toString()
+            ?.toLowerCase()
+            ?.includes(value.toLowerCase())
+      },
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+      render: (text) =>
+         searchedColumn === dataIndex ? (
+            <Highlighter
+               highlightStyle={{
+                  backgroundColor: "#ffc069",
+                  padding: 0,
+               }}
+               searchWords={[searchText]}
+               autoEscape
+               textToHighlight={text ? text.toString() : ""}
+            />
+         ) : (
+            text
+         ),
+   })
+   const getDeliveryTypeSearchProps = (dataIndex = "delivery_type") => ({
+      title: "รูปแบบจัดส่ง",
+      dataIndex: "delivery_type",
+      key: "delivery_type",
+      width: "150px",
+      render: (value, item) => {
+         const type = isValid(value) ? value : ""
+         const options = [
+            { label: "เลือก", value: "" },
+            { label: "EMS", value: "EMS" },
+            { label: "AIR CARGO", value: "AIR CARGO" },
+         ]
+         return (
+            <Space>
+               <Select
+                  value={type}
+                  options={options}
+                  onChange={(v) => handleSelectDeliveryType(v, item)}
+               />
+            </Space>
+         )
+      },
+      filterDropdown: ({
+         setSelectedKeys,
+         selectedKeys,
+         confirm,
+         clearFilters,
+         close,
+      }) => (
+         <div
+            style={{
+               padding: 8,
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+         >
+            <Input
+               ref={searchInput}
+               placeholder={`Search ${dataIndex}`}
+               value={selectedKeys[0]}
+               onChange={(e) =>
+                  setSelectedKeys(e.target.value ? [e.target.value] : [])
+               }
+               onPressEnter={() =>
+                  handleSearch(selectedKeys, confirm, dataIndex)
+               }
+               style={{
+                  marginBottom: 8,
+                  display: "block",
+               }}
+            />
+            <Space>
+               <Button
+                  type="primary"
+                  onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                  icon={<SearchOutlined />}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Search
+               </Button>
+               <Button
+                  onClick={() => clearFilters && handleReset(clearFilters)}
+                  size="small"
+                  style={{
+                     width: 90,
+                  }}
+               >
+                  Reset
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     confirm({
+                        closeDropdown: false,
+                     })
+                     setSearchText(selectedKeys[0])
+                     setSearchedColumn(dataIndex)
+                  }}
+               >
+                  Filter
+               </Button>
+               <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                     close()
+                  }}
+               >
+                  close
+               </Button>
+            </Space>
+         </div>
+      ),
+      filterIcon: (filtered) => (
+         <SearchOutlined
+            style={{
+               color: filtered ? "#1677ff" : undefined,
+            }}
+         />
+      ),
+      onFilter: (value, record) => {
+         return record[dataIndex]
+            ?.toString()
+            ?.toLowerCase()
+            ?.includes(value.toLowerCase())
+      },
+      onFilterDropdownOpenChange: (visible) => {
+         if (visible) {
+            setTimeout(() => searchInput.current?.select(), 100)
+         }
+      },
+   })
    const columns = [
       {
          title: "วันที่",
@@ -104,6 +341,12 @@ function CargoPage() {
          dataIndex: "username",
          width: "150px",
          key: "username",
+         // filterMode: "tree",
+         // onFilter: (value, record) => record.username.startsWith(value),
+         // filters: Array.from(
+         //    new Set([...cargo.map((item) => item.username)])
+         // ).map((username) => ({ text: username, value: username })),
+         ...getColumnSearchProps("username"),
       },
       {
          title: "ช่องทางเดิม",
@@ -111,12 +354,18 @@ function CargoPage() {
          width: "150px",
          key: "channel",
          render: (text) => {
-            const channelList = ['123', 'mercari', 'fril', 'shimizu', 'yahoo']
-            const channelColorList = ['magenta', 'red', 'volcano', 'orange', 'gold']
-            const chIdx = channelList.findIndex(ch => ch === text)
+            const channelList = ["123", "mercari", "fril", "shimizu", "yahoo"]
+            const channelColorList = [
+               "magenta",
+               "red",
+               "volcano",
+               "orange",
+               "gold",
+            ]
+            const chIdx = channelList.findIndex((ch) => ch === text)
             const color = channelColorList[chIdx]
             return <Tag color={color}>{text}</Tag>
-         }
+         },
       },
       {
          title: "เลขแทรกกิงค์",
@@ -125,28 +374,7 @@ function CargoPage() {
          key: "track_no",
       },
       {
-         title: "รูปแบบจัดส่ง",
-         dataIndex: "delivery_type",
-         key: "delivery_type",
-         width: "150px",
-         render: (value, item) => {
-            const type = isValid(value) ? value : ""
-            // console.log(value)
-            const options = [
-               { label: "เลือก", value: "" },
-               { label: "EMS", value: "EMS" },
-               { label: "AIR CARGO", value: "AIR CARGO" },
-            ]
-            return (
-               <Space>
-                  <Select
-                     value={type}
-                     options={options}
-                     onChange={(v) => handleSelectDeliveryType(v, item)}
-                  />
-               </Space>
-            )
-         },
+         ...getDeliveryTypeSearchProps("delivery_type"),
       },
       {
          title: "เลขกล่อง",
@@ -161,6 +389,7 @@ function CargoPage() {
          key: "round_closed",
          width: "120px",
          render: (text) => (isValid(text) ? text : "-"),
+         ...getColumnSearchProps("round_closed")
       },
       {
          title: "น้ำหนักจริง",
@@ -169,23 +398,23 @@ function CargoPage() {
          width: "120px",
          render: (text) => (isValid(text) ? text : "-"),
       },
-      // {
-      //    title: "น้ำหนักขนาด",
-      //    dataIndex: "weight_size",
-      //    key: "weight_size",
-      //    width: "120px",
-      //    render: (text) => (isValid(text) ? text : "-"),
-      // },
       {
          title: "ราคา",
          dataIndex: "price",
          key: "price",
          width: "100px",
          // eslint-disable-next-line no-nested-ternary
-         render: (text, row) => (isValid(text) ? text + (row.delivery_type === 'EMS' ? '¥' : (row.delivery_type === 'AIR CARGO' ? '฿' : '𐄹')) : "-"),
+         render: (text, row) =>
+            isValid(text)
+               ? text +
+                 (row.delivery_type === "EMS"
+                    ? "¥"
+                    : row.delivery_type === "AIR CARGO"
+                    ? "฿"
+                    : "𐄹")
+               : "-",
       },
       {
-         // title: "แจ้งเก็บเงิน",
          title: "ชำระเงินแล้ว",
          dataIndex: "is_notified",
          key: "is_notified",
@@ -288,7 +517,6 @@ function CargoPage() {
          try {
             const response = await axios.get("/api/cargo")
             setCargo(response.data.cargo)
-            console.log(response.data.cargo)
          } catch (err) {
             console.log(err)
          } finally {
@@ -314,7 +542,6 @@ function CargoPage() {
                dataSource={cargo}
                scroll={{
                   x: 1500,
-                  y: 450,
                }}
             />
             <EditModal
@@ -361,7 +588,7 @@ function EditModal({ item, open, onCancel, editCargo }) {
 }
 
 function EditForm({ formData, setFormData }) {
-   const handleFieldChange = (changedFields, allFields) => {
+   const handleFieldChange = (changedFields) => {
       const changedField = changedFields[0]
       const fieldName = changedField.name[0]
       const fieldValue = changedField.value
@@ -451,58 +678,6 @@ function EditForm({ formData, setFormData }) {
                <Input.TextArea className="w-full" />
             </Form.Item>
          </Col>
-      </Form>
-   )
-}
-
-function AddModal({ item, open, onCancel, editCargo }) {
-   const [formData, setFormData] = useState(item)
-
-   // const handleSubmit = async () => {
-   //    await editCargo({ ...formData })
-   // }
-   // useEffect(() => {
-   //    setFormData(item)
-   // }, [item])
-   return (
-      <Modal
-         title="เพิ่มข้อมูลการขนส่ง"
-         open={open}
-         onCancel={onCancel}
-         width={600}
-         // onOk={handleSubmit}
-      >
-         <div className="pt-5">
-            <AddForm formData={formData} setFormData={setFormData} />
-         </div>
-      </Modal>
-   )
-}
-
-function AddForm({ formData, setFormData }) {
-   return (
-      <Form
-      // fields={}
-      // onFieldsChange={handleFieldChange}
-      >
-         <Form.Item label="วันที่" name="date">
-            <DatePicker format="DD/MM/YYYY" />
-         </Form.Item>
-         <Form.Item label="Track No" name="track_no">
-            <Input />
-         </Form.Item>
-         <Form.Item label="Box No" name="box_no">
-            <Input />
-         </Form.Item>
-         <Form.Item label="น้ำหนักจริง" name="weight_true">
-            <InputNumber className="w-full" />
-         </Form.Item>
-         <Form.Item label="น้ำหนักขนาด" name="weight_size">
-            <InputNumber className="w-full" />
-         </Form.Item>
-         <Form.Item label="ราคา" name="price">
-            <InputNumber className="w-full" />
-         </Form.Item>
       </Form>
    )
 }
