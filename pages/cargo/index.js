@@ -22,9 +22,9 @@ import {
 import { DownOutlined, SearchOutlined } from "@ant-design/icons"
 import axios from "axios"
 import dayjs from "dayjs"
+import Highlighter from "react-highlight-words"
 import Layout from "../../components/layout/layout"
 import EditImageModal from "../../components/EditImageModal/EditImageModal"
-import Highlighter from "react-highlight-words"
 
 function CargoPage() {
    const [trigger, setTrigger] = useState(false)
