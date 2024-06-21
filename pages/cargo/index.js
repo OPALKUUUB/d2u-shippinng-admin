@@ -595,7 +595,7 @@ function EditForm({ formData, setFormData }) {
       if (fieldName === "date" || fieldName === "round_closed") {
          setFormData((prevData) => ({
             ...prevData,
-            [fieldName]: dayjs(fieldValue, "D/M/YYYY").format("D/M/YYYY"),
+            [fieldName]: fieldValue === null ?  '' : dayjs(fieldValue).format("D/M/YYYY"),
          }))
       } else {
          setFormData((prevData) => ({
@@ -609,7 +609,7 @@ function EditForm({ formData, setFormData }) {
       ? null
       : dayjs(formData.date, "D/M/YYYY")
    const round_closed = !isValid(formData.round_closed)
-      ? null
+      ? ''
       : dayjs(formData.round_closed, "D/M/YYYY")
    const trackNo = formData.track_no
    const boxNo = formData.box_no
