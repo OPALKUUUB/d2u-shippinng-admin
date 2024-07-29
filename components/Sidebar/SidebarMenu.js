@@ -1,28 +1,26 @@
-import { CheckSquareOutlined, DingdingOutlined, PieChartOutlined, ProfileOutlined } from "@ant-design/icons"
+import { CheckSquareOutlined, DingdingOutlined, MoneyCollectOutlined, PieChartOutlined, ProfileOutlined } from "@ant-design/icons"
 import BillingIcon from "../icon/BillingIcon"
 import DashboardIcon from "../icon/DashboardIcon"
-import StoreIcon from "../icon/StoreIcon"
 import TrackingPackageIcon from "../icon/TrackingPackageIcon"
 import YahooIcon from "../icon/YahooIcon"
 
-
 // eslint-disable-next-line import/prefer-default-export
 const sidebarMenuData = [
-   { id: 10, name: "Dasboard", icon: <DashboardIcon />, to: "/" },
-   { id: 1, name: "Customer", icon: <ProfileOutlined />, to: "/customer" },
+   { id: 1, name: "Dasboard", icon: <DashboardIcon />, to: "/" },
+   { id: 2, name: "Customer", icon: <ProfileOutlined />, to: "/customer" },
    {
-      id: 2,
+      id: 3,
       name: "Auction Yahoo",
       icon: <YahooIcon />,
       childs: [
-         { id: 1, name: "Add Auction", to: "/yahoo/add" },
+         // { id: 1, name: "Add Auction", to: "/yahoo/add" },
          { id: 2, name: "Bidding", to: "/yahoo/bidding" },
          { id: 3, name: "Payment", to: "/yahoo/payment" },
          { id: 4, name: "History", to: "/yahoo/history" },
       ],
    },
    {
-      id: 3,
+      id: 4,
       name: "Tracking",
       icon: <TrackingPackageIcon />,
       childs: [
@@ -33,42 +31,31 @@ const sidebarMenuData = [
          { id: 5, name: "Frill", to: "/tracking/frill" },
          { id: 6, name: "Yahoo", to: "/tracking/yahoo" },
          { id: 6, name: "ประวัติการลบรายการ", to: "/tracking/contentDelete" },
-         // { id: 7, name: "Mart", to: "/tracking/mart" },
       ],
    },
-   // {
-   //    id: 4,
-   //    name: "Mart",
-   //    icon: <StoreIcon />,
-   //    childs: [
-   //       { id: 1, name: "Order", to: "/" },
-   //       { id: 2, name: "Buy List", to: "/" },
-   //       { id: 3, name: "Promotion", to: "/mart/promotion" },
-   //       { id: 4, name: "Gachapong", to: "/mart/ewelcia" },
-   //       { id: 5, name: "7-Eleven", to: "/mart/omni7" },
-   //       { id: 6, name: "Donki", to: "/mart/donki" },
-   //       { id: 7, name: "Disney", to: "/mart/disney" },
-   //       { id: 8, name: "Disnayland", to: "/mart/disneyland" },
-   //    ],
-   // },
    { id: 5, name: "Ship Billing", icon: <BillingIcon />, to: "/shipbilling" },
    { id: 6, name: "ขนส่งเอกชน", icon: <BillingIcon />, to: "/private-transport" },
    { id: 7, name: "ฝากไว้ก่อน", icon: <BillingIcon />, to: "/deposite-first" },
    { id: 8, name: "Cargo", icon: <DingdingOutlined />, to: "/cargo" },
    {
-      id: 11,
+      id: 9,
       name: "การเงิน",
-      icon: <CheckSquareOutlined />,
+      icon: <CheckSquareOutlined  />,
       childs: [
          { id: 1, name: "เงินเข้า manual", to: "/for-accountant/money-in-manual" },
          { id: 2, name: "รายการเงินเข้า", to: "/for-accountant/list-money-in-manual" },
-         // { id: 1, name: "เงินเข้า", to: "/for-accountant/money-in" },
-         { id: 2, name: "รายการเงินเข้าเก่า", to: "/for-accountant/list-money-in" },
-         // { id: 3, name: "ตัดยอด", to: "/for-accountant/cut-cost" },
-         // { id: 7, name: "Mart", to: "/tracking/mart" },
+         { id: 3, name: "รายการเงินเข้าเก่า", to: "/for-accountant/list-money-in" },
       ],
    },
-   { id: 9, name: "รายการวางบิล", icon: <CheckSquareOutlined />, to: "/invoice-ship-billing" },
+   { 
+      id: 10,
+      name: "วางบิล",
+      icon: <MoneyCollectOutlined />,
+      childs: [
+         { id: 1, name: "รายการวางบิล", to: "/invoice-ship-billing" },
+         { id: 2, name: "รายการฝาก", to: "/invoice-ship-billing/keep" },
+      ],
+   },
    { id: 11, name: "Data Analysis", icon: <PieChartOutlined />, to: "/data-analysis" },
 
 ]

@@ -18,6 +18,8 @@ async function handler(req, res) {
             slipImage: "",
             addAddress: "",
             addressType: "",
+            addAddressType: "",
+            isSelectPayOnSite: false,
             nextInvoice: false,
             baseRate,
          }

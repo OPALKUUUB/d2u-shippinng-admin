@@ -2,15 +2,16 @@ import React, { useState } from "react"
 import axios from "axios"
 import { useRouter } from "next/router"
 import LoadingPage from "../components/LoadingPage"
+import { useSearchParams } from "next/navigation"
 
 export const TABLIST = [
-   { label: "all", key: "TabItem_all" },
-   { label: "unpaid", key: "TabItem_unpaid" },
-   { label: "keep", key: "TabItem_keep" },
-   { label: "pickup", key: "TabItem_pickup" },
-   { label: "toship", key: "TabItem_toship" },
-   { label: "ship", key: "TabItem_ship" },
-   { label: "finish", key: "TabItem_finish" },
+   { label: "unpaid", key: "unpaid" },
+   { label: "keep", key: "keep" },
+   { label: "pickup", key: "pickup" },
+   { label: "toship", key: "toship" },
+   { label: "ship", key: "ship" },
+   { label: "finish", key: "finish" },
+   { label: "all", key: "all" },
 ]
 
 export const InvoiceShipBillingContext = React.createContext(null)
@@ -20,14 +21,13 @@ export const useInvoiceShipBillingContext = () =>
 
 export const InvoiceShipBillingProvider = ({ children }) => {
    const router = useRouter()
+   const searchParams = useSearchParams()
 
    const [loading, setLoading] = useState(false)
 
    const handleUpdateShipBillingStatus = async (
       shipBillingStatus,
-      shipBillingId,
-      current,
-      pageSize
+      shipBillingId
    ) => {
       try {
          setLoading(true)
@@ -35,27 +35,40 @@ export const InvoiceShipBillingProvider = ({ children }) => {
             shipBillingId: shipBillingId,
             shipBillingStatus: shipBillingStatus,
          }
-         const response = await axios.patch("/api/invoiceShipBilling", payload)
-         await handleChangePaginaiton(current, pageSize)
-         console.log(response)
+         await axios.patch("/api/invoiceShipBilling", payload)
       } catch (error) {
          console.log(error)
       } finally {
-         console.log("finish")
          setLoading(false)
       }
    }
 
-   const handleChangePaginaiton = async (current, pageSize) => {
-      if (isSearchShipBillingValidate(router.query.voyage)) {
+   const handleUpdateInvoice = async (shipbillingId, contentData) => {
+      try {
+         setLoading(true)
+         const payload = {
+            shipbillingId: shipbillingId,
+            contentData: JSON.stringify(contentData),
+         }
+         await axios.put("/api/invoiceShipBilling", payload)
+      } catch (error) {
+         console.log(error)
+      } finally {
+         setLoading(false)
+      }
+   }
+
+   const handleChangePaginaiton = async (
+      current = 0,
+      pageSize = 10,
+      tabSelect = "unpaid",
+      voyage
+   ) => {
+      if (isSearchShipBillingValidate(voyage)) {
          try {
             setLoading(true)
             const response = await axios.get(
-               `/api/invoiceShipBilling?voyage=${
-                  router.query.voyage
-               }&tabSelect=${
-                  !router.query.tabSelect ? "all" : router.query.tabSelect
-               }&pageSize=${pageSize}&current=${current}`
+               `/api/invoiceShipBilling?voyage=${voyage}&tabSelect=${tabSelect}&pageSize=${pageSize}&current=${current}`
             )
             const responseData = await response.data?.data
             setState((prev) => ({
@@ -70,18 +83,14 @@ export const InvoiceShipBillingProvider = ({ children }) => {
       }
    }
 
-   const isSearchShipBillingValidate = (voyage, tabSelect) => {
-      return (
-         voyage && /\d{1}|\d{2}\/\d{1}|\d{2}\/\d{4}/.test(voyage)
-         // &&
-         // tabSelect &&
-         // TABLIST.map((item) => item.label).includes(tabSelect)
-      )
+   const isSearchShipBillingValidate = (voyage) => {
+      return voyage && /\d{1}|\d{2}\/\d{1}|\d{2}\/\d{4}/.test(voyage)
    }
 
    const [state, setState] = React.useState({
       _voyages: [],
       _shipBillingData: [],
+      _handleUpdateInvoice: handleUpdateInvoice,
       _handleChangePaginaiton: handleChangePaginaiton,
       _handleUpdateShipBillingStatus: handleUpdateShipBillingStatus,
       _loading: loading,
@@ -112,17 +121,20 @@ export const InvoiceShipBillingProvider = ({ children }) => {
    }, [])
 
    React.useEffect(() => {
-      ;(async () => {
-         if (
-            isSearchShipBillingValidate(
-               router.query.voyage,
-               router.query.tabSelect
+      const fetchData = async () => {
+         if (isSearchShipBillingValidate(router.query.voyage)) {
+            await handleChangePaginaiton(
+               0,
+               10,
+               searchParams.has("tabSelect")
+                  ? searchParams.get("tabSelect")
+                  : "all",
+               searchParams.has("voyage") ? searchParams.get("voyage") : ""
             )
-         ) {
-            await handleChangePaginaiton(0, 10)
          }
-      })()
-   }, [router.query])
+      }
+      fetchData()
+   }, [])
 
    return (
       <InvoiceShipBillingContext.Provider value={state}>

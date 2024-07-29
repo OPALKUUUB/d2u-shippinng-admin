@@ -5,7 +5,7 @@ import { InvoiceShipBillingContext } from "../../context/InvoiceShipBillingConte
 
 export default function InvoiceShipBillingFilter() {
    const router = useRouter()
-   const { _voyages } = useContext(InvoiceShipBillingContext)
+   const { _voyages, _handleChangePaginaiton } = useContext(InvoiceShipBillingContext)
 
    const [form] = Form.useForm()
 
@@ -14,7 +14,8 @@ export default function InvoiceShipBillingFilter() {
 
    const handleChangeVoyageSelect = (value) => {
       setVoyageSelect(value)
-      router.push({ query: { voyage: value } })
+      router.push({ query: { voyage: value, tabSelect: 'unpaid' } })
+      _handleChangePaginaiton(0, 10, 'unpaid', value)
    }
 
    useEffect(() => {
