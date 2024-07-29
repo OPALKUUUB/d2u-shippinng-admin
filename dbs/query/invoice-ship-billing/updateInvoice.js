@@ -97,7 +97,7 @@ async function updateInvoice(body) {
                            "\n"
                         )}\nhttps://track.thailandpost.co.th/?trackNumber=${trackingPriceList1
                         .map((item) => item.trackingNo)
-                        .join(",")}`,
+                        .join(",").replace(" ", "")}`,
                   },
                ],
             },
@@ -130,8 +130,8 @@ async function updateInvoice(body) {
                         .join(
                            "\n"
                         )}\nhttps://track.thailandpost.co.th/?trackNumber=${trackingPriceList2
-                        .map((item) => item.trackingNo)
-                        .join(",")}`,
+                           .map((item) => item.trackingNo)
+                        .join(",").replace(" ", "")}`,
                   },
                ],
             },
