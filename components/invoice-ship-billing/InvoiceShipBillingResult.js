@@ -21,11 +21,11 @@ import {
 import { useRouter } from "next/router"
 import React, { Fragment, useContext, useEffect, useState } from "react"
 import axios from "axios"
+import { useSearchParams } from "next/navigation"
 import {
    InvoiceShipBillingContext,
    TABLIST,
 } from "../../context/InvoiceShipBillingContext"
-import { useSearchParams } from "next/navigation"
 import ReportInvoice from "../ReportInvoice"
 
 const SHIP_BILLING_STATUS_OPTIONS = [
@@ -364,7 +364,7 @@ export default function InvoiceShipBillingResult() {
             column.key === "isBothChecked"
          ) {
             return true
-         } else if (column.key === "isBothChecked") {
+         } if (column.key === "isBothChecked") {
             return false
          }
          return true
@@ -465,7 +465,7 @@ export default function InvoiceShipBillingResult() {
       }
       const onAddTrackingList = (mode) => {
          const trackingPriceListVal =
-            contentData["trackingPriceList" + mode] || []
+            contentData[`trackingPriceList${  mode}`] || []
          const addressTrackNo = contentData?.addressTrackNo
          const addressPrice = contentData?.addressPrice
          setSelectRowData((prev) => ({
@@ -474,7 +474,7 @@ export default function InvoiceShipBillingResult() {
                ...contentData,
                addressTrackNo: "",
                addressPrice: "",
-               ["trackingPriceList" + mode]: [
+               [`trackingPriceList${  mode}`]: [
                   ...trackingPriceListVal,
                   { trackingNo: addressTrackNo, price: addressPrice },
                ],

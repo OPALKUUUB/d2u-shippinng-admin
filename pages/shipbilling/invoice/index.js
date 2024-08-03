@@ -159,7 +159,7 @@ function InvoicePage({ user_id, voyage }) {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
-            rate: rate,
+            rate,
          }),
       })
       await response.json()

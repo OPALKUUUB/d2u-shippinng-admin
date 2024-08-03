@@ -35,14 +35,14 @@ const styles = StyleSheet.create({
    },
    tableColHeader: {
       borderStyle: "solid",
-      borderWidth: borderWidth,
-      borderColor: borderColor,
+      borderWidth,
+      borderColor,
       padding: "4px 5px",
    },
    tableCol: {
       borderStyle: "solid",
-      borderWidth: borderWidth,
-      borderColor: borderColor,
+      borderWidth,
+      borderColor,
       padding: "4px 5px",
    },
    tableCellHeader: {
@@ -146,6 +146,7 @@ function RenderTable({ data }) {
             Array.isArray(data) &&
             data.length >= 0 &&
             data.map((item, index) => {
+               const key = `List_data_${index}`
                const contentDataParse = JSON.parse(item?.contentData)
                const addressType = contentDataParse?.addressType
                const addAddressType = contentDataParse?.addAddressType
@@ -158,7 +159,7 @@ function RenderTable({ data }) {
                   addAddress,
                ].join("\n")
                return (
-                  <View style={styles.tableRow}>
+                  <View key={key} style={styles.tableRow}>
                      <View
                         style={{
                            ...styles.tableCol,

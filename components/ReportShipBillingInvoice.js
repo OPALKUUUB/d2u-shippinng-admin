@@ -35,14 +35,14 @@ const styles = StyleSheet.create({
    },
    tableColHeader: {
       borderStyle: "solid",
-      borderWidth: borderWidth,
-      borderColor: borderColor,
+      borderWidth,
+      borderColor,
       padding: "4px 5px",
    },
    tableCol: {
       borderStyle: "solid",
-      borderWidth: borderWidth,
-      borderColor: borderColor,
+      borderWidth,
+      borderColor,
       padding: "4px 5px",
    },
    tableCellHeader: {
@@ -147,7 +147,7 @@ function RenderTable({ data, summary, title }) {
             data.length >= 0 &&
             data.map((item, index) => {
                return (
-                  <View style={styles.tableRow}>
+                  <View key={index} style={styles.tableRow}>
                      <View
                         style={{
                            ...styles.tableCol,
@@ -214,9 +214,9 @@ function RenderTable({ data, summary, title }) {
             summary.length >= 0 &&
             summary
                .filter((item) => item.value !== 0)
-               .map((item) => {
+               .map((item, index) => {
                   return (
-                     <View style={styles.tableRow}>
+                     <View key={index} style={styles.tableRow}>
                         <View
                            style={{
                               ...styles.tableCol,
