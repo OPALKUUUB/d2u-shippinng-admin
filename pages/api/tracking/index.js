@@ -71,7 +71,7 @@ async function handler(req, res) {
       })
    } else if (req.method === "PUT") {
       const id = parseInt(req.query.id, 10)
-      const { received, finished, airbilling, cod } = req.body
+      const { received, finished, airbilling, cod, isPicture, isRepack } = req.body
       await mysql.connect()
       if (received !== undefined) {
          await mysql.query("update trackings set received = ? where id = ?", [
@@ -91,6 +91,20 @@ async function handler(req, res) {
       } else if (cod !== undefined) {
          await mysql.query("update trackings set cod = ? where id = ?", [
             cod,
+            id,
+         ])
+         res.status(200).json({ message: "success!" })
+         return
+      } else if (isPicture !== undefined) {
+         await mysql.query("update trackings set isPicture = ? where id = ?", [
+            isPicture,
+            id,
+         ])
+         res.status(200).json({ message: "success!" })
+         return
+      } else if (isRepack !== undefined) {
+         await mysql.query("update trackings set isRepack = ? where id = ?", [
+            isRepack,
             id,
          ])
          res.status(200).json({ message: "success!" })

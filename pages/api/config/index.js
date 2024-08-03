@@ -10,7 +10,7 @@ async function updateRateYen(rateYen) {
    return result
 }
 
-async function getRateYen() {
+export async function getRateYen() {
    const selectQuery = `
       SELECT rate_yen
       FROM preference

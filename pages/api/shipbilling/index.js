@@ -1,5 +1,6 @@
 import mysql from "../../../lib/db"
 import genDate from "../../../utils/genDate"
+import { getRateYen } from "../config"
 
 export function CalBaseRate(point, user) {
    if (user?.username === "April") {
@@ -58,7 +59,9 @@ async function handler(req, res) {
             trackings.user_id, 
             users.username,
             trackings.voyage,
-            trackings.box_no
+            trackings.box_no,
+            trackings.isPicture,
+            trackings.isRepack
          FROM 
             trackings
          JOIN 
@@ -130,7 +133,7 @@ async function handler(req, res) {
                   date_pay_voyage: null,
                   delivery_cost: null,
                   notify_data_klong4: 0,
-                  check_pay_delivery_cost: 0
+                  check_pay_delivery_cost: 0,
                },
             ]
          }
@@ -226,6 +229,7 @@ async function handler(req, res) {
          billing: billings[0],
          user,
          baseRate,
+         rateYen: await getRateYen()
       })
    } else if (req.method === "PATCH") {
       const id = parseInt(req.query.id, 10)

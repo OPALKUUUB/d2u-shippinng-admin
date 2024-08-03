@@ -4,6 +4,7 @@ import {
    Card,
    Checkbox,
    Col,
+   Collapse,
    Divider,
    Form,
    Input,
@@ -25,6 +26,7 @@ import {
    TABLIST,
 } from "../../context/InvoiceShipBillingContext"
 import { useSearchParams } from "next/navigation"
+import ReportInvoice from "../ReportInvoice"
 
 const SHIP_BILLING_STATUS_OPTIONS = [
    { label: "unpaid", value: "unpaid" },
@@ -63,7 +65,7 @@ export default function InvoiceShipBillingResult() {
       pageSize: 10,
       total: 0,
       defaultPageSize: 10,
-      pageSizeOptions: [10, 20, 50, 100],
+      pageSizeOptions: [10, 20, 50, 100, 500, 10000],
       showSizeChanger: true,
    })
 
@@ -927,6 +929,11 @@ export default function InvoiceShipBillingResult() {
             onChange={onChangePaging}
          />
          {renderManageRowModal("จัดการข้อมูลการวางบิล")}
+         <Collapse accordion className="mt-3">
+            <Collapse.Panel header="ดูสรุปข้อมูล(PDF)">
+               <ReportInvoice data={dataSource} />
+            </Collapse.Panel>
+         </Collapse>
       </Fragment>
    )
 }

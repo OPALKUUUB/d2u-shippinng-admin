@@ -31,10 +31,11 @@ async function handler(req, res) {
          `,
          [user_id]
       )
+      const dateNow = new Date()
+      const year = dateNow.getFullYear()
       const trackings = [...trackings_user, ...trackings_user_yahoo].filter(
          (ft) =>
-            // parseInt(ft.created_at.split(" ")[0].split("/")[2], 10) === 2023
-            parseInt(ft.created_at.split(" ")[0].split("/")[2], 10) === 2024
+            parseInt(ft.created_at.split(" ")[0].split("/")[2], 10) === year
       )
       const point_current = trackings.reduce((a, c) => {
          const price = c.price === null ? 0 : c.price

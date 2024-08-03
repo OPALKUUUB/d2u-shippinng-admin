@@ -5,16 +5,17 @@
 import {
    Button,
    Checkbox,
+   Collapse,
    Divider,
    InputNumber,
    message,
    Modal,
-   Select,
-   Space,
    Spin,
+   Switch,
    Table,
 } from "antd"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
+import ReportShipBillingInvoice from "../../../components/ReportShipBillingInvoice"
 
 function CalRate(rate_w, rate_s, deduct) {
    const rate = rate_w > rate_s ? rate_s : rate_w
@@ -52,11 +53,13 @@ function CalBaseRateByWeight(weight) {
    return 200
 }
 function InvoicePage({ user_id, voyage }) {
-   const [pointCurrent, setPointCurrent] = useState("loading...")
+   const [pointCurrent, setPointCurrent] = useState(0)
+   const [pointLast, setPointLast] = useState(0)
    const [data, setData] = useState([])
    const [bill, setBill] = useState({})
    const [discount, setDiscount] = useState(0)
    const [checkDiscount, setCheckDiscount] = useState(false)
+   const [isEmployeeRate, setIsEmployeeRate] = useState(false)
    const [costDelivery, setCostdDelivery] = useState(0)
    const [user, setUser] = useState({})
    const [scoreBaseRate, setScoreBaseRate] = useState({ rate: 0, min: false })
@@ -65,6 +68,7 @@ function InvoicePage({ user_id, voyage }) {
    const [deduct, setDeduct] = useState(false)
    const [confirmLoading, setConfirmLoading] = useState(false)
    const [loading, setLoading] = useState(false)
+   const [rateYen, setRateYen] = useState(0)
    let seq = 0
 
    const handleSaveCod = async () => {
@@ -90,6 +94,7 @@ function InvoicePage({ user_id, voyage }) {
          console.log(err)
       } finally {
          setConfirmLoading(false)
+         setOpenModal(false)
       }
    }
    const handleSaveCostDelivery = async () => {
@@ -120,12 +125,41 @@ function InvoicePage({ user_id, voyage }) {
       message.success("success!")
       setCheckDiscount(checked)
    }
+   const handleCheckEmployeeRate = async (checked) => {
+      const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ isEmployeeRate: checked }),
+      })
+      await response.json()
+      message.success("success!")
+      setIsEmployeeRate(checked)
+      setScoreBaseRate((prev) => ({
+         ...prev,
+         rate: 150,
+      }))
+      await handleUpdateRateByRate(150)
+   }
    const handleUpdateRate = async () => {
       const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
             rate: scoreBaseRate.rate === "" ? null : scoreBaseRate.rate,
+         }),
+      })
+      await response.json()
+      message.success("success!")
+      if (scoreBaseRate.rate === "") {
+         window.location.reload(false)
+      }
+   }
+   const handleUpdateRateByRate = async (rate) => {
+      const response = await fetch(`/api/shipbilling?id=${bill?.id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            rate: rate,
          }),
       })
       await response.json()
@@ -184,60 +218,64 @@ function InvoicePage({ user_id, voyage }) {
       }
       return Math.ceil((weight - 1) * 200 * 100) / 100
    }
+   const refreshData = async () => {
+      const response = await fetch(`/api/shipbilling`, {
+         method: "POST",
+         headers: {
+            "Content-Type": "application/json",
+         },
+         body: JSON.stringify({
+            user_id,
+            voyage,
+         }),
+      })
+      const response2 = await fetch("/api/point", {
+         method: "POST",
+         headers: {
+            "Content-Type": "application/json",
+         },
+         body: JSON.stringify({ user_id }),
+      })
+      const response2Json = await response2.json()
+      setPointCurrent(response2Json.point || 0)
+      const responseJson = await response.json()
+      setData([
+         ...responseJson.trackings.reduce(
+            (a, c, idx) => [...a, { ...c, key: idx }],
+            []
+         ),
+      ])
+      setDeduct(responseJson.billing.deduct)
+      setBill(responseJson.billing)
+      setDiscount(responseJson.billing?.discount)
+      setCostdDelivery(
+         responseJson.billing?.cost_delivery === undefined
+            ? 0
+            : responseJson.billing?.cost_delivery
+      )
+      setUser(responseJson.user)
+      const point_last = responseJson.user?.point_last || 0
+      setPointLast(point_last)
+      const point_current =
+         (response.user?.point_current || 0) + response2Json.point
+      const point_use = point_current > point_last ? point_current : point_last
+      if (responseJson.billing.rate === null) {
+         const baseRate1 = CalBaseRate(point_use, responseJson.user)
+         const baseRate2 = CalBaseRate(point_use, responseJson.user)
+         const baseRate =
+            baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
+         setScoreBaseRate(baseRate)
+      } else {
+         setScoreBaseRate({ rate: responseJson.billing.rate, min: false })
+      }
+      setCheckDiscount(responseJson.billing?.check_50 === 1)
+      setIsEmployeeRate(responseJson.billing?.isEmployeeRate === 1)
+      setRateYen(responseJson?.rateYen || 0)
+   }
    useEffect(() => {
       setLoading(true)
       ;(async () => {
-         const response = await fetch(`/api/shipbilling`, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-               user_id,
-               voyage,
-            }),
-         })
-         const response2 = await fetch("/api/point", {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ user_id }),
-         })
-         const response2Json = await response2.json()
-         setPointCurrent(response2Json.point)
-         const responseJson = await response.json()
-         setData([
-            ...responseJson.trackings.reduce(
-               (a, c, idx) => [...a, { ...c, key: idx }],
-               []
-            ),
-         ])
-         setDeduct(responseJson.billing.deduct)
-         setBill(responseJson.billing)
-         setDiscount(responseJson.billing?.discount)
-         setCostdDelivery(
-            responseJson.billing?.cost_delivery === undefined
-               ? 0
-               : responseJson.billing?.cost_delivery
-         )
-         setUser(responseJson.user)
-         // console.log(responseJson.user)
-         const point_last = responseJson.user?.point_last
-         const point_current =
-            (response.user?.point_current || 0) + response2Json.point
-         const point_use =
-            point_current > point_last ? point_current : point_last
-         if (responseJson.billing.rate === null) {
-            const baseRate1 = CalBaseRate(point_use, responseJson.user)
-            const baseRate2 = CalBaseRate(point_use, responseJson.user)
-            const baseRate =
-               baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
-            setScoreBaseRate(baseRate)
-         } else {
-            setScoreBaseRate({ rate: responseJson.billing.rate, min: false })
-         }
-         setCheckDiscount(responseJson.billing?.check_50 === 1)
+         await refreshData()
          setLoading(false)
       })()
    }, [])
@@ -311,6 +349,26 @@ function InvoicePage({ user_id, voyage }) {
             }
          )
    )
+   const handleCheckTracking = async (status, id, key) => {
+      setLoading(true)
+      try {
+         const response = await fetch(`/api/tracking?id=${id}`, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ [key]: status ? 0 : 1 }),
+         })
+         await response.json()
+         await refreshData()
+         message.success("success!")
+      } catch (err) {
+         console.log(err)
+         message.error("fail!")
+      } finally {
+         setLoading(false)
+      }
+   }
    const columns = [
       {
          title: "วันที่",
@@ -336,6 +394,40 @@ function InvoicePage({ user_id, voyage }) {
          title: "COD(¥)",
          dataIndex: "cod",
          key: "cod",
+      },
+      {
+         title: "ถ่ายรูป",
+         dataIndex: "isPicture",
+         key: "isPicture",
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleCheckTracking(ck, item.id, "isPicture")}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleCheckTracking(ck, item.id, "isPicture")}
+               />
+            ),
+      },
+      {
+         title: "repack",
+         dataIndex: "isRepack",
+         key: "isRepack",
+         render: (ck, item) =>
+            ck ? (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleCheckTracking(ck, item.id, "isRepack")}
+               />
+            ) : (
+               <Switch
+                  checked={ck}
+                  onChange={() => handleCheckTracking(ck, item.id, "isRepack")}
+               />
+            ),
       },
       {
          title: "หมายเหตุแอดมิน",
@@ -391,10 +483,114 @@ function InvoicePage({ user_id, voyage }) {
          10
       )
    )
-   const voyagePriceShow = new Intl.NumberFormat("th-TH", {
-      currency: "THB",
-      style: "currency",
-   }).format(voyagePrice)
+
+   const renderSummary = (label, value) => {
+      return (
+         <tr key={label}>
+            <th
+               colSpan={4}
+               className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right"
+            >
+               {label}:
+            </th>
+            <td
+               colSpan={1}
+               className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right"
+            >
+               {value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+               })}
+            </td>
+         </tr>
+      )
+   }
+   const summaryWeight = data
+      .reduce((acc, curr) => {
+         return acc + (curr?.weight || 0)
+      }, 0)
+      .toFixed(2)
+   const summaryPrice =
+      Math.round(summaryWeight * (scoreBaseRate?.rate || 0) * 100) / 100
+   const summaryIsPicture =
+      Math.round(
+         data.reduce((acc, curr) => {
+            return acc + (curr?.isPicture ? 30 : 0)
+         }, 0) * 100
+      ) / 100
+   const summaryIsRepack =
+      Math.round(
+         data.reduce((acc, curr) => {
+            return acc + (curr?.isRepack ? 50 : 0)
+         }, 0) * 100
+      ) / 100
+   const summaryDiscountFivePercent = checkDiscount
+      ? Math.round((summaryPrice - (discount || 0)) * 5) / 100
+      : 0
+   const summaryCod =
+      Math.round(
+         data.reduce((acc, curr) => {
+            return acc + (curr?.cod || 0)
+         }, 0) *
+            rateYen *
+            100
+      ) / 100
+
+   const isOnlyShimizu =
+      data.filter((fi) => fi.channel !== "shimizu").length === 0
+   const pointUse = pointCurrent > pointLast ? pointCurrent : pointLast
+   const isCaseLTE0_5KgShimizu =
+      isOnlyShimizu && pointUse < 100 && summaryWeight < 0.5
+   const totalBalance = isCaseLTE0_5KgShimizu
+      ? 100
+      : summaryPrice +
+        summaryIsPicture +
+        summaryIsRepack -
+        (discount || 0) -
+        summaryDiscountFivePercent +
+        (costDelivery || 0) +
+        summaryCod
+   let summary = [
+      {
+         label: "น้ำหนักรวม(Kg.)",
+         value: summaryWeight,
+      },
+      {
+         label: "ราคารวม(฿)",
+         value: summaryPrice,
+      },
+      {
+         label: "ค่าถ่ายรูป(฿)",
+         value: summaryIsPicture,
+      },
+      {
+         label: "ค่า repack(฿)",
+         value: summaryIsRepack,
+      },
+      {
+         label: "ส่วนลด(฿)",
+         value: discount || 0,
+      },
+      {
+         label: "ส่วนลด 5 %(฿)",
+         value: summaryDiscountFivePercent,
+      },
+      {
+         label: "ค่าส่ง(฿)",
+         value: costDelivery || 0,
+      },
+      {
+         label: "รวม COD(฿)",
+         value: summaryCod,
+      },
+      {
+         label: "ราคารวมสุทธิ(฿)",
+         value: Math.round(totalBalance),
+      },
+   ].filter((item) => item.value !== 0)
+
+   summary = summary.length === 3 ? [summary[0], summary[2]] : summary
+
+   const title = `${user.username} รอบเรือ ${voyage}`
    return (
       <div className="w-screen h-screen bg-gray-100 overflow-x-hidden overflow-y-auto">
          {loading && (
@@ -478,16 +674,37 @@ function InvoicePage({ user_id, voyage }) {
                      <div className="flex items-center">
                         <Checkbox
                            className="me-2"
-                           value={checkDiscount}
+                           checked={checkDiscount}
                            onChange={(e) =>
                               handleCheckDiscount(e.target.checked)
                            }
                         />
                         ส่วนลด 5%
                      </div>
+                     <div className="flex items-center">
+                        <Checkbox
+                           className="me-2"
+                           checked={isEmployeeRate}
+                           onChange={(e) =>
+                              handleCheckEmployeeRate(e.target.checked)
+                           }
+                        />
+                        ราคาพนักงาน
+                     </div>
                   </div>
                </div>
             </div>
+            <Collapse accordion className="mt-3">
+               <Collapse.Panel header="ดูสรุปข้อมูล(PDF)">
+                  <ReportShipBillingInvoice
+                     data={data}
+                     summary={summary}
+                     title={title}
+                     voyage={voyage}
+                     user={user}
+                  />
+               </Collapse.Panel>
+            </Collapse>
             <Divider
                orientation="left"
                style={{ fontSize: "1rem", fontWeight: "bold" }}
@@ -514,45 +731,27 @@ function InvoicePage({ user_id, voyage }) {
                </Modal>
             </div>
             <div>
-               <div className="grid grid-cols-2 gap-4 w-[840px]">
-                  <div>
-                     <Space className="mb-4">
-                        <Select
-                           style={{ width: "150px" }}
-                           value={deduct}
-                           onChange={(value) => setDeduct(value)}
-                           options={[
-                              { label: "หัก 1 kg.", value: 0 },
-                              { label: "ไม่หัก 1 kg.", value: 1 },
-                              { label: "เรทพนักงาน", value: 150 },
-                           ]}
-                        />
-                        <Button type="primary" onClick={handleConfirmDeduct}>
-                           ยืนยัน
-                        </Button>
-                     </Space>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 w-[300px]">
-                     {bill.voyage_price === null || bill.voyage_price === "" ? (
-                        <div className="text-gray-500">
-                           ยังไม่ได้ทำการบันทึกค่าเรือ
-                        </div>
-                     ) : (
-                        <div className="text-green-500">
-                           ค่าเรือที่ถูกบันทึก {bill.voyage_price}
-                        </div>
-                     )}
-                     <Button onClick={() => handleSaveVoyagePrice(voyagePrice)}>
-                        บันทึกค่าเรือ
-                     </Button>
-                     <Button
-                        type="dashed"
-                        danger
-                        onClick={handleResetVoyagePrice}
-                     >
-                        reset
-                     </Button>
-                  </div>
+               <div className="w-[575px] flex items-center gap-2 justify-end mb-2">
+                  {bill.voyage_price === null || bill.voyage_price === "" ? (
+                     <div className="text-gray-500 flex-1 text-left">
+                        ยังไม่ได้ทำการบันทึกค่าเรือ
+                     </div>
+                  ) : (
+                     <div className="text-green-500 flex-1 text-left">
+                        ค่าเรือที่ถูกบันทึก{" "}
+                        {(Math.round(totalBalance) || 0).toLocaleString("th-TH", {
+                           minimumFractionDigits: 2,
+                           style: "currency",
+                           currency: "THB",
+                        })}
+                     </div>
+                  )}
+                  <Button onClick={() => handleSaveVoyagePrice(Math.round(totalBalance))}>
+                     บันทึกค่าเรือ
+                  </Button>
+                  <Button type="dashed" danger onClick={handleResetVoyagePrice}>
+                     reset
+                  </Button>
                </div>
                <table className="text-center">
                   <thead className="text-center ">
@@ -581,13 +780,13 @@ function InvoicePage({ user_id, voyage }) {
                            Box No.
                         </th>
                         <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                           น้ำหนัก(กก.)
+                           น้ำหนัก(Kg.)
                         </th>
-                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                        {/* <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                            ราคา(฿)
-                        </th>
+                        </th> */}
                         <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                           COD(฿)
+                           COD(¥)
                         </th>
                      </tr>
                   </thead>
@@ -640,22 +839,23 @@ function InvoicePage({ user_id, voyage }) {
                                     <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                        {item.box_no}
                                     </td>
-                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right">
                                        {item.weight}
                                     </td>
-                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {/* <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 bg-slate-100">
                                        {new Intl.NumberFormat("th-TH", {
                                           currency: "THB",
                                           style: "currency",
                                        }).format(
                                           Math.floor(CalMerFril(item.weight))
                                        )}
-                                    </td>
-                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                       {new Intl.NumberFormat("th-TH", {
+                                    </td> */}
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right">
+                                       {/* {new Intl.NumberFormat("th-TH", {
                                           currency: "THB",
                                           style: "currency",
-                                       }).format(item.cod * item.rate_yen)}
+                                       }).format(item.cod * item.rate_yen)} */}
+                                       {(item?.cod || 0).toLocaleString()}
                                     </td>
                                  </tr>
                               )
@@ -694,20 +894,21 @@ function InvoicePage({ user_id, voyage }) {
                                     <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                                        {item.box_no}
                                     </td>
-                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right">
                                        {item.weight}
                                     </td>
-                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                                    {/* <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 bg-slate-100">
                                        -
-                                    </td>
-                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                       {new Intl.NumberFormat("th-TH", {
+                                    </td> */}
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right">
+                                       {/* {new Intl.NumberFormat("th-TH", {
                                           currency: "THB",
                                           style: "currency",
-                                       }).format(item.cod * item.rate_yen)}
+                                       }).format(item.cod * item.rate_yen)} */}
+                                       {(item?.cod || 0).toLocaleString()}
                                     </td>
                                  </tr>
-                                 {showSum && (
+                                 {/* {showSum && (
                                     <tr>
                                        <th
                                           colSpan={5}
@@ -720,7 +921,6 @@ function InvoicePage({ user_id, voyage }) {
                                           )
                                        </th>
                                        <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
-                                          {/* {sum_channel[channel]?.price} */}
                                           {new Intl.NumberFormat("th-TH", {
                                              currency: "THB",
                                              style: "currency",
@@ -735,12 +935,17 @@ function InvoicePage({ user_id, voyage }) {
                                           )}
                                        </td>
                                     </tr>
-                                 )}
+                                 )} */}
                               </>
                            )
                         })}
                   </tbody>
-                  <tfoot className="">
+                  <tfoot>
+                     {summary.map((item, index) => {
+                        return renderSummary(item.label, item.value)
+                     })}
+                  </tfoot>
+                  {/* <tfoot>
                      <tr>
                         {checkDiscount ? (
                            <>
@@ -856,9 +1061,10 @@ function InvoicePage({ user_id, voyage }) {
                            {voyagePriceShow}
                         </td>
                      </tr>
-                  </tfoot>
+                  </tfoot> */}
                </table>
             </div>
+            {/* {renderPdf()} */}
          </div>
       </div>
    )
