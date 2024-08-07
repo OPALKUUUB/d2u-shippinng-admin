@@ -42,13 +42,23 @@ function CalBaseRate(point, user) {
    return { rate: 200, min: true }
 }
 
+// function CalBaseRateByWeight(weight) {
+//    if (weight >= 100) {
+//       return 140
+//    } else if (weight >= 50 && weight < 100) {
+//       return 160
+//    } else if (weight >= 10 && weight < 50) {
+//       return 180
+//    }
+//    return 200
+// }
 function CalBaseRateByWeight(weight) {
-   if (weight >= 100) {
-      return 140
-   } else if (weight >= 50 && weight < 100) {
-      return 160
+   if (weight >= 0.5 && weight < 10) {
+      return 200
    } else if (weight >= 10 && weight < 50) {
       return 180
+   } else if (weight >= 50) {
+      return 160
    }
    return 200
 }
@@ -509,8 +519,10 @@ function InvoicePage({ user_id, voyage }) {
          return acc + (curr?.weight || 0)
       }, 0)
       .toFixed(2)
+   const baseRateByWeight = CalBaseRateByWeight(summaryWeight || 0)
+   const baseRateUse = Math.min(baseRateByWeight, scoreBaseRate.rate || 200)
    const summaryPrice =
-      Math.round(summaryWeight * (scoreBaseRate?.rate || 0) * 100) / 100
+      Math.round(summaryWeight * (baseRateUse) * 100) / 100
    const summaryIsPicture =
       Math.round(
          data.reduce((acc, curr) => {
