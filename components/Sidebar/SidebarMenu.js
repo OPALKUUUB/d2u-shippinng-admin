@@ -13,7 +13,7 @@ const sidebarMenuData = [
       name: "Auction Yahoo",
       icon: <YahooIcon />,
       childs: [
-         // { id: 1, name: "Add Auction", to: "/yahoo/add" },
+         { id: 1, name: "Add Auction", to: "/yahoo/add" },
          { id: 2, name: "Bidding", to: "/yahoo/bidding" },
          { id: 3, name: "Payment", to: "/yahoo/payment" },
          { id: 4, name: "History", to: "/yahoo/history" },
