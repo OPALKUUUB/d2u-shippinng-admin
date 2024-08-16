@@ -35,8 +35,8 @@ async function handleGetRequest(query, res) {
 
 async function handlePostRequest(body, res) {
    try {
-      res.setHeader('Access-Control-Allow-Origin', ["http://localhost:3001", "https://coral-app-5nbuh.ondigitalocean.app", "https://web-invoice.d2u-shipping.com"]);
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+      res.setHeader('Access-Control-Allow-Origin', ["http://localhost:3001", "https://coral-app-5nbuh.ondigitalocean.app", "https://web-invoice.d2u-shipping.com"])
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
       const moneyInId = await addMoneyInManual(body)
       res.status(200).json({
          code: 200,
