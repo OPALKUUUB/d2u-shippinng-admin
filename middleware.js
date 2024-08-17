@@ -22,7 +22,11 @@ export function middleware(request) {
    Object.entries(corsOptions).forEach(([key, value]) => {
       response.headers.set(key, value)
    })
-   
+
+   if (method === "OPTIONS") {
+      return new NextResponse(null, { status: 204, headers: response.headers })
+   }
+
    return response
 }
 
