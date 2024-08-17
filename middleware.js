@@ -8,24 +8,30 @@ const allowedOrigins = [
 const corsOptions = {
    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+   "Access-Control-Allow-Credentials": "true",
 }
 
 export function middleware(request) {
-   const origin = request.headers.get("origin") ?? ""
-   const method = request.method
-   const isAllowedOrigin = allowedOrigins.includes(origin)
-   let response = NextResponse.next()
-   if (isAllowedOrigin) {
-      console.log("Allowed Origin", origin)
-
+   const origin = request.headers.get("origin")
+   const response = NextResponse.next()
+   if (allowedOrigins.includes(origin)) {
       response.headers.set("Access-Control-Allow-Origin", origin)
+      response.headers.set(
+         "Access-Control-Allow-Methods",
+         "GET,POST,PUT,DELETE,OPTIONS"
+      )
+      response.headers.set(
+         "Access-Control-Allow-Headers",
+         "Content-Type, Authorization"
+      )
+      response.headers.set("Access-Control-Allow-Credentials", "true")
    }
-   Object.entries(corsOptions).forEach(([key, value]) => {
-      response.headers.set(key, value)
-   })
 
-   if (method === "OPTIONS") {
-      return new NextResponse(null, { status: 204, headers: response.headers })
+   if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+         status: 204,
+         headers: response.headers,
+      })
    }
 
    return response
