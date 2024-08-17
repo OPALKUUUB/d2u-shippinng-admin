@@ -5,7 +5,8 @@ import getAllMoneyInManual from "../../../../dbs/query/for-accountant/money-in-m
 
 async function handlers(req, res) {
    const { method, body, query } = req
-
+   console.log(method, body)
+   
    switch (method) {
       case "GET":
          console.log("GET::/api/for-accountant/money-in-manual")

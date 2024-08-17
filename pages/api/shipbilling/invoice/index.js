@@ -33,11 +33,11 @@ async function handler(req, res) {
                "INSERT INTO invoice (ship_billing_id, content_data) VALUES(?,?);"
             const row = await mysql.query(queryString, queryParams)
             res.status(200).json({
-               link: `http://localhost:5173?invoiceId=${row.insertId}`,
+               link: `https://web-invoice.d2u-shipping.com?invoiceId=${row.insertId}`,
             })
          } else {
             res.status(200).json({
-               link: `http://localhost:5173?invoiceId=${getInvoiceByShipBilling[0].invoice_id}`,
+               link: `https://web-invoice.d2u-shipping.com?invoiceId=${getInvoiceByShipBilling[0].invoice_id}`,
                message: "this invoice create link already",
             })
          }

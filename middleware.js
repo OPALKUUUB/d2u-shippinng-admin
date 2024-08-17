@@ -22,7 +22,6 @@ export function middleware(request) {
    Object.entries(corsOptions).forEach(([key, value]) => {
       response.headers.set(key, value)
    })
-   console.log(request);
    
    return response
 }
