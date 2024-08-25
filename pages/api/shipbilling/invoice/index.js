@@ -4,7 +4,7 @@ import mysql from "../../../../lib/db"
 async function handler(req, res) {
    if (req.method === "POST") {
       try {
-         const { shipBillingId, userId, shipBillingStatus } = req.body
+         const { shipBillingId, userId } = req.body
          const users = await mysql.query("SELECT * FROM users WHERE id = ?", [
             userId,
          ])
@@ -13,15 +13,22 @@ async function handler(req, res) {
          const baseRate =
             baseRate1.rate < baseRate2.rate ? baseRate1 : baseRate2
          const content_data = {
-            mode: shipBillingStatus,
-            address: "",
             slipImage: "",
+            address: "",
             addAddress: "",
             addressType: "",
             addAddressType: "",
             isSelectPayOnSite: false,
-            nextInvoice: false,
             baseRate,
+            addressList: [
+               // {
+               //    address: "",
+               //    addressType: "",
+               //    items: [{ trackNo: "", price: 0 }],
+               //    slipImage: "",
+               //    status: ""
+               // },
+            ],
          }
          const getInvoiceByShipBilling = await mysql.query(
             "SELECT invoice_id FROM invoice WHERE ship_billing_id = ?",

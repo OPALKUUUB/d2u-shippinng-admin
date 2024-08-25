@@ -32,10 +32,12 @@ async function getInvoiceShipBilling(queryData) {
                WHEN t2.ship_billing_status IS NULL THEN 'unpaid'
                ELSE t2.ship_billing_status
             END AS shipBillingStatus,
+            t4.money_in_status AS slipStatus,
             t2.remark
         FROM DATASOURCE t1
         LEFT JOIN ship_billing t2 ON t2.voyage = t1.voyage AND t2.user_id = t1.user_id
         LEFT JOIN invoice t3 ON t3.ship_billing_id = t2.id
+        LEFT JOIN mny_in t4 ON t4.content_data -> '$.shipBillingId' = t2.id
         WHERE 1=1
         AND 1 = (
             CASE

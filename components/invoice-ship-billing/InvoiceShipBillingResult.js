@@ -289,6 +289,13 @@ export default function InvoiceShipBillingResult() {
          },
       },
       {
+         title: "สถานะการตรวจสอบ Slip",
+         key: "slipStatus",
+         dataIndex: "slipStatus",
+         align: "center",
+         width: 130,
+      },
+      {
          title: "จัดการ",
          align: "center",
          width: "250px",
@@ -354,18 +361,17 @@ export default function InvoiceShipBillingResult() {
    const columns = defaultColumns
       .filter((column, _index) => {
          const tabSelect = router.query?.tabSelect || "all"
+
          if (tabSelect !== "pickup") {
-            if (column.key === "isPickUp") {
+            if (["isPickUp"].some((fi) => fi === column.key)) return false
+         }
+         if (!["ship", "toship"].some((fi) => fi === tabSelect)) {
+            if (["isBothChecked"].some((fi) => fi === column.key)) return false
+         }
+         if (!["pickup", "ship", "toship", "keep"].some((fi) => fi === tabSelect)) {
+            if (["slipStatus"].some((fi) => fi === column.key)) {
                return false
             }
-         }
-         if (
-            (tabSelect === "ship" || tabSelect === "toship") &&
-            column.key === "isBothChecked"
-         ) {
-            return true
-         } if (column.key === "isBothChecked") {
-            return false
          }
          return true
       })
@@ -465,7 +471,7 @@ export default function InvoiceShipBillingResult() {
       }
       const onAddTrackingList = (mode) => {
          const trackingPriceListVal =
-            contentData[`trackingPriceList${  mode}`] || []
+            contentData[`trackingPriceList${mode}`] || []
          const addressTrackNo = contentData?.addressTrackNo
          const addressPrice = contentData?.addressPrice
          setSelectRowData((prev) => ({
@@ -474,7 +480,7 @@ export default function InvoiceShipBillingResult() {
                ...contentData,
                addressTrackNo: "",
                addressPrice: "",
-               [`trackingPriceList${  mode}`]: [
+               [`trackingPriceList${mode}`]: [
                   ...trackingPriceListVal,
                   { trackingNo: addressTrackNo, price: addressPrice },
                ],
@@ -706,11 +712,19 @@ export default function InvoiceShipBillingResult() {
                                  <Col>{contentData?.address}</Col>
                               </Row>
                               <Row>
-                                 <Col>
-                                    {JSON.stringify(
-                                       contentData?.groupTrackingList
-                                    )}
-                                 </Col>
+                                 Box No. :{" "}
+                                 {Object.keys(contentData?.groupTrackingList)
+                                    .map((key) =>
+                                       contentData?.groupTrackingList[key]
+                                          .map(
+                                             (item) =>
+                                                item
+                                                   .split("-")[0]
+                                                   .split("Box No. ")[1]
+                                          )
+                                          .join(", ")
+                                    )
+                                    .join(", ")}
                               </Row>
                            </Card>
                            <Form.Item label="เลขแทร็คกิ้ง">
