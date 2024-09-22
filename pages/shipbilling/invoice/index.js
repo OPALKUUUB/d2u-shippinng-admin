@@ -521,8 +521,7 @@ function InvoicePage({ user_id, voyage }) {
       .toFixed(2)
    const baseRateByWeight = CalBaseRateByWeight(summaryWeight || 0)
    const baseRateUse = Math.min(baseRateByWeight, scoreBaseRate.rate || 200)
-   const summaryPrice =
-      Math.round(summaryWeight * (baseRateUse) * 100) / 100
+   const summaryPrice = Math.round(summaryWeight * baseRateUse * 100) / 100
    const summaryIsPicture =
       Math.round(
          data.reduce((acc, curr) => {
@@ -552,15 +551,16 @@ function InvoicePage({ user_id, voyage }) {
    const pointUse = pointCurrent > pointLast ? pointCurrent : pointLast
    const isCaseLTE0_5KgShimizu =
       isOnlyShimizu && pointUse < 100 && summaryWeight < 0.5
-   const totalBalance = isCaseLTE0_5KgShimizu
-      ? 100
-      : summaryPrice +
-        summaryIsPicture +
+   const calculateForTotalPrice = summaryIsPicture +
         summaryIsRepack -
         (discount || 0) -
         summaryDiscountFivePercent +
         (costDelivery || 0) +
         summaryCod
+   const totalBalance = isCaseLTE0_5KgShimizu
+      ? 100 + calculateForTotalPrice
+      : summaryPrice +
+        calculateForTotalPrice
    let summary = [
       {
          label: "น้ำหนักรวม(Kg.)",
@@ -751,14 +751,21 @@ function InvoicePage({ user_id, voyage }) {
                   ) : (
                      <div className="text-green-500 flex-1 text-left">
                         ค่าเรือที่ถูกบันทึก{" "}
-                        {(Math.round(totalBalance) || 0).toLocaleString("th-TH", {
-                           minimumFractionDigits: 2,
-                           style: "currency",
-                           currency: "THB",
-                        })}
+                        {(Math.round(totalBalance) || 0).toLocaleString(
+                           "th-TH",
+                           {
+                              minimumFractionDigits: 2,
+                              style: "currency",
+                              currency: "THB",
+                           }
+                        )}
                      </div>
                   )}
-                  <Button onClick={() => handleSaveVoyagePrice(Math.round(totalBalance))}>
+                  <Button
+                     onClick={() =>
+                        handleSaveVoyagePrice(Math.round(totalBalance))
+                     }
+                  >
                      บันทึกค่าเรือ
                   </Button>
                   <Button type="dashed" danger onClick={handleResetVoyagePrice}>
