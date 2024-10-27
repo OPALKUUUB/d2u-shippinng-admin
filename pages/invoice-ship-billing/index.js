@@ -1,8 +1,8 @@
 import { getSession } from "next-auth/react"
 import Layout from "../../components/layout/layout"
 import InvoiceShipBillingFilter from "../../components/invoice-ship-billing/InvoiceShipBillingFilter"
-import InvoiceShipBillingResult from "../../components/invoice-ship-billing/InvoiceShipBillingResult"
-import { InvoiceShipBillingProvider } from "../../context/InvoiceShipBillingContext"
+import InvoiceShipBillingResultV2 from "../../components/invoice-ship-billing/InvoiceShipBillingTabs"
+import { InvoiceShipBillingProvider } from "../../context/InvoiceShipBillingContextV2"
 
 const Container = ({ children }) => {
    return (
@@ -16,7 +16,7 @@ function InvoiceShipBillingPage() {
       <InvoiceShipBillingProvider>
          <Container>
             <InvoiceShipBillingFilter />
-            <InvoiceShipBillingResult />
+            <InvoiceShipBillingResultV2 />
          </Container>
       </InvoiceShipBillingProvider>
    )

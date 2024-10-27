@@ -1,8 +1,9 @@
+/* eslint-disable default-param-last */
 import React, { useState } from "react"
 import axios from "axios"
 import { useRouter } from "next/router"
-import LoadingPage from "../components/LoadingPage"
 import { useSearchParams } from "next/navigation"
+import LoadingPage from "../components/LoadingPage"
 
 export const TABLIST = [
    { label: "unpaid", key: "unpaid" },
@@ -32,8 +33,8 @@ export const InvoiceShipBillingProvider = ({ children }) => {
       try {
          setLoading(true)
          const payload = {
-            shipBillingId: shipBillingId,
-            shipBillingStatus: shipBillingStatus,
+            shipBillingId,
+            shipBillingStatus,
          }
          await axios.patch("/api/invoiceShipBilling", payload)
       } catch (error) {
@@ -47,7 +48,7 @@ export const InvoiceShipBillingProvider = ({ children }) => {
       try {
          setLoading(true)
          const payload = {
-            shipbillingId: shipbillingId,
+            shipbillingId,
             contentData: JSON.stringify(contentData),
          }
          await axios.put("/api/invoiceShipBilling", payload)
