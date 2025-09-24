@@ -21,6 +21,7 @@ async function getShimizu() {
          trackings.tracking_slip_image,
          trackings.paid_channel,
          trackings.airbilling,
+         trackings.remark_type,
          users.id as user_id,
          users.username,
          GROUP_CONCAT(\`tracking-image\`.image) AS images
@@ -63,6 +64,7 @@ async function getShimizu() {
       tracking_slip_image: tracking.tracking_slip_image,
       paid_channel: tracking.paid_channel,
       airbilling: tracking.airbilling,
+      remark_type: tracking.remark_type,
       images: tracking.images ? tracking.images.split(",") : [],
    }))
    return trackingObjects
@@ -99,6 +101,7 @@ async function handler(req, res) {
          voyage,
          remark_user,
          remark_admin,
+         remark_type,
       } = req.body
       const date_created = genDate()
       console.log(date_created)
@@ -106,7 +109,7 @@ async function handler(req, res) {
       const preference = await mysql.query("SELECT rate_yen FROM preference")
       const { rate_yen } = preference[0]
       await mysql.query(
-         "INSERT INTO trackings (rate_yen, date, user_id, box_no, track_no, weight, price, voyage, remark_user, remark_admin, channel, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+         "INSERT INTO trackings (rate_yen, date, user_id, box_no, track_no, weight, price, voyage, remark_user, remark_admin, channel, created_at, updated_at, remark_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
          [
             rate_yen,
             date,
@@ -121,6 +124,7 @@ async function handler(req, res) {
             "shimizu",
             date_created,
             date_created,
+            remark_type || null,
          ]
       )
       const trackings = await getShimizu()
@@ -142,10 +146,11 @@ async function handler(req, res) {
          price,
          remark_user,
          remark_admin,
+         remark_type,
       } = req.body
       await mysql.connect()
       await mysql.query(
-         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ? WHERE id = ?",
+         "UPDATE trackings SET user_id = ?, date = ?, voyage = ?, track_no = ?, box_no = ?, weight = ?, price = ?, remark_user = ?, remark_admin = ?, remark_type = ? WHERE id = ?",
          [
             user_id,
             date,
@@ -156,6 +161,7 @@ async function handler(req, res) {
             price,
             remark_user,
             remark_admin,
+            remark_type || null,
             id,
          ]
       )

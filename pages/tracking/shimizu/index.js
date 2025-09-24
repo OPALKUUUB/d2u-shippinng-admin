@@ -74,6 +74,7 @@ function ShimizuTrackingsPage() {
          voyage: selectedRow.voyage,
          remark_user: selectedRow.remark_user,
          remark_admin: selectedRow.remark_admin,
+         remark_type: selectedRow.remark_type,
       }
       try {
          const response = await fetch(
@@ -135,6 +136,7 @@ function ShimizuTrackingsPage() {
          remark_user: addForm.remark_user,
          remark_admin: addForm.remark_admin,
          channel: addForm.channel,
+         remark_type: addForm.remark_type,
       }
       try {
          const response = await fetch("/api/tracking/shimizu", {
@@ -407,6 +409,12 @@ function ShimizuTrackingsPage() {
          ),
       },
       {
+         title: "ประเภทช่องทาง",
+         dataIndex: "remark_type",
+         key: "remark_type",
+         ...getColumnSearchProps("remark_type"),
+      },
+      {
          title: "เลขแทรกกิงค์",
          dataIndex: "track_no",
          key: "track_no",
@@ -596,6 +604,18 @@ function ShimizuTrackingsPage() {
                      />
                   </Space>
                   <Space className="mb-[10px]">
+                     <label>ประเภทช่องทาง: </label>
+                     <Input
+                        value={addForm.remark_type}
+                        onChange={(e) =>
+                           setAddForm({
+                              ...addForm,
+                              remark_type: e.target.value,
+                           })
+                        }
+                     />
+                  </Space>
+                  <Space className="mb-[10px]">
                      <label>เลขแทรกกิงค์: </label>
                      <Input
                         value={addForm.track_no}
@@ -752,6 +772,18 @@ function ShimizuTrackingsPage() {
                         setInputDate(value)
                      }
                   }}
+               />
+            </Space>
+            <Space className="mb-[10px]">
+               <label>ประเภทช่องทาง: </label>
+               <Input
+                  value={selectedRow.remark_type}
+                  onChange={(e) =>
+                     setSelectedRow({
+                        ...selectedRow,
+                        remark_type: e.target.value,
+                     })
+                  }
                />
             </Space>
             <Space className="mb-[10px]">

@@ -33,6 +33,7 @@ export const trackingForm_model = {
    channel: "",
    remark_user: "",
    remark_admin: "",
+   remark_type: "",
    received: "",
    finished: "",
    created_at: "",

@@ -807,6 +807,9 @@ function InvoicePage({ user_id, voyage }) {
                         <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
                            COD(¥)
                         </th>
+                        <th className="border-solid border-[0.5px] border-gray-400 px-4 py-2">
+                           หมายเหตุ
+                        </th>
                      </tr>
                   </thead>
                   <tbody>
@@ -876,6 +879,9 @@ function InvoicePage({ user_id, voyage }) {
                                        }).format(item.cod * item.rate_yen)} */}
                                        {(item?.cod || 0).toLocaleString()}
                                     </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right">
+                                       {item.remark_type || "-"}
+                                    </td>
                                  </tr>
                               )
                            }
@@ -925,6 +931,9 @@ function InvoicePage({ user_id, voyage }) {
                                           style: "currency",
                                        }).format(item.cod * item.rate_yen)} */}
                                        {(item?.cod || 0).toLocaleString()}
+                                    </td>
+                                    <td className="border-solid border-[0.5px] border-gray-400 px-4 py-2 text-right">
+                                       {item.remark_type || "-"}
                                     </td>
                                  </tr>
                                  {/* {showSum && (
