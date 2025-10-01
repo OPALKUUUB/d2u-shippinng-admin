@@ -26,7 +26,7 @@ async function handler(req, res) {
             ["ชำระเงินเสร็จสิ้น"]
          )
          await mysql.end()
-         res.status(200).json({
+         return res.status(200).json({
             message: "get order from table success!",
             payments: yahoo_payments,
          })
@@ -38,8 +38,7 @@ async function handler(req, res) {
             error: error.message,
          })
       }
-   }
-   if (req.method === "POST") {
+   } else if (req.method === "POST") {
       const {
          user_id,
          order_id,
@@ -237,8 +236,7 @@ async function handler(req, res) {
             error: error.message,
          })
       }
-   }
-   if (req.method === "PUT") {
+   } else if (req.method === "PUT") {
       const {
          user_id,
          date,
@@ -353,7 +351,7 @@ async function handler(req, res) {
          )
 
          await mysql.end()
-         res.status(200).json({
+         return res.status(200).json({
             message: "update payment success!",
             payments: yahoo_payments,
          })
@@ -408,7 +406,7 @@ async function handler(req, res) {
          )
 
          await mysql.end()
-         res.status(200).json({
+         return res.status(200).json({
             message: "Delete payment success!",
             payments: yahoo_payments,
          })

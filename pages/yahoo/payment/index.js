@@ -1,468 +1,579 @@
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable prefer-const */
-import { DownOutlined } from "@ant-design/icons"
-import {
-   Button,
-   DatePicker,
-   Dropdown,
-   InputNumber,
-   message,
-   Modal,
-   Select,
-   Space,
-   Switch,
-   Table,
-} from "antd"
+import { Table, Input, Switch, Button, Badge, notification } from "antd"
+import { getSession } from "next-auth/react"
+import React, { Fragment, useState, useEffect, useRef } from "react"
+import { ReloadOutlined, SoundOutlined, SoundFilled } from "@ant-design/icons"
 import dayjs from "dayjs"
 import weekday from "dayjs/plugin/weekday"
 import localeData from "dayjs/plugin/localeData"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 
-import { getSession } from "next-auth/react"
-import React, { Fragment, useEffect, useState } from "react"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
+import ConfirmDeleteDialog from "../../../components/ui/ConfirmDeleteDialog"
+import EditPaymentModal from "../../../components/yahoo/EditPaymentModal"
+import SlipModal from "../../../components/yahoo/SlipModal"
+import createPaymentTableColumns from "../../../components/yahoo/PaymentTableColumns"
+import usePaymentData from "../../../hooks/usePaymentData"
+import useTableSearch from "../../../hooks/useTableSearch"
 import genDate from "../../../utils/genDate"
-import sortDate from "../../../utils/sortDate"
-import { payment_model } from "../../../model/tracking"
-import sortDateTime from "../../../utils/sortDateTime"
 
 dayjs.extend(customParseFormat)
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 
-function YahooPaymentPage() {
-   const [data, setData] = useState([])
-   const [selectedRow, setSelectedRow] = useState(payment_model)
-   const [showEditModal, setshowEditModal] = useState(false)
-   const [InputDate, setInputDate] = useState(null)
-   const [slip, setSlip] = useState({ id: "", image: "" })
-   const [showSlipModal, setShowSlipModal] = useState(false)
+const { Search } = Input
 
-   const handleDeleteRow = async (id) => {
-      if (!window.confirm("คุณแน่ใจที่จะลบใช่หรือไม่")) {
-         return 
-      }
-      try {
-         const response = await fetch("/api/yahoo/payment", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ payment_id: id }),
-         })
-         const responseJson = await response.json()
-         setData(
-            responseJson.payments
-         )
-         message.success("ลบรายการสำเร็จ!")
-      } catch (err) {
-         console.log(err)
-         message.error("ลบไม่สำเร็จ!")
-      }
-   }
-   const handleShowEditModal = (id) => {
-      const temp = data.filter((ft) => ft.id === id)[0]
-      setInputDate(dayjs(temp.date, "D/M/YYYY"))
-      setSelectedRow({ ...temp })
-      setshowEditModal(true)
-   }
+function YahooPaymentPage(props) {
+   // Table states
+   const [filteredInfo, setFilteredInfo] = useState({})
+   const [sortedInfo, setSortedInfo] = useState({})
 
-   const handleOkEditModal = async () => {
-      // eslint-disable-next-line prefer-const
-      let {
-         user_id,
-         id,
-         date,
-         tranfer_fee,
-         delivery_fee,
-         rate_yen,
-         payment_status,
-      } = selectedRow
-      tranfer_fee = !tranfer_fee ? 0 : tranfer_fee
-      delivery_fee = !delivery_fee ? 0 : delivery_fee
-      rate_yen = !rate_yen ? 0 : rate_yen
-      const body = {
-         date,
-         tranfer_fee,
-         delivery_fee,
-         rate_yen,
-         payment_status,
-         user_id,
-      }
-      try {
-         const response = await fetch(`/api/yahoo/payment?id=${id}`, {
-            method: "PUT",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-         })
-         const responseJson = await response.json()
-         setData(
-            responseJson.payments
-         )
-         setshowEditModal(false)
-         setSelectedRow(payment_model)
-         setInputDate(null)
-      } catch (err) {
-         console.log(err)
-      }
-   }
-   const handleCancelEditModal = () => {
-      // console.log("handleCancleEdittModal")
-      setSelectedRow(payment_model)
-      setshowEditModal(false)
-   }
+   // Auto refresh states
+   const [autoRefresh, setAutoRefresh] = useState(true)
+   const [refreshInterval, setRefreshInterval] = useState(30) // seconds
+   const [soundEnabled, setSoundEnabled] = useState(true)
+   const [lastDataCount, setLastDataCount] = useState(0)
+   const [newPaymentsCount, setNewPaymentsCount] = useState(0)
+   const [isManualRefreshing, setIsManualRefreshing] = useState(false)
+   const [newPaymentIds, setNewPaymentIds] = useState(new Set())
 
-   const handleShowSlip = async (id) => {
-      try {
-         const response = await fetch(`/api/yahoo/slip/${id}`)
-         const responseJson = await response.json()
-         console.log(responseJson)
-         setSlip(responseJson.slip)
-         setShowSlipModal(true)
-      } catch (err) {
-         console.log(err)
-      }
-   }
+   // Refs
+   const intervalRef = useRef(null)
 
-   const handleChangeNotificated = async (status, id) => {
-      try {
-         const response = await fetch(`/api/yahoo/payment?id=${id}`, {
-            method: "PUT",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ notificated: status ? 0 : 1 }),
-         })
-         const responseJson = await response.json()
-         setData(
-            responseJson.payments
-         )
-         message.success("success!")
-      } catch (err) {
-         console.log(err)
-         message.error("fail!")
-      }
-   }
-   const columns = [
-      {
-         title: "วันที่",
-         dataIndex: "date",
-         key: "date",
-         sorter: (a, b) => sortDate(a.date, b.date),
-      },
-      {
-         title: "รูปภาพ",
-         dataIndex: "image",
-         key: "image",
-         render: (text) => <img src={text} alt="" width={100} />,
-      },
-      {
-         title: "ชื่อลูกค้า",
-         dataIndex: "username",
-         key: "username",
-      },
-      {
-         title: "ลิ้งค์",
-         dataIndex: "link",
-         key: "link",
-         render: (text) => {
-            if (
-               text.includes("https://page.auctions.yahoo.co.jp/jp/auction/")
-            ) {
-               return (
-                  <a href={text} target="_blank" rel="noreferrer">
-                     {
-                        text.split(
-                           "https://page.auctions.yahoo.co.jp/jp/auction/"
-                        )[1]
-                     }
-                  </a>
-               )
-            }
-            return text
-         },
-      },
-      {
-         title: "ราคาประมูล",
-         dataIndex: "bid",
-         key: "bid",
-         render: (text) =>
-            new Intl.NumberFormat("ja-JP", {
-               currency: "JPY",
-               style: "currency",
-            }).format(text),
-      },
-      {
-         title: "ค่าโอน",
-         dataIndex: "tranfer_fee",
-         key: "tranfer_fee",
-         render: (text) =>
-            new Intl.NumberFormat("th-TH", {
-               currency: "THB",
-               style: "currency",
-               minimumFractionDigits: 0,
-            }).format(text),
-      },
-      {
-         title: "ค่าส่ง",
-         dataIndex: "delivery_fee",
-         key: "delivery_fee",
-         render: (text) =>
-            new Intl.NumberFormat("ja-JP", {
-               currency: "JPY",
-               style: "currency",
-            }).format(text),
-      },
-      {
-         title: "รวม",
-         dataIndex: "id",
-         key: "sum",
-         render: (id) => {
-            const payments = data.filter((ft) => ft.id === id)
-            const payment = payments[0]
-            const { bid, delivery_fee, tranfer_fee, rate_yen } = payment
+   // Use custom hooks
+   const paymentData = usePaymentData(props.session)
+   const tableSearch = useTableSearch()
 
-            const s = Math.ceil(
-               (bid + (!delivery_fee ? 0 : delivery_fee)) * rate_yen +
-                  (!tranfer_fee ? 0 : tranfer_fee)
-            )
-            return new Intl.NumberFormat("th-TH", {
-               currency: "THB",
-               style: "currency",
-               minimumFractionDigits: 0,
-            }).format(s)
-         },
-      },
-      {
-         title: "Slip",
-         dataIndex: "slip_id",
-         key: "slip_id",
-         render: (slip_id) => {
-            if (slip_id === null) {
-               return "-"
-            }
-            return <Button onClick={() => handleShowSlip(slip_id)}>slip</Button>
-         },
-      },
-      {
-         title: "สถานะ",
-         dataIndex: "payment_status",
-         key: "payment_status",
-      },
-      {
-         title: "แจ้งชำระ",
-         dataIndex: "id",
-         key: "notificated",
-         render: (id) => {
-            const payments = data.filter((ft) => ft.id === id)
-            const payment = payments[0]
-            const notificated = payment.notificated === 1
-            return notificated ? (
-               <div>
-                  <span style={{ color: "green" }}>แจ้งชำระแล้ว</span>
-                  <Switch
-                     checked={notificated}
-                     onClick={() => handleChangeNotificated(notificated, id)}
-                  />
-               </div>
-            ) : (
-               <div>
-                  <span style={{ color: "red" }}>รอแจ้งชำระ</span>
-                  <Switch
-                     checked={notificated}
-                     onClick={() => handleChangeNotificated(notificated, id)}
-                  />
-               </div>
-            )
-         },
-      },
-      {
-         title: "หมายเหตุลูกค้า",
-         dataIndex: "remark_user",
-         key: "remark_user",
-         render: (text) => (text === null ? "-" : text),
-      },
-      {
-         title: "หมายเหตุแอดมิน",
-         dataIndex: "remark_admin",
-         key: "remark_admin",
-         render: (text) => (text === null ? "-" : text),
-      },
-      {
-         title: "จัดการ",
-         dataIndex: "id",
-         key: "manage",
-         width: "90px",
-         fixed: "right",
-         render: (id) => {
-            const items = [
-               {
-                  key: "1",
-                  label: "แก้ไข",
-                  onClick: () => handleShowEditModal(id),
-               },
-               {
-                  key: "2",
-                  label: "ลบ",
-                  onClick: () => handleDeleteRow(id)
-               },
-            ]
-            return (
-               <Space>
-                  <Dropdown menu={{ items }}>
-                     <span>
-                        จัดการ <DownOutlined />
-                     </span>
-                  </Dropdown>
-               </Space>
-            )
-         },
-      },
-   ]
+   // Auto refresh effect
    useEffect(() => {
-      ;(async () => {
-         const response = await fetch("/api/yahoo/payment")
-         const responseJson = await response.json()
-         console.log(responseJson)
-         setData(
-            responseJson.payments
+      if (autoRefresh && refreshInterval > 0) {
+         intervalRef.current = setInterval(() => {
+            paymentData.fetchPayments()
+         }, refreshInterval * 1000)
+      } else if (intervalRef.current) {
+         clearInterval(intervalRef.current)
+         intervalRef.current = null
+      }
+
+      return () => {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+         }
+      }
+   }, [autoRefresh, refreshInterval, paymentData.fetchPayments])
+
+   // Check for new payments
+   useEffect(() => {
+      const currentData = paymentData.data || []
+      const currentDataCount = currentData.length
+
+      if (lastDataCount > 0 && currentDataCount > lastDataCount) {
+         const newCount = currentDataCount - lastDataCount
+
+         // เก็บ ID ของ payment ใหม่
+         const sortedData = [...currentData].sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
          )
-      })()
-   }, [])
+         const newPayments = sortedData.slice(0, newCount)
+         const newIds = newPayments.map(
+            (payment) =>
+               `${payment.date}_${payment.username}_${
+                  payment.id || Math.random()
+               }`
+         )
+
+         setNewPaymentsCount((prev) => prev + newCount)
+         setNewPaymentIds((prev) => {
+            const updatedSet = new Set([...prev, ...newIds])
+            return updatedSet
+         })
+
+         // Show notification
+         notification.success({
+            message: "🎉 มีการชำระเงินใหม่!",
+            description: `มีรายการชำระเงินใหม่ ${newCount} รายการ`,
+            placement: "topRight",
+            duration: 5,
+         })
+
+         // Play notification sound
+         playNotificationSound()
+      }
+
+      setLastDataCount(currentDataCount)
+   }, [paymentData.data, lastDataCount, soundEnabled])
+
+   // Filter data based on search value
+   const filteredData =
+      paymentData.data?.filter((item) => {
+         if (!tableSearch.searchValue) return true
+
+         const searchLower = tableSearch.searchValue.toLowerCase()
+         return (
+            item.username?.toLowerCase().includes(searchLower) ||
+            item.remark_user?.toLowerCase().includes(searchLower) ||
+            item.remark_admin?.toLowerCase().includes(searchLower) ||
+            item.date?.toLowerCase().includes(searchLower) ||
+            item.payment_status?.toLowerCase().includes(searchLower)
+         )
+      }) || []
+
+   // Handle table changes
+   const handleChange = (pagination, filters, sorter) => {
+      setFilteredInfo(filters)
+      setSortedInfo(sorter)
+   }
+
+   // Create table columns
+   const columns = createPaymentTableColumns({
+      data: filteredData,
+      filteredInfo,
+      sortedInfo,
+      getColumnSearchProps: tableSearch.getColumnSearchProps,
+      handleShowEditModal: paymentData.handleShowEditModal,
+      handleDeleteRow: paymentData.handleDeleteRow,
+      handleShowSlip: paymentData.handleShowSlip,
+      handleChangeNotification: paymentData.handleChangeNotification,
+      newPaymentIds,
+   })
+
+   // Form handlers for modals
+   const handleDateChange = (value) => {
+      paymentData.updatePaymentForm("date", value)
+      paymentData.updateFormTouched("date", true)
+   }
+
+   const handleTransferFeeChange = (value) => {
+      paymentData.updatePaymentForm("tranfer_fee", value)
+      paymentData.updateFormTouched("tranfer_fee", true)
+   }
+
+   const handleDeliveryFeeChange = (value) => {
+      paymentData.updatePaymentForm("delivery_fee", value)
+      paymentData.updateFormTouched("delivery_fee", true)
+   }
+
+   const handleRateYenChange = (value) => {
+      paymentData.updatePaymentForm("rate_yen", value)
+      paymentData.updateFormTouched("rate_yen", true)
+   }
+
+   const handlePaymentStatusChange = (value) => {
+      paymentData.updatePaymentForm("payment_status", value)
+      paymentData.updateFormTouched("payment_status", true)
+   }
+
+   const handleFieldBlur = (field) => {
+      paymentData.updateFormTouched(field, true)
+   }
+
+   // Manual refresh handler
+   const handleManualRefresh = async () => {
+      setIsManualRefreshing(true)
+      try {
+         await paymentData.fetchPayments()
+         notification.success({
+            message: "✅ รีเฟรชข้อมูลสำเร็จ",
+            description: "ข้อมูลได้รับการอัปเดตแล้ว",
+            placement: "topRight",
+            duration: 2,
+         })
+      } catch (error) {
+         notification.error({
+            message: "❌ เกิดข้อผิดพลาด",
+            description: "ไม่สามารถรีเฟรชข้อมูลได้",
+            placement: "topRight",
+            duration: 3,
+         })
+      } finally {
+         setIsManualRefreshing(false)
+      }
+   }
+
+   // Clear new payments notification
+   const handleClearNewPayments = () => {
+      setNewPaymentsCount(0)
+      setNewPaymentIds(new Set())
+   }
+
+   // Play notification sound
+   const playNotificationSound = () => {
+      if (soundEnabled) {
+         try {
+            // Create simple notification sound with Web Audio API
+            const audioContext = new (window.AudioContext ||
+               window.webkitAudioContext)()
+            const oscillator = audioContext.createOscillator()
+            const gainNode = audioContext.createGain()
+
+            oscillator.connect(gainNode)
+            gainNode.connect(audioContext.destination)
+
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+            oscillator.frequency.setValueAtTime(
+               600,
+               audioContext.currentTime + 0.1
+            )
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+            gainNode.gain.exponentialRampToValueAtTime(
+               0.01,
+               audioContext.currentTime + 0.5
+            )
+
+            oscillator.start(audioContext.currentTime)
+            oscillator.stop(audioContext.currentTime + 0.5)
+         } catch (error) {
+            console.warn("ไม่สามารถเล่นเสียงแจ้งเตือนได้:", error)
+         }
+      }
+   }
    return (
       <Fragment>
          <CardHead
             name="Yahoo Payment Auction"
-            description="* แสดงรายการประมูลสินค้าที่ลูกค้าต้องชำระ"
+            description="แสดงรายการประมูลสินค้าที่ลูกค้าต้องชำระ"
          />
-
          <div className="container-table">
+            {paymentData.error && (
+               <div
+                  style={{
+                     padding: "20px",
+                     background: "#fff2f0",
+                     border: "1px solid #ffccc7",
+                     borderRadius: "4px",
+                     marginBottom: "16px",
+                     color: "#ff4d4f",
+                  }}
+               >
+                  <strong>เกิดข้อผิดพลาด:</strong> {paymentData.error}
+               </div>
+            )}
+
+            <div style={{ marginBottom: "20px" }}>
+               <div
+                  style={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                     marginBottom: "16px",
+                  }}
+               >
+                  <h2
+                     style={{
+                        fontSize: "20px",
+                        fontWeight: "600",
+                        color: "#001529",
+                        margin: 0,
+                     }}
+                  >
+                     การจัดการ Yahoo Payment
+                     {newPaymentsCount > 0 && (
+                        <Badge
+                           count={newPaymentsCount}
+                           onClick={handleClearNewPayments}
+                           style={{
+                              marginLeft: "10px",
+                              backgroundColor: "#52c41a",
+                              cursor: "pointer",
+                           }}
+                        />
+                     )}
+                  </h2>
+
+                  {/* Control Panel */}
+                  <div
+                     style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "15px",
+                        padding: "8px 12px",
+                        background: "#f0f2f5",
+                        borderRadius: "6px",
+                        border: "1px solid #d9d9d9",
+                     }}
+                  >
+                     {/* Status Info */}
+                     <div style={{ fontSize: "11px", color: "#666" }}>
+                        {autoRefresh && "🔄 อัปเดตอัตโนมัติทุก 30 วิ | "}
+                        {soundEnabled && "🔊 เสียงแจ้งเตือน | "}
+                        {newPaymentIds.size > 0 &&
+                           `🆕 Payment ใหม่: ${newPaymentIds.size} รายการ | `}
+                        📊 ข้อมูล: {paymentData.data?.length || 0} รายการ
+                     </div>
+
+                     {/* Auto Refresh Toggle */}
+                     <div
+                        style={{
+                           display: "flex",
+                           alignItems: "center",
+                           gap: "8px",
+                        }}
+                     >
+                        <span style={{ fontSize: "12px", color: "#666" }}>
+                           Auto Refresh:
+                        </span>
+                        <Switch
+                           checked={autoRefresh}
+                           onChange={setAutoRefresh}
+                           size="small"
+                        />
+                        <span
+                           style={{
+                              fontSize: "11px",
+                              color: autoRefresh ? "#52c41a" : "#999",
+                           }}
+                        >
+                           {autoRefresh ? `${refreshInterval}s` : "Off"}
+                        </span>
+                     </div>
+
+                     {/* Sound Toggle */}
+                     <div
+                        style={{
+                           display: "flex",
+                           alignItems: "center",
+                           gap: "5px",
+                        }}
+                     >
+                        <Button
+                           type={soundEnabled ? "primary" : "default"}
+                           size="small"
+                           icon={
+                              soundEnabled ? <SoundFilled /> : <SoundOutlined />
+                           }
+                           onClick={() => setSoundEnabled(!soundEnabled)}
+                           style={{ fontSize: "12px" }}
+                        />
+                        {soundEnabled && (
+                           <Button
+                              size="small"
+                              onClick={playNotificationSound}
+                              style={{ fontSize: "11px", padding: "2px 6px" }}
+                              title="ทดสอบเสียง"
+                           >
+                              ทดสอบ
+                           </Button>
+                        )}
+                     </div>
+
+                     {/* Manual Refresh */}
+                     <Button
+                        type="default"
+                        size="small"
+                        icon={<ReloadOutlined />}
+                        loading={isManualRefreshing}
+                        onClick={handleManualRefresh}
+                        style={{ fontSize: "12px" }}
+                     >
+                        Refresh
+                     </Button>
+
+                     {/* Clear NEW Markers */}
+                     {newPaymentIds.size > 0 && (
+                        <Button
+                           type="default"
+                           size="small"
+                           onClick={handleClearNewPayments}
+                           style={{
+                              fontSize: "11px",
+                              padding: "2px 8px",
+                              background: "#fff1f0",
+                              border: "1px solid #ffa39e",
+                              color: "#ff4d4f",
+                           }}
+                           title="เคลียร์เครื่องหมาย NEW ทั้งหมด"
+                        >
+                           Clear NEW ({newPaymentIds.size})
+                        </Button>
+                     )}
+
+                     {/* Data Count */}
+                     <div
+                        style={{
+                           fontSize: "11px",
+                           color: "#666",
+                           padding: "2px 6px",
+                           background: "white",
+                           borderRadius: "3px",
+                           border: "1px solid #e8e8e8",
+                        }}
+                     >
+                        {filteredData.length} รายการ
+                     </div>
+                  </div>
+               </div>
+
+               <Search
+                  placeholder="ค้นหาข้อมูล..."
+                  allowClear
+                  value={tableSearch.searchValue}
+                  onChange={(e) => tableSearch.handleSearch(e.target.value)}
+                  onSearch={tableSearch.handleSearch}
+                  style={{
+                     width: 300,
+                     marginBottom: "16px",
+                  }}
+               />
+            </div>
+
             <Table
-               dataSource={data}
                columns={columns}
+               dataSource={filteredData}
+               loading={paymentData.loading}
+               onChange={handleChange}
                scroll={{
                   x: 1500,
                   y: 500,
                }}
+               locale={{
+                  emptyText: paymentData.loading
+                     ? "กำลังโหลดข้อมูล..."
+                     : "ไม่มีข้อมูล",
+               }}
+               pagination={{
+                  pageSize: 20,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total, range) =>
+                     `แสดง ${range[0]}-${range[1]} จาก ${total} รายการ`,
+                  pageSizeOptions: ["10", "20", "50", "100"],
+               }}
+               size="middle"
+               bordered
+               rowClassName={(record, index) =>
+                  index % 2 === 0 ? "table-row-even" : "table-row-odd"
+               }
             />
          </div>
-         <Modal
-            title="แก้ไขรายการ"
-            open={showEditModal}
-            onOk={handleOkEditModal}
-            onCancel={handleCancelEditModal}
-            okText="ยืนยัน"
-            cancelText="ยกเลิก"
-         >
-            <div className="UpdatePaymentModal">
-               <label>วันที่: </label>
-               <DatePicker
-                  defaultValue={null}
-                  value={InputDate}
-                  format="D/M/YYYY"
-                  onChange={(value) => {
-                     if (value === null) {
-                        setSelectedRow((prev) => ({
-                           ...prev,
-                           date: null,
-                        }))
-                        setInputDate(null)
-                     } else {
-                        setSelectedRow((prev) => ({
-                           ...prev,
-                           date: genDate(value),
-                        }))
-                        setInputDate(value)
-                     }
-                  }}
-               />
-               <label>ค่าโอน(฿): </label>
-               <InputNumber
-                  value={selectedRow.tranfer_fee}
-                  onChange={(value) =>
-                     setSelectedRow((prev) => ({ ...prev, tranfer_fee: value }))
-                  }
-               />
-               <label>ค่าขนส่ง(￥): </label>
-               <InputNumber
-                  value={selectedRow.delivery_fee}
-                  onChange={(value) =>
-                     setSelectedRow((prev) => ({
-                        ...prev,
-                        delivery_fee: value,
-                     }))
-                  }
-               />
-               <label>อัตราแลกเปลี่ยนจากเยนเป็นเงินบาท: </label>
-               <InputNumber
-                  value={selectedRow.rate_yen}
-                  onChange={(value) =>
-                     setSelectedRow((prev) => ({ ...prev, rate_yen: value }))
-                  }
-               />
-               <label>สถานะ: </label>
-               <Select
-                  onChange={(value) =>
-                     setSelectedRow((prev) => ({
-                        ...prev,
-                        payment_status: value,
-                     }))
-                  }
-                  value={selectedRow.payment_status}
-                  options={[
-                     { label: "รอค่าโอนและค่าส่ง", value: "รอค่าโอนและค่าส่ง" },
-                     { label: "รอการชำระเงิน", value: "รอการชำระเงิน" },
-                     { label: "รอการตรวจสอบ", value: "รอการตรวจสอบ" },
-                     { label: "ชำระเงินเสร็จสิ้น", value: "ชำระเงินเสร็จสิ้น" },
-                  ]}
-               />
-            </div>
-         </Modal>
-         <Modal
-            // title="Slip"
-            open={showSlipModal}
-            onCancel={() => setShowSlipModal(false)}
-            okText="ยืนยัน"
-            cancelText="ยกเลิก"
-            footer={false}
-            wrapClassName="Slip-Modal"
-         >
-            <img src={slip.image} alt="" width={330} />
-         </Modal>
-         <style jsx global>
-            {`
-               .Slip-Modal .ant-modal {
-                  width: 330px;
-                  margin: 0;
-                  top: 0;
-                  padding: 0;
-               }
-               .Slip-Modal .ant-modal-content {
-                  background-color: rgba(0, 0, 0, 0.01);
-                  padding: 0;
-                  width: fit-content;
-                  box-shadow: none;
-               }
-               .UpdatePaymentModal .ant-picker {
-                  width: 100%;
-                  margin-bottom: 10px;
-               }
-               .UpdatePaymentModal .ant-input-number {
-                  width: 100%;
-                  margin-bottom: 10px;
-               }
-               .UpdatePaymentModal .ant-select {
-                  width: 100%;
-                  margin-bottom: 10px;
-               }
-            `}
-         </style>
+
+         {/* Delete Confirmation Dialog */}
+         <ConfirmDeleteDialog
+            visible={paymentData.showDeleteConfirm}
+            onConfirm={paymentData.confirmDelete}
+            onCancel={paymentData.handleCancelDelete}
+            loading={paymentData.deleteLoading}
+            itemName={paymentData.itemToDelete?.username}
+         />
+
+         {/* Edit Payment Modal */}
+         <EditPaymentModal
+            visible={paymentData.showEditModal}
+            loading={paymentData.editLoading}
+            paymentForm={paymentData.paymentForm}
+            formTouched={paymentData.formTouched}
+            onOk={paymentData.handleOkEditModal}
+            onCancel={paymentData.handleCancelEditModal}
+            onDateChange={handleDateChange}
+            onTransferFeeChange={handleTransferFeeChange}
+            onDeliveryFeeChange={handleDeliveryFeeChange}
+            onRateYenChange={handleRateYenChange}
+            onPaymentStatusChange={handlePaymentStatusChange}
+            onFieldBlur={handleFieldBlur}
+         />
+
+         {/* Slip Modal */}
+         <SlipModal
+            visible={paymentData.showSlipModal}
+            slip={paymentData.slip}
+            onCancel={() => paymentData.setShowSlipModal(false)}
+         />
+
          <style jsx>
             {`
                .container-table {
                   margin: 10px;
                   background: white;
-                  padding: 10px;
+                  padding: 20px;
+                  border-radius: 4px;
+                  border: 1px solid #d9d9d9;
+               }
+
+               :global(.table-row-even) {
+                  background-color: #fafafa !important;
+               }
+
+               :global(.table-row-odd) {
+                  background-color: #ffffff !important;
+               }
+
+               :global(.table-row-even:hover),
+               :global(.table-row-odd:hover) {
+                  background-color: #f0f0f0 !important;
+               }
+
+               :global(.ant-table-thead > tr > th) {
+                  background: #001529 !important;
+                  color: white !important;
+                  font-weight: 600 !important;
+                  text-align: center !important;
+                  border: none !important;
+                  font-size: 13px !important;
+               }
+
+               :global(.ant-table-thead > tr > th .ant-table-column-sorter) {
+                  color: white !important;
+               }
+
+               :global(
+                     .ant-table-thead
+                        > tr
+                        > th
+                        .ant-table-column-sorter
+                        .ant-table-column-sorter-up.active
+                  ) {
+                  color: #1890ff !important;
+               }
+
+               :global(
+                     .ant-table-thead
+                        > tr
+                        > th
+                        .ant-table-column-sorter
+                        .ant-table-column-sorter-down.active
+                  ) {
+                  color: #1890ff !important;
+               }
+
+               :global(.ant-table-thead > tr > th .ant-table-filter-trigger) {
+                  color: white !important;
+               }
+
+               :global(
+                     .ant-table-thead > tr > th .ant-table-filter-trigger:hover
+                  ) {
+                  color: #1890ff !important;
+               }
+
+               :global(.ant-table-thead > tr > th .ant-input) {
+                  background: white !important;
+                  color: #001529 !important;
+               }
+
+               :global(.ant-table-tbody > tr > td) {
+                  border-bottom: 1px solid #f0f0f0 !important;
+                  padding: 12px 8px !important;
+                  vertical-align: middle !important;
+               }
+
+               :global(.ant-table-bordered .ant-table-thead > tr > th) {
+                  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+               }
+
+               :global(.ant-table-bordered .ant-table-tbody > tr > td) {
+                  border-right: 1px solid #f0f0f0 !important;
+               }
+
+               :global(.ant-pagination) {
+                  margin-top: 20px !important;
+                  text-align: center !important;
+               }
+
+               :global(.ant-table-wrapper) {
+                  border-radius: 4px !important;
+                  overflow: hidden !important;
+                  border: 1px solid #d9d9d9 !important;
                }
             `}
          </style>

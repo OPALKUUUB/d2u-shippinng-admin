@@ -189,7 +189,6 @@ const biddingTableColumns = ({
                "https://auctions.yahoo.co.jp/jp/auction/"
             )
             const auctionId = link_code[1] || ""
-            console.log(link_code)
             return (
                <div style={{ textAlign: "center" }}>
                   <a
