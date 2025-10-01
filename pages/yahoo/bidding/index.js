@@ -1,8 +1,9 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable prefer-const */
-import { Table, Input } from "antd"
+import { Table, Input, Switch, Button, Badge, notification } from "antd"
 import { getSession } from "next-auth/react"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useState, useEffect, useRef } from "react"
+import { ReloadOutlined, SoundOutlined, SoundFilled } from "@ant-design/icons"
 import CardHead from "../../../components/CardHead"
 import Layout from "../../../components/layout/layout"
 import ConfirmDeleteDialog from "../../../components/ui/ConfirmDeleteDialog"
@@ -27,11 +28,80 @@ function YahooBiddingPage(props) {
       startIndex: 0,
    })
 
+   // Auto refresh states
+   const [autoRefresh, setAutoRefresh] = useState(true)
+   const [refreshInterval, setRefreshInterval] = useState(30) // seconds
+   const [soundEnabled, setSoundEnabled] = useState(true)
+   const [lastDataCount, setLastDataCount] = useState(0)
+   const [newOrdersCount, setNewOrdersCount] = useState(0)
+   const [isManualRefreshing, setIsManualRefreshing] = useState(false)
+   const [newOrderIds, setNewOrderIds] = useState(new Set())
+
+   // Refs
+   const intervalRef = useRef(null)
+
    // Use custom hooks
    const biddingData = useBiddingData(props.session)
    const tableSearch = useTableSearch()
 
-   // Filter data based on search value
+   // Auto refresh effect
+   useEffect(() => {
+      if (autoRefresh && refreshInterval > 0) {
+         intervalRef.current = setInterval(() => {
+            biddingData.fetchOrders()
+         }, refreshInterval * 1000)
+      } else if (intervalRef.current) {
+         clearInterval(intervalRef.current)
+         intervalRef.current = null
+      }
+
+      return () => {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+         }
+      }
+   }, [autoRefresh, refreshInterval, biddingData.refreshData])
+
+   // Check for new orders
+   useEffect(() => {
+      const currentData = biddingData.data || []
+      const currentDataCount = currentData.length
+
+      if (lastDataCount > 0 && currentDataCount > lastDataCount) {
+         const newCount = currentDataCount - lastDataCount
+
+         // เก็บ ID ของ order ใหม่ (สมมติว่าใช้ created_at + username เป็น unique key)
+         const sortedData = [...currentData].sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+         )
+         const newOrders = sortedData.slice(0, newCount)
+         const newIds = newOrders.map(
+            (order) =>
+               `${order.created_at}_${order.username}_${
+                  order.id || Math.random()
+               }`
+         )
+
+         setNewOrdersCount((prev) => prev + newCount)
+         setNewOrderIds((prev) => {
+            const updatedSet = new Set([...prev, ...newIds])
+            return updatedSet
+         })
+
+         // Show notification
+         notification.success({
+            message: "🎉 มี Order ใหม่!",
+            description: `มีการสั่งประมูลใหม่ ${newCount} รายการ`,
+            placement: "topRight",
+            duration: 5,
+         })
+
+         // Play notification sound
+         playNotificationSound()
+      }
+
+      setLastDataCount(currentDataCount)
+   }, [biddingData.data, lastDataCount, soundEnabled]) // Filter data based on search value
    const filteredData =
       biddingData.data?.filter((item) => {
          if (!tableSearch.searchValue) return true
@@ -65,6 +135,7 @@ function YahooBiddingPage(props) {
       handleDeleteRow: biddingData.handleDeleteRow,
       imagePopupState,
       setImagePopupState,
+      newOrderIds,
    })
 
    // Form handlers for modals
@@ -100,6 +171,67 @@ function YahooBiddingPage(props) {
    const handleFieldBlur = (field) => {
       biddingData.updateFormTouched(field, true)
    }
+
+   // Manual refresh handler
+   const handleManualRefresh = async () => {
+      setIsManualRefreshing(true)
+      try {
+         await biddingData.fetchOrders()
+         notification.success({
+            message: "✅ รีเฟรชข้อมูลสำเร็จ",
+            description: "ข้อมูลได้รับการอัปเดตแล้ว",
+            placement: "topRight",
+            duration: 2,
+         })
+      } catch (error) {
+         notification.error({
+            message: "❌ เกิดข้อผิดพลาด",
+            description: "ไม่สามารถรีเฟรชข้อมูลได้",
+            placement: "topRight",
+            duration: 3,
+         })
+      } finally {
+         setIsManualRefreshing(false)
+      }
+   }
+
+   // Clear new orders notification
+   const handleClearNewOrders = () => {
+      setNewOrdersCount(0)
+      setNewOrderIds(new Set())
+   }
+
+   // Play notification sound
+   const playNotificationSound = () => {
+      if (soundEnabled) {
+         try {
+            // Create simple notification sound with Web Audio API
+            const audioContext = new (window.AudioContext ||
+               window.webkitAudioContext)()
+            const oscillator = audioContext.createOscillator()
+            const gainNode = audioContext.createGain()
+
+            oscillator.connect(gainNode)
+            gainNode.connect(audioContext.destination)
+
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+            oscillator.frequency.setValueAtTime(
+               600,
+               audioContext.currentTime + 0.1
+            )
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+            gainNode.gain.exponentialRampToValueAtTime(
+               0.01,
+               audioContext.currentTime + 0.5
+            )
+
+            oscillator.start(audioContext.currentTime)
+            oscillator.stop(audioContext.currentTime + 0.5)
+         } catch (error) {
+            console.warn("ไม่สามารถเล่นเสียงแจ้งเตือนได้:", error)
+         }
+      }
+   }
    return (
       <Fragment>
          <CardHead
@@ -123,16 +255,160 @@ function YahooBiddingPage(props) {
             )}
 
             <div style={{ marginBottom: "20px" }}>
-               <h2
+               <div
                   style={{
-                     fontSize: "20px",
-                     fontWeight: "600",
-                     color: "#001529",
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
                      marginBottom: "16px",
                   }}
                >
-                  การจัดการ Yahoo Bidding
-               </h2>
+                  <h2
+                     style={{
+                        fontSize: "20px",
+                        fontWeight: "600",
+                        color: "#001529",
+                        margin: 0,
+                     }}
+                  >
+                     การจัดการ Yahoo Bidding
+                     {newOrdersCount > 0 && (
+                        <Badge
+                           count={newOrdersCount}
+                           onClick={handleClearNewOrders}
+                           style={{
+                              marginLeft: "10px",
+                              backgroundColor: "#52c41a",
+                              cursor: "pointer",
+                           }}
+                        />
+                     )}
+                  </h2>
+
+                  {/* Control Panel */}
+                  <div
+                     style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "15px",
+                        padding: "8px 12px",
+                        background: "#f0f2f5",
+                        borderRadius: "6px",
+                        border: "1px solid #d9d9d9",
+                     }}
+                  >
+                     {/* Status Info */}
+                     <div style={{ fontSize: "11px", color: "#666" }}>
+                        {autoRefresh && "🔄 อัปเดตอัตโนมัติทุก 30 วิ | "}
+                        {soundEnabled && "🔊 เสียงแจ้งเตือน | "}
+                        {newOrderIds.size > 0 &&
+                           `🆕 Order ใหม่: ${newOrderIds.size} รายการ | `}
+                        📊 ข้อมูล: {biddingData.data?.length || 0} รายการ
+                     </div>
+
+                     {/* Auto Refresh Toggle */}
+                     <div
+                        style={{
+                           display: "flex",
+                           alignItems: "center",
+                           gap: "8px",
+                        }}
+                     >
+                        <span style={{ fontSize: "12px", color: "#666" }}>
+                           Auto Refresh:
+                        </span>
+                        <Switch
+                           checked={autoRefresh}
+                           onChange={setAutoRefresh}
+                           size="small"
+                        />
+                        <span
+                           style={{
+                              fontSize: "11px",
+                              color: autoRefresh ? "#52c41a" : "#999",
+                           }}
+                        >
+                           {autoRefresh ? `${refreshInterval}s` : "Off"}
+                        </span>
+                     </div>
+
+                     {/* Sound Toggle */}
+                     <div
+                        style={{
+                           display: "flex",
+                           alignItems: "center",
+                           gap: "5px",
+                        }}
+                     >
+                        <Button
+                           type={soundEnabled ? "primary" : "default"}
+                           size="small"
+                           icon={
+                              soundEnabled ? <SoundFilled /> : <SoundOutlined />
+                           }
+                           onClick={() => setSoundEnabled(!soundEnabled)}
+                           style={{ fontSize: "12px" }}
+                        />
+                        {soundEnabled && (
+                           <Button
+                              size="small"
+                              onClick={playNotificationSound}
+                              style={{ fontSize: "11px", padding: "2px 6px" }}
+                              title="ทดสอบเสียง"
+                           >
+                              ทดสอบ
+                           </Button>
+                        )}
+                     </div>
+
+                     {/* Manual Refresh */}
+                     {/* Manual Refresh */}
+                     <Button
+                        type="default"
+                        size="small"
+                        icon={<ReloadOutlined />}
+                        loading={isManualRefreshing}
+                        onClick={handleManualRefresh}
+                        style={{ fontSize: "12px" }}
+                     >
+                        Refresh
+                     </Button>
+
+                     {/* Clear NEW Markers */}
+                     {newOrderIds.size > 0 && (
+                        <Button
+                           type="default"
+                           size="small"
+                           onClick={handleClearNewOrders}
+                           style={{
+                              fontSize: "11px",
+                              padding: "2px 8px",
+                              background: "#fff1f0",
+                              border: "1px solid #ffa39e",
+                              color: "#ff4d4f",
+                           }}
+                           title="เคลียร์เครื่องหมาย NEW ทั้งหมด"
+                        >
+                           Clear NEW ({newOrderIds.size})
+                        </Button>
+                     )}
+
+                     {/* Data Count */}
+                     <div
+                        style={{
+                           fontSize: "11px",
+                           color: "#666",
+                           padding: "2px 6px",
+                           background: "white",
+                           borderRadius: "3px",
+                           border: "1px solid #e8e8e8",
+                        }}
+                     >
+                        {filteredData.length} รายการ
+                     </div>
+                  </div>
+               </div>
+
                <Search
                   placeholder="ค้นหาข้อมูล..."
                   allowClear
