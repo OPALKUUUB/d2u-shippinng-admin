@@ -51,8 +51,6 @@ function YahooPaymentPage() {
          const responseJson = await response.json()
          setData(
             responseJson.payments
-               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("ลบรายการสำเร็จ!")
       } catch (err) {
@@ -100,8 +98,6 @@ function YahooPaymentPage() {
          const responseJson = await response.json()
          setData(
             responseJson.payments
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          setshowEditModal(false)
          setSelectedRow(payment_model)
@@ -140,8 +136,6 @@ function YahooPaymentPage() {
          const responseJson = await response.json()
          setData(
             responseJson.payments
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
          message.success("success!")
       } catch (err) {
@@ -332,8 +326,6 @@ function YahooPaymentPage() {
          console.log(responseJson)
          setData(
             responseJson.payments
-               .sort((a, b) => sortDate(a.date, b.date))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
    }, [])

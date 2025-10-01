@@ -54,8 +54,6 @@ function YahooHistoryPage(props) {
          // console.log(responseJson)
          setData(
             responseJson.history
-               .sort((a, b) => sortDateTime(a.created_at, b.created_at))
-               .reduce((a, c, i) => [...a, { ...c, key: i }], [])
          )
       })()
    }, [])
